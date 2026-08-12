@@ -1,6 +1,7 @@
 import type { AssetIssuance, QueryEvent } from "@qubic.org/rpc";
 
 import type { ExplorerAssetIssuanceEventsPage } from "./rpc/adapter";
+import { normalizeAssetIndex } from "./rpc/validation";
 
 export interface AssetIssuanceRow {
   readonly key: string;
@@ -59,7 +60,7 @@ export function normalizeAssetIssuanceEvent(
 
 export function normalizeAssetIssuance(issuance: AssetIssuance): AssetIssuanceRow {
   const data = issuance.data;
-  const universeIndex = reportedNumber(issuance.universeIndex);
+  const universeIndex = normalizeAssetIndex(issuance.universeIndex) ?? undefined;
 
   return {
     key: `asset-${universeIndex ?? "unknown"}`,
@@ -70,6 +71,11 @@ export function normalizeAssetIssuance(issuance: AssetIssuance): AssetIssuanceRo
     unitOfMeasurement: formatReportedUnit(data?.unitOfMeasurement),
     tickNumber: reportedNumber(issuance.tick),
   };
+}
+
+export function getAssetIssuanceHref(index: unknown): string | null {
+  const normalized = normalizeAssetIndex(index);
+  return normalized === null ? null : `/tokens/${normalized}`;
 }
 
 export function normalizeAssetIssuances(issuances: readonly AssetIssuance[]): AssetIssuanceRow[] {

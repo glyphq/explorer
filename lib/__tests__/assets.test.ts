@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import {
   formatReportedUnit,
+  getAssetIssuanceHref,
   getNextAssetIssuanceOffset,
   normalizeAssetIssuanceEvent,
   normalizeAssetIssuances,
@@ -102,6 +103,14 @@ describe("official asset issuance normalization", () => {
       transactionHash: QPAY_TRANSACTION,
       logId: "170935",
     });
+  });
+
+  test("builds canonical token detail hrefs from valid universe indexes", () => {
+    expect(getAssetIssuanceHref("00035")).toBe("/tokens/35");
+    expect(getAssetIssuanceHref(0)).toBe("/tokens/0");
+    expect(getAssetIssuanceHref("4294967295")).toBe("/tokens/4294967295");
+    expect(getAssetIssuanceHref("12.5")).toBeNull();
+    expect(getAssetIssuanceHref(undefined)).toBeNull();
   });
 
   test("does not invent missing event fields", () => {

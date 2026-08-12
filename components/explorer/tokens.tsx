@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import { normalizeAssetIssuances, type AssetIssuanceRow } from "@/lib/assets";
+import { getAssetIssuanceHref, normalizeAssetIssuances, type AssetIssuanceRow } from "@/lib/assets";
 import { useAssetIssuances } from "@/lib/rpc/queries";
 import {
   formatIdentifier,
@@ -43,6 +43,12 @@ function TickCell({ value }: { value: number | undefined }) {
   );
 }
 
+function TokenNameCell({ row }: { row: AssetIssuanceRow }) {
+  const name = row.assetName ?? <span className="font-normal text-[var(--glyph-tertiary)]">Unnamed</span>;
+  const href = getAssetIssuanceHref(row.universeIndex);
+  return href ? <ExplorerLink href={href}>{name}</ExplorerLink> : name;
+}
+
 function TokenTable({ rows }: { rows: readonly AssetIssuanceRow[] }) {
   return (
     <div className="-mx-4 overflow-x-auto sm:mx-0">
@@ -61,7 +67,7 @@ function TokenTable({ rows }: { rows: readonly AssetIssuanceRow[] }) {
           {rows.map((row) => (
             <tr className="align-top text-sm text-[var(--glyph-muted)]" key={row.key}>
               <td className="px-4 py-3 font-semibold text-[var(--glyph-ink)] sm:px-0">
-                {row.assetName ?? <span className="font-normal text-[var(--glyph-tertiary)]">Unnamed</span>}
+                <TokenNameCell row={row} />
               </td>
               <td className="whitespace-nowrap px-4 py-3 text-right font-mono text-xs text-[var(--glyph-ink)]">
                 {row.universeIndex === undefined ? "—" : formatNumber(row.universeIndex)}
