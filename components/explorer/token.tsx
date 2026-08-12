@@ -16,7 +16,6 @@ import {
   ExplorerLink,
   InvalidLookup,
   KeyValueList,
-  Panel,
   QueryRefreshMeta,
   QueryState,
   StatusMessage,
@@ -53,32 +52,27 @@ function Detail({ issuance }: { issuance: AssetIssuance }) {
 
   return (
     <>
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-4 border-b border-[var(--glyph-line)] pb-4">
+      <header className="mb-5 flex flex-wrap items-end justify-between gap-4 border-b border-[var(--glyph-line)] pb-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.1em] text-[var(--glyph-tertiary)]">Official asset issuance</p>
-          <h1 className="mt-2 font-mono text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)]">
+          <h1 className="text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)]">
             {data?.name ?? "Asset issuance"}
           </h1>
+          <p className="mt-1 text-sm text-[var(--glyph-muted)]">Reported issuance details.</p>
         </div>
         <ExplorerLink href="/tokens">Back to tokens</ExplorerLink>
-      </div>
+      </header>
 
-      <Panel title="Reported fields">
-        <KeyValueList
-          items={[
-            { label: "Issuer", value: <IssuerValue value={data?.issuerIdentity} /> },
-            { label: "Asset name", value: data?.name ?? <span className="text-[var(--glyph-tertiary)]">Not reported</span> },
-            { label: "Type", value: data?.type === undefined ? "Not reported" : formatNumber(data.type) },
-            { label: "Decimal places", value: data?.numberOfDecimalPlaces === undefined ? "Not reported" : formatNumber(data.numberOfDecimalPlaces) },
-            { label: "Unit measurement", value: <code className="break-all font-mono text-xs">{formatReportedUnit(data?.unitOfMeasurement)}</code> },
-            { label: "Universe index", value: issuance.universeIndex === undefined ? "Not reported" : formatNumber(issuance.universeIndex) },
-            { label: "Issuance tick", value: issuance.tick === undefined ? "Not reported" : formatTick(issuance.tick) },
-          ]}
-        />
-        <p className="mt-6 border-t border-[var(--glyph-line)] pt-4 text-xs leading-5 text-[var(--glyph-tertiary)]">
-          This detail view contains only fields reported by the official Qubic live asset issuance endpoint. Supply is not shown because this endpoint does not report it.
-        </p>
-      </Panel>
+      <KeyValueList
+        items={[
+          { label: "Issuer", value: <IssuerValue value={data?.issuerIdentity} /> },
+          { label: "Asset name", value: data?.name ?? <span className="text-[var(--glyph-tertiary)]">Not reported</span> },
+          { label: "Type", value: data?.type === undefined ? "Not reported" : formatNumber(data.type) },
+          { label: "Decimal places", value: data?.numberOfDecimalPlaces === undefined ? "Not reported" : formatNumber(data.numberOfDecimalPlaces) },
+          { label: "Unit measurement", value: <code className="break-all font-mono text-xs">{formatReportedUnit(data?.unitOfMeasurement)}</code> },
+          { label: "Universe index", value: issuance.universeIndex === undefined ? "Not reported" : formatNumber(issuance.universeIndex) },
+          { label: "Issuance tick", value: issuance.tick === undefined ? "Not reported" : formatTick(issuance.tick) },
+        ]}
+      />
     </>
   );
 }

@@ -8,7 +8,6 @@ import {
   ExplorerFrame,
   ExplorerLink,
   InvalidLookup,
-  Panel,
   QueryRefreshMeta,
   QueryState,
 } from "./primitives";
@@ -93,49 +92,47 @@ export function TickTransactionsPage({ tick }: { tick: number | null }) {
 
   return (
     <ExplorerFrame>
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-4 border-b border-[var(--glyph-line)] pb-4">
+      <header className="mb-4 flex flex-wrap items-end justify-between gap-4 border-b border-[var(--glyph-line)] pb-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.1em] text-[var(--glyph-tertiary)]">Tick transactions</p>
-          <h1 className="mt-2 font-mono text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)]">{formatNumber(tick)}</h1>
+          <h1 className="text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)]">Tick {formatNumber(tick)}</h1>
+          <p className="mt-1 text-sm text-[var(--glyph-muted)]">Transactions reported for this tick.</p>
         </div>
         <div className="flex items-center gap-3">
           <ExplorerLink href={`/tick/${tick}`}>Tick record</ExplorerLink>
           <CopyButton label="Copy tick" value={String(tick)} />
         </div>
-      </div>
+      </header>
 
-      <Panel title="Transactions">
-        <QueryState
-          label="archive tick record"
-          noResultMessage="No archive record was found for this tick."
-          query={archive}
-        >
-          {archive.data ? (
-            <QueryState
-              emptyMessage="No transactions were returned for this tick."
-              emptyWhen={(data) => Array.isArray(data) && data.length === 0}
-              label="tick transactions"
-              noResultMessage="No transaction response was returned for this tick."
-              query={transactions}
-            >
-              {Array.isArray(transactions.data) ? (
-                <>
-                  <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-[var(--glyph-line)] pb-3">
-                    <p className="font-mono text-xs text-[var(--glyph-muted)]">
-                      {formatNumber(transactions.data.length)} transactions returned
-                    </p>
-                    <p className="text-xs text-[var(--glyph-tertiary)]">
-                      Archive tick {formatNumber(archive.data.tickNumber ?? tick)}
-                    </p>
-                  </div>
-                  <TransactionTable rows={toTickTransactionRows(transactions.data)} tick={tick} />
-                </>
-              ) : null}
-            </QueryState>
-          ) : null}
-        </QueryState>
-        {archive.data ? <QueryRefreshMeta query={transactions} /> : <QueryRefreshMeta query={archive} />}
-      </Panel>
+      <QueryState
+        label="archive tick record"
+        noResultMessage="No archive record was found for this tick."
+        query={archive}
+      >
+        {archive.data ? (
+          <QueryState
+            emptyMessage="No transactions were returned for this tick."
+            emptyWhen={(data) => Array.isArray(data) && data.length === 0}
+            label="tick transactions"
+            noResultMessage="No transaction response was returned for this tick."
+            query={transactions}
+          >
+            {Array.isArray(transactions.data) ? (
+              <>
+                <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-[var(--glyph-line)] pb-3">
+                  <p className="font-mono text-xs text-[var(--glyph-muted)]">
+                    {formatNumber(transactions.data.length)} transactions returned
+                  </p>
+                  <p className="text-xs text-[var(--glyph-tertiary)]">
+                    Archive tick {formatNumber(archive.data.tickNumber ?? tick)}
+                  </p>
+                </div>
+                <TransactionTable rows={toTickTransactionRows(transactions.data)} tick={tick} />
+              </>
+            ) : null}
+          </QueryState>
+        ) : null}
+      </QueryState>
+      {archive.data ? <QueryRefreshMeta query={transactions} /> : <QueryRefreshMeta query={archive} />}
     </ExplorerFrame>
   );
 }

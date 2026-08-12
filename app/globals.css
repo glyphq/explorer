@@ -66,6 +66,27 @@ html {
   background: var(--glyph-canvas);
   scroll-behavior: smooth;
   scrollbar-gutter: stable;
+  scrollbar-color: var(--glyph-line-strong) var(--glyph-canvas);
+  scrollbar-width: thin;
+}
+
+*::-webkit-scrollbar {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--glyph-canvas);
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 3px solid var(--glyph-canvas);
+  border-radius: 999px;
+  background: var(--glyph-line-strong);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--glyph-muted);
 }
 
 body {

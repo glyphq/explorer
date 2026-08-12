@@ -10,7 +10,6 @@ import {
   ExplorerLink,
   InvalidLookup,
   KeyValueList,
-  Panel,
   QueryRefreshMeta,
   QueryState,
 } from "./primitives";
@@ -60,55 +59,57 @@ export function TransactionPage({ hash }: { hash: string | null }) {
 
   return (
     <ExplorerFrame>
-      <div className="mb-4 flex items-start gap-2 border-b border-[var(--glyph-line)] pb-4">
-        <code className="min-w-0 flex-1 break-all font-mono text-xs leading-5 text-[var(--glyph-ink)]">{hash}</code>
-        <CopyButton label="Copy transaction hash" value={hash} />
-      </div>
+      <header className="mb-5 border-b border-[var(--glyph-line)] pb-4">
+        <h1 className="text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)]">Transaction</h1>
+        <p className="mt-1 text-sm text-[var(--glyph-muted)]">Archive record for this transaction.</p>
+        <div className="mt-4 flex items-start gap-2">
+          <code className="min-w-0 flex-1 break-all font-mono text-xs leading-5 text-[var(--glyph-ink)]">{hash}</code>
+          <CopyButton label="Copy transaction hash" value={hash} />
+        </div>
+      </header>
 
-      <Panel title="Transaction record">
-        <QueryState
-          label="transaction"
-          noResultMessage="No transaction was found for this hash."
-          query={query}
-        >
-          {transaction ? (
-            <>
+      <QueryState
+        label="transaction"
+        noResultMessage="No transaction was found for this hash."
+        query={query}
+      >
+        {transaction ? (
+          <>
+            <KeyValueList
+              items={[
+                { label: "Archive record", value: "Available" },
+                { label: "Amount", value: transaction.amount !== undefined && transaction.amount !== null ? `${formatAtomicAmount(transaction.amount)} raw units` : "Amount not reported" },
+                { label: "Tick", value: transaction.tickNumber !== undefined ? <ExplorerLink href={`/tick/${transaction.tickNumber}`}>{formatNumber(transaction.tickNumber)}</ExplorerLink> : "Not reported" },
+                { label: "Timestamp", value: formatTimestamp(transaction.timestamp) },
+                { label: "Source", value: <IdentityIdentifier label="Source" value={transaction.source} />, wide: true },
+                { label: "Destination", value: <IdentityIdentifier label="Destination" value={transaction.destination} />, wide: true },
+                { label: "Input type", value: formatNumber(transaction.inputType) },
+                { label: "Input size", value: formatNumber(transaction.inputSize) },
+                { label: "Money flew", value: transaction.moneyFlew === undefined ? "Not reported" : transaction.moneyFlew ? "Yes" : "No" },
+              ]}
+            />
+
+            <div className="mt-8 border-t border-[var(--glyph-line)] pt-5">
+              <h2 className="text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]">Payload</h2>
               <KeyValueList
                 items={[
-                  { label: "Archive record", value: "Available" },
-                  { label: "Amount", value: transaction.amount !== undefined && transaction.amount !== null ? `${formatAtomicAmount(transaction.amount)} raw units` : "Amount not reported" },
-                  { label: "Tick", value: transaction.tickNumber !== undefined ? <ExplorerLink href={`/tick/${transaction.tickNumber}`}>{formatNumber(transaction.tickNumber)}</ExplorerLink> : "Not reported" },
-                  { label: "Timestamp", value: formatTimestamp(transaction.timestamp) },
-                  { label: "Source", value: <IdentityIdentifier label="Source" value={transaction.source} />, wide: true },
-                  { label: "Destination", value: <IdentityIdentifier label="Destination" value={transaction.destination} />, wide: true },
-                  { label: "Input type", value: formatNumber(transaction.inputType) },
-                  { label: "Input size", value: formatNumber(transaction.inputSize) },
-                  { label: "Money flew", value: transaction.moneyFlew === undefined ? "Not reported" : transaction.moneyFlew ? "Yes" : "No" },
+                  { label: "Input data", value: <RawTransactionValue label="Input data" value={transaction.inputData} />, wide: true },
+                  { label: "Signature", value: <RawTransactionValue label="Signature" value={transaction.signature} />, wide: true },
                 ]}
               />
+            </div>
 
+            {contractInvocationDisplay ? (
               <div className="mt-8 border-t border-[var(--glyph-line)] pt-5">
-                <p className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Payload fields</p>
-                <KeyValueList
-                  items={[
-                    { label: "Input data", value: <RawTransactionValue label="Input data" value={transaction.inputData} />, wide: true },
-                    { label: "Signature", value: <RawTransactionValue label="Signature" value={transaction.signature} />, wide: true },
-                  ]}
-                />
+                <h2 className="text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]">Contract invocation</h2>
+                <p className="mt-2 text-sm font-semibold text-[var(--glyph-ink)]">{contractInvocationDisplay.title}</p>
+                <p className="mt-1 text-sm leading-6 text-[var(--glyph-muted)]">{contractInvocationDisplay.description}</p>
               </div>
-
-              {contractInvocationDisplay ? (
-                <div className="mt-8 border-t border-[var(--glyph-line)] pt-5">
-                  <p className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Contract invocation</p>
-                  <p className="mt-2 text-sm font-semibold text-[var(--glyph-ink)]">{contractInvocationDisplay.title}</p>
-                  <p className="mt-1 text-sm leading-6 text-[var(--glyph-muted)]">{contractInvocationDisplay.description}</p>
-                </div>
-              ) : null}
-            </>
-          ) : null}
-        </QueryState>
-        <QueryRefreshMeta query={query} />
-      </Panel>
+            ) : null}
+          </>
+        ) : null}
+      </QueryState>
+      <QueryRefreshMeta query={query} />
     </ExplorerFrame>
   );
 }

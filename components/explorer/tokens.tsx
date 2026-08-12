@@ -21,7 +21,6 @@ import {
 import {
   ExplorerFrame,
   ExplorerLink,
-  Panel,
   QueryRefreshMeta,
   QueryState,
   StatusMessage,
@@ -149,58 +148,51 @@ export function TokensPage() {
 
   return (
     <ExplorerFrame>
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-4 border-b border-[var(--glyph-line)] pb-4">
+      <header className="mb-5 flex flex-wrap items-end justify-between gap-4 border-b border-[var(--glyph-line)] pb-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.1em] text-[var(--glyph-tertiary)]">Qubic assets</p>
-          <h1 className="mt-2 font-mono text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)]">Tokens</h1>
+          <h1 className="text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)]">Tokens</h1>
+          <p className="mt-1 text-sm text-[var(--glyph-muted)]">Assets issued on Qubic.</p>
         </div>
-        <div className="text-right text-xs text-[var(--glyph-tertiary)]">
-          <p>Official issuance events</p>
-          {totalLabel ? <p className="mt-1 font-mono text-[var(--glyph-muted)]">{formatNumber(rows.length)} of {totalLabel}</p> : null}
+        <div className="text-right font-mono text-xs text-[var(--glyph-tertiary)]">
+          {totalLabel ? <p>{formatNumber(rows.length)} of {totalLabel}</p> : null}
         </div>
-      </div>
+      </header>
 
-      <Panel title="Asset issuance registry">
-        <p className="mb-5 max-w-3xl text-sm leading-6 text-[var(--glyph-muted)]">
-          This list uses the official Qubic query API&apos;s paginated asset-issuance events. Supply, decimals, and unit measurements are shown only when reported by the API. Prices and off-chain metadata are not inferred.
-        </p>
+      {query.isError && !query.data && isUnsupportedAssetApi(query.error) ? (
+        <StatusMessage
+          description="The documented Qubic event-log endpoint is not available on the selected RPC service, so no token list can be shown."
+          status="error"
+          title="Official asset issuance data is unavailable"
+        />
+      ) : (
+        <QueryState
+          emptyMessage="The official query API returned no asset issuance events."
+          emptyWhen={(data) => {
+            if (!data || typeof data !== "object") return false;
+            const result = data as { pages?: unknown[] };
+            return Array.isArray(result.pages) && result.pages.length > 0 && rows.length === 0;
+          }}
+          label="asset issuance events"
+          query={query}
+        >
+          {rows.length > 0 ? <IssuanceTable rows={rows} /> : null}
+          {query.hasNextPage ? (
+            <div className="mt-5 flex justify-center border-t border-[var(--glyph-line)] pt-5">
+              <GlyphButton
+                disabled={query.isFetchingNextPage}
+                icon={ArrowDown01Icon}
+                onClick={() => void query.fetchNextPage()}
+                size="sm"
+                variant="secondary"
+              >
+                {query.isFetchingNextPage ? "Loading…" : "Load more"}
+              </GlyphButton>
+            </div>
+          ) : null}
+        </QueryState>
+      )}
 
-        {query.isError && !query.data && isUnsupportedAssetApi(query.error) ? (
-          <StatusMessage
-            description="The documented Qubic event-log endpoint is not available on the selected RPC service, so no token list can be shown."
-            status="error"
-            title="Official asset issuance data is unavailable"
-          />
-        ) : (
-          <QueryState
-            emptyMessage="The official query API returned no asset issuance events."
-            emptyWhen={(data) => {
-              if (!data || typeof data !== "object") return false;
-              const result = data as { pages?: unknown[] };
-              return Array.isArray(result.pages) && result.pages.length > 0 && rows.length === 0;
-            }}
-            label="asset issuance events"
-            query={query}
-          >
-            {rows.length > 0 ? <IssuanceTable rows={rows} /> : null}
-            {query.hasNextPage ? (
-              <div className="mt-5 flex justify-center border-t border-[var(--glyph-line)] pt-5">
-                <GlyphButton
-                  disabled={query.isFetchingNextPage}
-                  icon={ArrowDown01Icon}
-                  onClick={() => void query.fetchNextPage()}
-                  size="sm"
-                  variant="secondary"
-                >
-                  {query.isFetchingNextPage ? "Loading…" : "Load more"}
-                </GlyphButton>
-              </div>
-            ) : null}
-          </QueryState>
-        )}
-
-        <QueryRefreshMeta query={query} />
-      </Panel>
+      <QueryRefreshMeta query={query} />
     </ExplorerFrame>
   );
 }
