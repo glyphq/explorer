@@ -1,11 +1,20 @@
 "use client";
 
+import {
+  Activity03Icon,
+  ArrowUpRight01Icon,
+  AlertCircleIcon,
+  Copy01Icon,
+  CopyCheckIcon,
+  InformationCircleIcon,
+  ReloadIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useState, type ComponentProps, type ReactNode } from "react";
 import { GlyphButton } from "@/components/ui/button";
 
-import { formatRefreshTimestamp, getRpcErrorLabel, isMissingLookupResult, resolveExplorerLookup } from "./utils";
+import { formatRefreshTimestamp, getRpcErrorLabel, isMissingLookupResult } from "./utils";
 
 export type ExplorerQuery<T> = {
   data: T | undefined;
@@ -17,113 +26,80 @@ export type ExplorerQuery<T> = {
   refetch: () => Promise<unknown>;
 };
 
+type ExplorerIcon = HugeiconsIconProps["icon"];
+
 const surfaceClass = "border border-[var(--glyph-line)] bg-[var(--glyph-surface)]";
 
 export function ExplorerFrame({ children }: { children: ReactNode }) {
   return (
     <main className="min-h-[calc(100svh-72px)]">
-      <div className="mx-auto w-full max-w-6xl px-[var(--glyph-gutter)] py-6 md:py-8">
+      <div className="mx-auto w-full max-w-6xl px-[var(--glyph-gutter)] py-5 md:py-7">
         {children}
       </div>
     </main>
   );
 }
 
-export function ExplorerPageHeader({
-  eyebrow,
-  title,
-  description,
-  children,
-}: {
-  eyebrow: string;
-  title: string;
-  description: string;
-  children?: ReactNode;
+export function IconButton({
+  label,
+  icon,
+  variant = "secondary",
+  ...props
+}: Omit<ComponentProps<typeof GlyphButton>, "children" | "icon"> & {
+  label: string;
+  icon: ExplorerIcon;
 }) {
   return (
-    <header className="mb-6 flex flex-col gap-4 border-b border-[var(--glyph-line)] pb-5 md:flex-row md:items-end md:justify-between">
-      <div className="min-w-0">
-        <p className="mb-1 font-mono text-[0.65rem] font-medium uppercase tracking-[0.16em] text-[var(--glyph-tertiary)]">
-          {eyebrow}
-        </p>
-        <h1 className="text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)] md:text-3xl">
-          {title}
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--glyph-muted)]">
-          {description}
-        </p>
-      </div>
-      {children ? <div className="shrink-0">{children}</div> : null}
-    </header>
+    <GlyphButton
+      {...props}
+      aria-label={label}
+      className={`!min-h-11 !w-11 !p-0 ${props.className ?? ""}`}
+      icon={icon}
+      variant={variant}
+    >
+      <span className="sr-only">{label}</span>
+    </GlyphButton>
   );
 }
 
-export function SearchForm({ compact = false }: { compact?: boolean }) {
-  const router = useRouter();
-  const [value, setValue] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const inputId = compact ? "explorer-search-compact" : "explorer-search";
-  const helpId = `${inputId}-help`;
-  const errorId = `${inputId}-error`;
+export function CopyButton({ value, label }: { value: string; label: string }) {
+  const [copied, setCopied] = useState(false);
 
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const lookup = resolveExplorerLookup(value);
-    if (!lookup) {
-      setError("Enter a valid identity, 60-character transaction hash, or tick number.");
-      return;
+  async function copyValue() {
+    if (!navigator.clipboard) return;
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1_500);
+    } catch {
+      setCopied(false);
     }
-
-    setError(null);
-    router.push(lookup.href);
   }
 
   return (
-    <form className={compact ? "w-full" : "w-full max-w-3xl"} onSubmit={submit} noValidate>
-      <label
-        className="mb-2 block text-sm font-semibold text-[var(--glyph-ink)]"
-        htmlFor={inputId}
-      >
-        Search the network
-      </label>
-      <div className="flex flex-col gap-2 sm:flex-row">
-        <input
-          aria-describedby={error ? `${helpId} ${errorId}` : helpId}
-          aria-invalid={Boolean(error)}
-          className="min-h-12 min-w-0 flex-1 border border-[var(--glyph-line-strong)] bg-[var(--glyph-canvas)] px-4 font-mono text-sm text-[var(--glyph-ink)] placeholder:text-[var(--glyph-tertiary)]"
-          id={inputId}
-          onChange={(event) => {
-            setValue(event.target.value);
-            if (error) setError(null);
-          }}
-          placeholder="Identity, transaction hash, or tick"
-          spellCheck={false}
-          type="text"
-          value={value}
-        />
-        <GlyphButton type="submit" size="md">
-          Open lookup
-        </GlyphButton>
-      </div>
-      <p className="mt-2 text-xs leading-5 text-[var(--glyph-tertiary)]" id={helpId}>
-        Lookup is read-only. The Explorer never signs or broadcasts transactions.
-      </p>
-      {error ? (
-        <p className="mt-2 text-sm font-medium text-[var(--glyph-ink)]" id={errorId} role="alert">
-          {error}
-        </p>
-      ) : null}
-    </form>
+    <IconButton
+      icon={copied ? CopyCheckIcon : Copy01Icon}
+      label={copied ? "Copied" : label}
+      onClick={() => void copyValue()}
+      size="sm"
+    />
+  );
+}
+
+export function ExplorerLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link className="inline-flex items-center gap-1 font-mono text-xs font-semibold underline" href={href}>
+      <HugeiconsIcon aria-hidden="true" focusable="false" icon={ArrowUpRight01Icon} size={14} strokeWidth={1.5} />
+      <span>{children}</span>
+    </Link>
   );
 }
 
 export function Panel({
-  eyebrow,
   title,
   children,
   className = "",
 }: {
-  eyebrow?: string;
   title: string;
   children: ReactNode;
   className?: string;
@@ -131,12 +107,7 @@ export function Panel({
   return (
     <section className={`${surfaceClass} ${className}`}>
       <div className="border-b border-[var(--glyph-line)] px-4 py-3">
-        {eyebrow ? (
-          <p className="mb-1 font-mono text-[0.65rem] font-medium uppercase tracking-[0.16em] text-[var(--glyph-tertiary)]">
-            {eyebrow}
-          </p>
-        ) : null}
-        <h2 className="text-lg font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]">{title}</h2>
+        <h2 className="text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]">{title}</h2>
       </div>
       <div className="p-4">{children}</div>
     </section>
@@ -147,11 +118,11 @@ export function QueryRefreshMeta({ query }: { query: Pick<ExplorerQuery<unknown>
   const label = formatRefreshTimestamp(query.dataUpdatedAt);
   return (
     <p className="mt-5 border-t border-[var(--glyph-line)] pt-4 text-xs text-[var(--glyph-tertiary)]">
-      <span>Last refreshed: </span>
+      <span>Updated </span>
       <time dateTime={query.dataUpdatedAt ? new Date(query.dataUpdatedAt).toISOString() : undefined}>
         {label}
       </time>
-      {query.isFetching && query.dataUpdatedAt ? <span aria-live="polite"> (Refreshing…)</span> : null}
+      {query.isFetching && query.dataUpdatedAt ? <span aria-live="polite"> · refreshing</span> : null}
     </p>
   );
 }
@@ -201,11 +172,14 @@ export function QueryState({
   return (
     <>
       {query.isError ? (
-        <div className="mb-5 border border-[var(--glyph-line-strong)] bg-[var(--glyph-canvas)] px-4 py-3 text-sm text-[var(--glyph-muted)]" role="alert">
-          <p className="font-semibold text-[var(--glyph-ink)]">Refresh unavailable</p>
-          <p className="mt-1">Showing the last successful response. {getRpcErrorLabel(query.error)}</p>
-          <div className="mt-3">
-            <RetryButton onClick={() => void query.refetch()} />
+        <div className="mb-5 flex gap-3 border border-[var(--glyph-line-strong)] bg-[var(--glyph-canvas)] px-4 py-3 text-sm text-[var(--glyph-muted)]" role="alert">
+          <HugeiconsIcon aria-hidden="true" className="mt-0.5 shrink-0" focusable="false" icon={AlertCircleIcon} size={18} strokeWidth={1.5} />
+          <div>
+            <p className="font-semibold text-[var(--glyph-ink)]">Refresh unavailable</p>
+            <p className="mt-1">Showing the last successful response. {getRpcErrorLabel(query.error)}</p>
+            <div className="mt-3">
+              <RetryButton onClick={() => void query.refetch()} />
+            </div>
           </div>
         </div>
       ) : null}
@@ -227,22 +201,26 @@ export function StatusMessage({
 }) {
   const role = status === "error" ? "alert" : "status";
   const label = status === "loading" ? "Loading" : status === "error" ? "Unavailable" : "No result";
+  const icon = status === "loading" ? Activity03Icon : status === "error" ? AlertCircleIcon : InformationCircleIcon;
 
   return (
     <div className="border border-[var(--glyph-line)] bg-[var(--glyph-canvas)] px-4 py-5" role={role}>
-      <p className="font-mono text-[0.65rem] font-medium uppercase tracking-[0.16em] text-[var(--glyph-tertiary)]">
-        {label}
-      </p>
-      <p className="mt-2 font-medium text-[var(--glyph-ink)]">{title}</p>
-      {description ? <p className="mt-1 text-sm leading-6 text-[var(--glyph-muted)]">{description}</p> : null}
-      {action ? <div className="mt-4">{action}</div> : null}
+      <div className="flex items-start gap-3">
+        <HugeiconsIcon aria-hidden="true" className="mt-0.5 shrink-0 text-[var(--glyph-muted)]" focusable="false" icon={icon} size={19} strokeWidth={1.5} />
+        <div>
+          <p className="font-mono text-[0.65rem] font-medium uppercase tracking-[0.16em] text-[var(--glyph-tertiary)]">{label}</p>
+          <p className="mt-2 font-medium text-[var(--glyph-ink)]">{title}</p>
+          {description ? <p className="mt-1 text-sm leading-6 text-[var(--glyph-muted)]">{description}</p> : null}
+          {action ? <div className="mt-4">{action}</div> : null}
+        </div>
+      </div>
     </div>
   );
 }
 
 export function RetryButton({ onClick }: { onClick: () => void }) {
   return (
-    <GlyphButton onClick={onClick} size="sm" variant="secondary">
+    <GlyphButton icon={ReloadIcon} onClick={onClick} size="sm" variant="secondary">
       Try again
     </GlyphButton>
   );
@@ -258,7 +236,7 @@ export function InvalidLookup({
   expected: string;
 }) {
   return (
-    <Panel title={`${label} lookup`} eyebrow="Input validation">
+    <Panel title={`${label} lookup`}>
       <StatusMessage
         description={`Received “${value}”. ${expected}`}
         status="error"

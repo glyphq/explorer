@@ -1,13 +1,12 @@
 "use client";
 
-import Link from "next/link";
-
 import { useTransactionByHash } from "@/lib/rpc/queries";
 import { formatAtomicAmount } from "@/lib/rpc/validation";
 
 import {
   ExplorerFrame,
-  ExplorerPageHeader,
+  CopyButton,
+  ExplorerLink,
   IdentifierValue,
   InvalidLookup,
   KeyValueList,
@@ -23,11 +22,6 @@ export function TransactionPage({ hash }: { hash: string | null }) {
   if (!hash) {
     return (
       <ExplorerFrame>
-        <ExplorerPageHeader
-          description="The transaction route only accepts a canonical Qubic transaction hash."
-          eyebrow="Glyph Explorer / transaction"
-          title="Transaction lookup"
-        />
         <InvalidLookup
           expected="Use the canonical 60-character lowercase transaction hash format."
           label="Transaction hash"
@@ -41,17 +35,12 @@ export function TransactionPage({ hash }: { hash: string | null }) {
 
   return (
     <ExplorerFrame>
-      <ExplorerPageHeader
-        description="Archive transaction record."
-        eyebrow="Glyph Explorer / transaction"
-        title="Transaction detail"
-      >
-        <code className="block max-w-sm break-all border border-[var(--glyph-line-strong)] bg-[var(--glyph-surface)] px-3 py-2 font-mono text-xs leading-5">
-          {hash}
-        </code>
-      </ExplorerPageHeader>
+      <div className="mb-4 flex items-start gap-2 border-b border-[var(--glyph-line)] pb-4">
+        <code className="min-w-0 flex-1 break-all font-mono text-xs leading-5 text-[var(--glyph-ink)]">{hash}</code>
+        <CopyButton label="Copy transaction hash" value={hash} />
+      </div>
 
-      <Panel title="Transaction record" eyebrow="Archive query RPC">
+      <Panel title="Transaction record">
         <QueryState
           label="transaction"
           noResultMessage="No transaction was found for this hash."
@@ -61,9 +50,9 @@ export function TransactionPage({ hash }: { hash: string | null }) {
             <>
               <KeyValueList
                 items={[
-                  { label: "Hash", value: <IdentifierValue value={transaction.hash ?? hash} />, wide: true },
-                  { label: "Amount", value: transaction.amount ? `${formatAtomicAmount(transaction.amount)} raw units` : "Amount not reported" },
-                  { label: "Tick", value: transaction.tickNumber !== undefined ? <Link className="underline" href={`/tick/${transaction.tickNumber}`}>{formatNumber(transaction.tickNumber)}</Link> : "Not reported" },
+                  { label: "Archive record", value: "Available" },
+                  { label: "Amount", value: transaction.amount !== undefined && transaction.amount !== null ? `${formatAtomicAmount(transaction.amount)} raw units` : "Amount not reported" },
+                  { label: "Tick", value: transaction.tickNumber !== undefined ? <ExplorerLink href={`/tick/${transaction.tickNumber}`}>{formatNumber(transaction.tickNumber)}</ExplorerLink> : "Not reported" },
                   { label: "Timestamp", value: formatTimestamp(transaction.timestamp) },
                   { label: "Source", value: <IdentifierValue value={transaction.source} />, wide: true },
                   { label: "Destination", value: <IdentifierValue value={transaction.destination} />, wide: true },

@@ -1,13 +1,12 @@
 "use client";
 
-import Link from "next/link";
-
 import { useTickData, useTransactionsForTick } from "@/lib/rpc/queries";
 import { formatAtomicAmount } from "@/lib/rpc/validation";
 
 import {
   ExplorerFrame,
-  ExplorerPageHeader,
+  CopyButton,
+  ExplorerLink,
   IdentifierValue,
   InvalidLookup,
   KeyValueList,
@@ -24,11 +23,6 @@ export function TickPage({ tick }: { tick: number | null }) {
   if (tick === null) {
     return (
       <ExplorerFrame>
-        <ExplorerPageHeader
-          description="The tick route only accepts an unsigned integer in the Qubic uint32 range."
-          eyebrow="Glyph Explorer / tick"
-          title="Tick lookup"
-        />
         <InvalidLookup
           expected="Use a whole-number tick from 0 through 4,294,967,295."
           label="Tick"
@@ -40,18 +34,13 @@ export function TickPage({ tick }: { tick: number | null }) {
 
   return (
     <ExplorerFrame>
-      <ExplorerPageHeader
-        description="Archive tick record and transactions."
-        eyebrow="Glyph Explorer / tick"
-        title="Tick detail"
-      >
-        <span className="inline-flex border border-[var(--glyph-line-strong)] bg-[var(--glyph-surface)] px-3 py-2 font-mono text-sm">
-          {formatNumber(tick)}
-        </span>
-      </ExplorerPageHeader>
+      <div className="mb-4 flex items-center gap-2 border-b border-[var(--glyph-line)] pb-4">
+        <p className="min-w-0 flex-1 font-mono text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)]">{formatNumber(tick)}</p>
+        <CopyButton label="Copy tick" value={String(tick)} />
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-        <Panel title="Tick record" eyebrow="Archive query RPC">
+        <Panel title="Tick record">
           <QueryState
             label="tick data"
             noResultMessage="No tick record was found for this tick."
@@ -61,6 +50,7 @@ export function TickPage({ tick }: { tick: number | null }) {
               <KeyValueList
                 items={[
                   { label: "Tick", value: formatNumber(tickData.data.tickNumber ?? tick) },
+                  { label: "Archive record", value: "Available" },
                   { label: "Epoch", value: formatNumber(tickData.data.epoch) },
                   { label: "Computor index", value: formatNumber(tickData.data.computorIndex) },
                   { label: "Timestamp", value: formatTimestamp(tickData.data.timestamp) },
@@ -74,7 +64,7 @@ export function TickPage({ tick }: { tick: number | null }) {
           <QueryRefreshMeta query={tickData} />
         </Panel>
 
-        <Panel title="Transactions in tick" eyebrow="Archive query RPC">
+        <Panel title="Transactions in tick">
           <QueryState
             emptyMessage="No transactions were returned for this tick."
             emptyWhen={(data) => Array.isArray(data) && data.length === 0}
@@ -83,15 +73,19 @@ export function TickPage({ tick }: { tick: number | null }) {
             query={transactions}
           >
             {Array.isArray(transactions.data) ? (
-              <ul className="divide-y divide-[var(--glyph-line)]">
+              <>
+                <p className="mb-3 border-b border-[var(--glyph-line)] pb-3 font-mono text-xs text-[var(--glyph-muted)]">
+                  {formatNumber(transactions.data.length)} transactions
+                </p>
+                <ul className="divide-y divide-[var(--glyph-line)]">
                 {transactions.data.map((transaction, index) => (
                   <li className="py-4 first:pt-0" key={`${transaction.hash ?? "transaction"}-${index}`}>
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                       <div className="min-w-0">
                         {transaction.hash ? (
-                          <Link className="break-all font-mono text-xs font-semibold underline" href={`/transaction/${transaction.hash}`}>
+                          <ExplorerLink href={`/transaction/${transaction.hash}`}>
                             {transaction.hash}
-                          </Link>
+                          </ExplorerLink>
                         ) : (
                           <p className="font-mono text-xs text-[var(--glyph-tertiary)]">Hash not reported</p>
                         )}
@@ -100,12 +94,13 @@ export function TickPage({ tick }: { tick: number | null }) {
                         </p>
                       </div>
                       <p className="font-mono text-sm text-[var(--glyph-ink)]">
-                        {transaction.amount ? `${formatAtomicAmount(transaction.amount)} raw units` : "Amount not reported"}
+                        {transaction.amount !== undefined && transaction.amount !== null ? `${formatAtomicAmount(transaction.amount)} raw units` : "Amount not reported"}
                       </p>
                     </div>
                   </li>
                 ))}
-              </ul>
+                </ul>
+              </>
             ) : null}
           </QueryState>
           <QueryRefreshMeta query={transactions} />

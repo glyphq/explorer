@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import type { IssuedAsset, OwnedAsset, PossessedAsset } from "@qubic.org/rpc";
 
@@ -13,8 +12,8 @@ import { formatAtomicAmount, formatIdentity } from "@/lib/rpc/validation";
 
 import {
   ExplorerFrame,
-  ExplorerPageHeader,
-  IdentifierValue,
+  CopyButton,
+  ExplorerLink,
   InvalidLookup,
   KeyValueList,
   Panel,
@@ -103,7 +102,13 @@ function AssetPanel({
   query: ReturnType<typeof useIdentityAssets>["issued"];
 }) {
   return (
-    <Panel title={title} eyebrow="Live asset state">
+    <Panel title={title}>
+      {Array.isArray(query.data) ? (
+        <div className="mb-4 flex items-baseline justify-between border-b border-[var(--glyph-line)] pb-3 text-xs">
+          <span className="text-[var(--glyph-tertiary)]">Assets returned</span>
+          <span className="font-mono text-[var(--glyph-ink)]">{formatNumber(query.data.length)}</span>
+        </div>
+      ) : null}
       <QueryState
         emptyMessage={`No ${kind} assets were returned for this identity.`}
         emptyWhen={(data) => Array.isArray(data) && data.length === 0}
@@ -125,7 +130,7 @@ function TransactionHistory({
   query: ReturnType<typeof useTransactionsForIdentity>;
 }) {
   return (
-    <Panel title="Transaction history" eyebrow="Archive query RPC">
+    <Panel title="Transaction history">
       <QueryState
         emptyMessage="No transactions were returned for this identity."
         emptyWhen={(data) => {
@@ -152,9 +157,9 @@ function TransactionHistory({
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div className="min-w-0">
                       {transaction.hash ? (
-                        <Link className="font-mono text-xs font-semibold underline" href={`/transaction/${transaction.hash}`}>
+                        <ExplorerLink href={`/transaction/${transaction.hash}`}>
                           {transaction.hash}
-                        </Link>
+                        </ExplorerLink>
                       ) : (
                         <p className="font-mono text-xs text-[var(--glyph-tertiary)]">Hash not reported</p>
                       )}
@@ -163,7 +168,7 @@ function TransactionHistory({
                       </p>
                     </div>
                     <p className="font-mono text-sm text-[var(--glyph-ink)]">
-                      {transaction.amount ? `${formatAtomicAmount(transaction.amount)} raw units` : "Amount not reported"}
+                      {transaction.amount !== undefined && transaction.amount !== null ? `${formatAtomicAmount(transaction.amount)} raw units` : "Amount not reported"}
                     </p>
                   </div>
                 </li>
@@ -194,11 +199,6 @@ export function IdentityPage({ identity }: { identity: string | null }) {
   if (!identity) {
     return (
       <ExplorerFrame>
-        <ExplorerPageHeader
-          description="The identity route only accepts a structurally valid Qubic identity."
-          eyebrow="Glyph Explorer / identity"
-          title="Identity lookup"
-        />
         <InvalidLookup
           expected="Use the canonical 60-character uppercase Qubic identity format."
           label="Identity"
@@ -210,18 +210,13 @@ export function IdentityPage({ identity }: { identity: string | null }) {
 
   return (
     <ExplorerFrame>
-      <ExplorerPageHeader
-        description="Balance, assets, and archive history."
-        eyebrow="Glyph Explorer / identity"
-        title="Identity detail"
-      >
-        <code className="block max-w-xs break-all border border-[var(--glyph-line-strong)] bg-[var(--glyph-surface)] px-3 py-2 font-mono text-xs leading-5">
-          {identity}
-        </code>
-      </ExplorerPageHeader>
+      <div className="mb-4 flex items-start gap-2 border-b border-[var(--glyph-line)] pb-4">
+        <code className="min-w-0 flex-1 break-all font-mono text-xs leading-5 text-[var(--glyph-ink)]">{identity}</code>
+        <CopyButton label="Copy identity" value={identity} />
+      </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <Panel title="Balance" eyebrow="Live balance endpoint">
+      <div>
+        <Panel title="Balance">
           <QueryState label="identity balance" noResultMessage="No balance was returned for this identity." query={balance}>
             {balance.data ? (
               <KeyValueList
@@ -239,16 +234,6 @@ export function IdentityPage({ identity }: { identity: string | null }) {
             ) : null}
           </QueryState>
           <QueryRefreshMeta query={balance} />
-        </Panel>
-
-        <Panel title="Identity" eyebrow="Validated route parameter">
-          <KeyValueList
-            items={[
-              { label: "Canonical identity", value: <IdentifierValue value={identity} />, wide: true },
-              { label: "Route validation", value: "Valid Qubic identity" },
-              { label: "Data scope", value: "Live and archive read-only endpoints" },
-            ]}
-          />
         </Panel>
       </div>
 
