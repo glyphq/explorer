@@ -69,6 +69,12 @@ export type ContractInvocation =
 export interface ContractInvocationDisplay {
   title: string;
   description: string;
+  metadata?: string;
+  availability?: {
+    title: string;
+    description: string;
+    provenance: string;
+  };
 }
 
 interface KnownProcedure {
@@ -418,14 +424,30 @@ export function identifyContractInvocation(transaction: TransactionContractField
 
 export function formatContractInvocation(invocation: ContractInvocation): ContractInvocationDisplay {
   if (invocation.status === "recognized") {
-    const payload = invocation.payloadSize === null ? "payload not reported" : `${invocation.payloadSize} decoded bytes`;
+    const payload = invocation.payloadSize === null ? "payload not reported" : `${invocation.payloadSize} payload bytes`;
     const reportedSize = invocation.inputSize === null ? "input size not reported" : `${invocation.inputSize} reported bytes`;
-    const argumentsDescription = invocation.argumentDecoding.status === "decoded"
-      ? `${invocation.argumentDecoding.arguments.length} argument${invocation.argumentDecoding.arguments.length === 1 ? "" : "s"} decoded using the official ABI for epoch ${invocation.argumentDecoding.epoch}`
-      : `arguments not decoded: ${formatArgumentFallback(invocation.argumentDecoding.reason)}`;
+    const availability = invocation.argumentDecoding.status === "decoded"
+      ? {
+          title: invocation.argumentDecoding.arguments.length === 0
+            ? "No arguments to decode"
+            : `${invocation.argumentDecoding.arguments.length} argument${invocation.argumentDecoding.arguments.length === 1 ? "" : "s"} decoded`,
+          description: invocation.argumentDecoding.arguments.length === 0
+            ? "This procedure has no input arguments."
+            : `Decoded with the installed official ABI for transaction epoch ${invocation.argumentDecoding.epoch}.`,
+          provenance: `Source: @qubic.org/registry/registry.json bundled with this explorer; matched transaction epoch ${invocation.argumentDecoding.epoch}.`,
+        }
+      : {
+          title: "Arguments unavailable",
+          description: `Not decoded: ${formatArgumentFallback(invocation.argumentDecoding.reason)}.`,
+          provenance: invocation.argumentDecoding.reason === "registry-stale"
+            ? "Source: @qubic.org/registry/registry.json bundled with this explorer; potentially stale ABIs are never used."
+            : "Source: @qubic.org/registry/registry.json bundled with this explorer.",
+        };
     return {
-      title: `${invocation.contractName} · ${invocation.procedureName}`,
-      description: `Contract index ${invocation.contractIndex} · input type ${invocation.inputType} · ${reportedSize} · ${payload} · ${argumentsDescription}.`,
+      title: invocation.procedureName,
+      description: invocation.contractName,
+      metadata: `Contract index ${invocation.contractIndex} · input type ${invocation.inputType} · ${reportedSize} · ${payload}`,
+      availability,
     };
   }
 

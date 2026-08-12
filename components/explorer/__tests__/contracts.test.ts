@@ -45,8 +45,14 @@ describe("contract invocation metadata", () => {
       argumentDecoding: { status: "unavailable", reason: "epoch" },
     });
     expect(formatContractInvocation(invocation)).toEqual({
-      title: "Qearn · Unlock",
-      description: "Contract index 9 · input type 2 · 12 reported bytes · 12 decoded bytes · arguments not decoded: the transaction epoch is not reported.",
+      title: "Unlock",
+      description: "Qearn",
+      metadata: "Contract index 9 · input type 2 · 12 reported bytes · 12 payload bytes",
+      availability: {
+        title: "Arguments unavailable",
+        description: "Not decoded: the transaction epoch is not reported.",
+        provenance: "Source: @qubic.org/registry/registry.json bundled with this explorer.",
+      },
     });
   });
 
@@ -78,8 +84,14 @@ describe("contract invocation metadata", () => {
       },
     });
     expect(formatContractInvocation(invocation)).toEqual({
-      title: "Qearn · Unlock",
-      description: "Contract index 9 · input type 2 · 12 reported bytes · 12 decoded bytes · 2 arguments decoded using the official ABI for epoch 144.",
+      title: "Unlock",
+      description: "Qearn",
+      metadata: "Contract index 9 · input type 2 · 12 reported bytes · 12 payload bytes",
+      availability: {
+        title: "2 arguments decoded",
+        description: "Decoded with the installed official ABI for transaction epoch 144.",
+        provenance: "Source: @qubic.org/registry/registry.json bundled with this explorer; matched transaction epoch 144.",
+      },
     });
   });
 
@@ -159,6 +171,19 @@ describe("contract invocation metadata", () => {
       status: "recognized",
       argumentDecoding: { status: "unavailable", reason: "registry-stale" },
     });
+
+    const display = formatContractInvocation(invocation);
+    expect(display).toEqual({
+      title: "Unlock",
+      description: "Qearn",
+      metadata: "Contract index 9 · input type 2 · 12 reported bytes · 12 payload bytes",
+      availability: {
+        title: "Arguments unavailable",
+        description: "Not decoded: the installed official registry may be stale for this transaction epoch.",
+        provenance: "Source: @qubic.org/registry/registry.json bundled with this explorer; potentially stale ABIs are never used.",
+      },
+    });
+    expect(display.metadata).not.toContain("decoded bytes");
   });
 
   test("does not guess for an unrecognized contract destination", () => {
