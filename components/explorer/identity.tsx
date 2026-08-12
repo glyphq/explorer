@@ -66,24 +66,6 @@ function useIdentityAssets(identity: string | null) {
   return { issued, owned, possessed };
 }
 
-function SummaryChip({
-  label,
-  value,
-  detail,
-}: {
-  label: string;
-  value: string;
-  detail?: string;
-}) {
-  return (
-    <div className="min-w-[10rem] flex-1 border border-[var(--glyph-line)] bg-[var(--glyph-surface)] px-4 py-3" role="listitem">
-      <dt className="text-[0.68rem] font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">{label}</dt>
-      <dd className="mt-1 font-mono text-sm font-semibold text-[var(--glyph-ink)]">{value}</dd>
-      {detail ? <p className="mt-1 text-xs text-[var(--glyph-muted)]">{detail}</p> : null}
-    </div>
-  );
-}
-
 function querySummaryValue<T>(
   query: { data: T | undefined; isPending: boolean; isError: boolean },
   format: (data: T) => string,
@@ -236,32 +218,44 @@ function IdentityQrDialog({ identity }: { identity: string }) {
   );
 }
 
-function IdentitySummary({
-  assets,
-}: {
-  assets: ReturnType<typeof useIdentityAssets>;
-}) {
+function IdentityAssetChips({ assets }: { assets: ReturnType<typeof useIdentityAssets> }) {
+  const records = [
+    ...(assets.owned.data ?? []).map((asset) => ({
+      asset,
+      name: asset.data?.issuedAsset?.name,
+    })),
+    ...(assets.possessed.data ?? []).map((asset) => ({
+      asset,
+      name: asset.data?.ownedAsset?.issuedAsset?.name,
+    })),
+  ];
+  const chips = new Map<string, { label: string; index?: number }>();
+
+  for (const record of records) {
+    const index = record.asset.info?.universeIndex;
+    const name = record.name?.trim();
+    const label = name || (index === undefined ? undefined : `#${formatNumber(index)}`);
+    if (!label) continue;
+
+    const key = index === undefined ? `name:${label}` : `index:${index}`;
+    chips.set(key, { index, label });
+  }
+
+  if (chips.size === 0) return null;
+
   return (
-    <section aria-labelledby="identity-summary" className="border-b border-[var(--glyph-line)] pb-7">
-      <h2 className="sr-only" id="identity-summary">Identity summary</h2>
-      <dl className="flex flex-wrap gap-3" role="list">
-        <SummaryChip
-          detail="Assets issued by this identity"
-          label="Issued assets"
-          value={querySummaryValue(assets.issued, (data) => formatNumber(data.length))}
-        />
-        <SummaryChip
-          detail="Assets owned by this identity"
-          label="Owned assets"
-          value={querySummaryValue(assets.owned, (data) => formatNumber(data.length))}
-        />
-        <SummaryChip
-          detail="Assets possessed by this identity"
-          label="Possessed assets"
-          value={querySummaryValue(assets.possessed, (data) => formatNumber(data.length))}
-        />
-      </dl>
-    </section>
+    <div aria-label="Assets held by this identity" className="mt-3 flex max-w-full flex-wrap justify-center gap-2" role="list">
+      {[...chips.values()].map(({ index, label }) => (
+        <span
+          className="inline-flex max-w-full items-center rounded-full border border-[var(--glyph-line-strong)] bg-[var(--glyph-surface)] px-3 py-1 text-xs font-medium text-[var(--glyph-muted)]"
+          key={index === undefined ? label : index}
+          role="listitem"
+          title={index === undefined ? label : `Asset ${formatNumber(index)}`}
+        >
+          <span className="break-all">{label}</span>
+        </span>
+      ))}
+    </div>
   );
 }
 
@@ -564,10 +558,11 @@ export function IdentityPage({ identity }: { identity: string | null }) {
 
   return (
     <ExplorerFrame>
-      <header className="mb-7 border-b border-[var(--glyph-line)] pb-6">
-        <div className="flex min-w-0 items-center">
-          <div className="min-w-0 max-w-full">
-            <div className="flex items-center">
+      <header className="mb-4 border-b border-[var(--glyph-line)] pb-5 text-center">
+        <div className="flex min-w-0 flex-col items-center">
+          <IdentityAvatar identity={identity} label="Wallet identity avatar" radius={12} size={64} />
+          <div className="mt-3 min-w-0 max-w-full">
+            <div className="flex min-w-0 items-center justify-center">
               <h1 className="min-w-0 break-all font-mono text-2xl leading-7 text-[var(--glyph-ink)]">{identity}</h1>
               <span className="flex shrink-0 items-center gap-0">
                 <IdentityCopyButton value={identity} />
@@ -576,20 +571,20 @@ export function IdentityPage({ identity }: { identity: string | null }) {
             </div>
           </div>
         </div>
-        <section aria-labelledby="identity-balance" className="mt-6">
+        <section aria-labelledby="identity-balance" className="mt-4">
           <h2 className="sr-only" id="identity-balance">Identity balance</h2>
-          <p className="mt-1 font-mono text-xl font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]">
-            {querySummaryValue(balance, (data) => formatAtomicAmount(data.balance))} <span className="text-base font-medium tracking-normal text-[var(--glyph-muted)]">QUBIC</span>
+          <p className="mt-1 font-mono text-xl font-semibold tracking-[0.01em] text-[var(--glyph-ink)]">
+            {querySummaryValue(balance, (data) => formatAtomicAmount(data.balance))} <span className="text-base font-medium tracking-[0.02em] text-[var(--glyph-muted)]">QUBIC</span>
           </p>
           <p className="mt-1 text-sm text-[var(--glyph-muted)]">
             <span className="font-mono text-[var(--glyph-muted)]">≈ {queryUsdBalance(balance, stats)}</span>
           </p>
+          <IdentityAssetChips assets={assets} />
           <QueryRefreshMeta query={balance} />
         </section>
       </header>
 
       <div className="space-y-8">
-        <IdentitySummary assets={assets} />
         <TransactionHistory request={historyRequest} />
       </div>
     </ExplorerFrame>
