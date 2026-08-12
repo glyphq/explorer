@@ -59,7 +59,6 @@ function TokenTable({ rows }: { rows: readonly AssetIssuanceRow[] }) {
             <th className="px-4 pb-3 font-medium sm:px-0" scope="col">Token</th>
             <th className="px-4 pb-3 text-right font-medium" scope="col">Index</th>
             <th className="px-4 pb-3 font-medium" scope="col">Issuer</th>
-            <th className="px-4 pb-3 text-right font-medium" scope="col">Decimals</th>
             <th className="px-4 pb-3 text-right font-medium" scope="col">Issued at</th>
           </tr>
         </thead>
@@ -73,9 +72,6 @@ function TokenTable({ rows }: { rows: readonly AssetIssuanceRow[] }) {
                 {row.universeIndex === undefined ? "—" : formatNumber(row.universeIndex)}
               </td>
               <td className="px-4 py-3"><IssuerCell value={row.issuerIdentity} /></td>
-              <td className="whitespace-nowrap px-4 py-3 text-right font-mono text-xs text-[var(--glyph-ink)]">
-                {row.numberOfDecimalPlaces === undefined ? "—" : formatNumber(row.numberOfDecimalPlaces)}
-              </td>
               <td className="whitespace-nowrap px-4 py-3 text-right font-mono text-xs"><TickCell value={row.tickNumber} /></td>
             </tr>
           ))}

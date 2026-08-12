@@ -2,7 +2,6 @@
 
 import {
   Activity03Icon,
-  ArrowUpRight01Icon,
   AlertCircleIcon,
   Copy01Icon,
   CopyCheckIcon,
@@ -90,9 +89,8 @@ export function CopyButton({ value, label }: { value: string; label: string }) {
 
 export function ExplorerLink({ href, children }: { href: string; children: ReactNode }) {
   return (
-    <Link className="inline-flex items-center gap-1 font-mono text-xs font-semibold underline" href={href}>
-      <HugeiconsIcon aria-hidden="true" focusable="false" icon={ArrowUpRight01Icon} size={14} strokeWidth={1.5} />
-      <span>{children}</span>
+    <Link className="inline font-mono text-xs font-semibold underline" href={href}>
+      {children}
     </Link>
   );
 }
