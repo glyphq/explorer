@@ -1,3 +1,5 @@
+import { Wallet01Icon } from "@hugeicons/core-free-icons";
+
 import { GlyphButton } from "@/components/ui/button";
 
 type WalletButtonProps = {
@@ -12,6 +14,7 @@ export function WalletButton({
   return (
     <GlyphButton
       data-glyph-slot="wallet-sign-in"
+      icon={Wallet01Icon}
       onClick={onConnect}
       size="sm"
       aria-label={label}

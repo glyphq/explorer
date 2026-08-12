@@ -1,6 +1,16 @@
 "use client";
 
 import { Command } from "cmdk";
+import {
+  Cancel01Icon,
+  HashIcon,
+  Home01Icon,
+  IdentityCardIcon,
+  Search01Icon,
+  SearchRemoveIcon,
+  TransactionIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 
@@ -109,30 +119,35 @@ function getNavigationCommands(query: string): NavigationCommand[] {
   });
 }
 
-function SearchIcon() {
-  return (
-    <svg aria-hidden="true" className="size-5" viewBox="0 0 20 20" fill="none">
-      <circle cx="8.75" cy="8.75" r="5.25" stroke="currentColor" strokeWidth="1.5" />
-      <path d="m12.75 12.75 4 4" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
-    </svg>
-  );
-}
+type ExplorerIcon = HugeiconsIconProps["icon"];
 
-function CloseIcon() {
+function ExplorerIcon({
+  className = "size-5",
+  icon,
+}: {
+  className?: string;
+  icon: ExplorerIcon;
+}) {
   return (
-    <svg aria-hidden="true" className="size-4" viewBox="0 0 16 16" fill="none">
-      <path d="m3 3 10 10M13 3 3 13" stroke="currentColor" strokeLinecap="round" />
-    </svg>
+    <HugeiconsIcon
+      aria-hidden="true"
+      className={className}
+      focusable="false"
+      icon={icon}
+      size="1em"
+      strokeWidth={1.5}
+    />
   );
 }
 
 function CommandIcon({ type }: { type: NavigationCommand["id"] | QueryMatch["kind"] }) {
-  if (type === "search") return <SearchIcon />;
+  if (type === "overview") return <ExplorerIcon icon={Home01Icon} />;
+  if (type === "search") return <ExplorerIcon icon={Search01Icon} />;
 
   if (type === "identity") {
     return (
       <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-lg bg-[var(--glyph-ink)] text-xs font-semibold text-[var(--glyph-canvas)]">
-        ID
+        <ExplorerIcon className="size-4" icon={IdentityCardIcon} />
       </span>
     );
   }
@@ -140,7 +155,7 @@ function CommandIcon({ type }: { type: NavigationCommand["id"] | QueryMatch["kin
   if (type === "transaction") {
     return (
       <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-lg border border-[var(--glyph-line-strong)] font-mono text-xs text-[var(--glyph-muted)]">
-        TX
+        <ExplorerIcon className="size-4" icon={TransactionIcon} />
       </span>
     );
   }
@@ -148,14 +163,14 @@ function CommandIcon({ type }: { type: NavigationCommand["id"] | QueryMatch["kin
   if (type === "tick") {
     return (
       <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-lg border border-dashed border-[var(--glyph-line-strong)] font-mono text-xs text-[var(--glyph-muted)]">
-        #
+        <ExplorerIcon className="size-4" icon={HashIcon} />
       </span>
     );
   }
 
   return (
     <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-lg border border-[var(--glyph-line-strong)] text-sm text-[var(--glyph-muted)]">
-      <span className="size-1.5 rounded-full bg-current" />
+      <ExplorerIcon className="size-4" icon={SearchRemoveIcon} />
     </span>
   );
 }
@@ -244,7 +259,7 @@ function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (
       shouldFilter={false}
     >
       <div className="flex items-center gap-3 border-b border-[var(--glyph-line)] px-4">
-        <SearchIcon />
+        <ExplorerIcon icon={Search01Icon} />
         <Command.Input
           aria-label="Search routes and identifiers"
           autoFocus
@@ -259,7 +274,7 @@ function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (
           onClick={() => onOpenChange(false)}
           type="button"
         >
-          <CloseIcon />
+          <ExplorerIcon className="size-4" icon={Cancel01Icon} />
         </button>
       </div>
 
@@ -379,12 +394,12 @@ export function CommandSearch({
         aria-label={`${label}. Press Command K or Control K to open the command menu.`}
         className="glyph-command-search"
         data-glyph-slot="command-search"
+        icon={Search01Icon}
         onClick={handleTriggerClick}
         variant="secondary"
         size="sm"
       >
         <span className="glyph-command-search__label">
-          <SearchIcon />
           <span>{label}</span>
         </span>
         <kbd>{shortcut}</kbd>
