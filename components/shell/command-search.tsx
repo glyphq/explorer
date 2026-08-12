@@ -22,7 +22,14 @@ import {
 } from "react";
 
 import { GlyphButton } from "@/components/ui/button";
-import { formatIdentity, formatTick, formatTransactionHash, normalizeIdentity, normalizeTick } from "@/lib/rpc/validation";
+import {
+  formatIdentity,
+  formatTick,
+  formatTransactionHash,
+  normalizeIdentity,
+  normalizeTick,
+  normalizeTransactionHash,
+} from "@/lib/rpc/validation";
 
 type CommandSearchProps = {
   onClick?: () => void;
@@ -46,14 +53,12 @@ export type DirectQueryMatch =
 export type QueryMatch =
   | { kind: "empty"; value: "" }
   | DirectQueryMatch
+  | { kind: "ambiguous"; value: string; matches: readonly DirectQueryMatch[] }
   | { kind: "invalid"; value: string };
 
 export type RecentLookup = DirectQueryMatch;
 
 const MAX_RECENT_LOOKUPS = 3;
-const LOWERCASE_HEX_HASH_PATTERN = /^[0-9a-f]{60}$/;
-const IDENTITY_PATTERN = /^[A-Za-z]{60}$/;
-
 const NAVIGATION_COMMANDS: NavigationCommand[] = [
   {
     id: "overview",
@@ -64,30 +69,34 @@ const NAVIGATION_COMMANDS: NavigationCommand[] = [
   },
 ];
 
-function normalizeHexTransactionHash(value: string): string | null {
-  return LOWERCASE_HEX_HASH_PATTERN.test(value) ? value : null;
-}
-
 export function classifyCommandQuery(input: string): QueryMatch {
   const value = input.trim();
   if (!value) return { kind: "empty", value: "" };
 
-  const identity = IDENTITY_PATTERN.test(value) ? normalizeIdentity(value) : null;
+  const identity = normalizeIdentity(value);
+  const transactionHash = value === value.toLowerCase()
+    ? normalizeTransactionHash(value)
+    : null;
+  const matches: DirectQueryMatch[] = [];
+
   if (identity) {
-    return {
+    matches.push({
       kind: "identity",
       value: identity,
       href: `/identity/${encodeURIComponent(identity)}`,
-    };
+    });
   }
-
-  const transactionHash = normalizeHexTransactionHash(value);
   if (transactionHash) {
-    return {
+    matches.push({
       kind: "transaction",
       value: transactionHash,
       href: `/transaction/${encodeURIComponent(transactionHash)}`,
-    };
+    });
+  }
+
+  if (matches.length === 1) return matches[0];
+  if (matches.length > 1) {
+    return { kind: "ambiguous", value, matches };
   }
 
   const tick = normalizeTick(value);
@@ -284,7 +293,12 @@ function CommandPalette({
   const [query, setQuery] = useState("");
   const match = classifyCommandQuery(query);
   const navigationCommands = getNavigationCommands(query);
-  const hasDirectMatch = match.kind !== "empty" && match.kind !== "invalid";
+  const directMatches = match.kind === "ambiguous"
+    ? match.matches
+    : match.kind !== "empty" && match.kind !== "invalid"
+      ? [match]
+      : [];
+  const hasDirectMatch = directMatches.length > 0;
   const hasQuery = Boolean(query.trim());
 
   const navigate = useCallback(
@@ -338,7 +352,9 @@ function CommandPalette({
       </p>
       <p aria-live="polite" className="sr-only" role="status">
         {hasDirectMatch
-          ? `${getMatchCopy(match.kind).label} route ready. Press Enter to open.`
+          ? directMatches.length === 1
+            ? `${getMatchCopy(directMatches[0].kind).label} route ready. Press Enter to open.`
+            : "Choose whether this identifier is an identity or transaction."
           : hasQuery
             ? "No matching route."
             : "Navigation and recent lookups."}
@@ -362,8 +378,14 @@ function CommandPalette({
         ) : null}
 
         {hasDirectMatch ? (
-          <Command.Group heading="Direct route" className={groupClassName}>
-            <DirectRouteItem match={match} onSelect={() => selectMatch(match)} />
+          <Command.Group heading={directMatches.length > 1 ? "Choose a route" : "Direct route"} className={groupClassName}>
+            {directMatches.map((directMatch) => (
+              <DirectRouteItem
+                key={`${directMatch.kind}:${directMatch.value}`}
+                match={directMatch}
+                onSelect={() => selectMatch(directMatch)}
+              />
+            ))}
           </Command.Group>
         ) : null}
 

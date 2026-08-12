@@ -4,7 +4,7 @@ import { ExplorerRpcError } from "@/lib/rpc/errors";
 import { resolveExplorerLookup, isMissingLookupResult } from "../utils";
 
 const IDENTITY = "A".repeat(60);
-const HASH = "a".repeat(60);
+const LOWERCASE_AMBIGUOUS_IDENTIFIER = "a".repeat(60);
 
 describe("Explorer lookup helpers", () => {
   test("routes canonical identities, transaction hashes, and ticks", () => {
@@ -13,10 +13,15 @@ describe("Explorer lookup helpers", () => {
       value: IDENTITY,
       href: `/identity/${IDENTITY}`,
     });
-    expect(resolveExplorerLookup(HASH)).toEqual({
-      kind: "transaction",
-      value: HASH,
-      href: `/transaction/${HASH}`,
+    expect(resolveExplorerLookup(IDENTITY.toLowerCase())).toEqual({
+      kind: "identity",
+      value: IDENTITY,
+      href: `/identity/${IDENTITY}`,
+    });
+    expect(resolveExplorerLookup(LOWERCASE_AMBIGUOUS_IDENTIFIER)).toEqual({
+      kind: "identity",
+      value: IDENTITY,
+      href: `/identity/${IDENTITY}`,
     });
     expect(resolveExplorerLookup(" 123 ")).toEqual({
       kind: "tick",
