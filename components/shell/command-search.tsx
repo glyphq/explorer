@@ -41,7 +41,6 @@ type CommandSearchProps = {
 export type NavigationCommand = {
   id: "overview" | "tokens";
   label: string;
-  description: string;
   href: "/" | "/tokens";
   keywords: string[];
 };
@@ -64,14 +63,12 @@ const NAVIGATION_COMMANDS: NavigationCommand[] = [
   {
     id: "overview",
     label: "Overview",
-    description: "Network telemetry and latest tick",
     href: "/",
     keywords: ["home", "dashboard", "network", "overview", "telemetry", "latest"],
   },
   {
     id: "tokens",
     label: "Tokens",
-    description: "Browse official asset issuance events",
     href: "/tokens",
     keywords: ["assets", "asset", "issuance", "token", "tokens", "registry"],
   },
@@ -137,7 +134,7 @@ export function getNavigationCommands(query: string): NavigationCommand[] {
   if (!normalizedQuery) return NAVIGATION_COMMANDS;
 
   return NAVIGATION_COMMANDS.filter((command) => {
-    const searchableText = [command.label, command.description, ...command.keywords]
+    const searchableText = [command.label, ...command.keywords]
       .join(" ")
       .toLowerCase();
     return searchableText.includes(normalizedQuery);
@@ -248,16 +245,8 @@ function DirectRouteItem({ match, onSelect }: { match: DirectQueryMatch; onSelec
     >
       <CommandIcon type={match.kind} />
       <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--glyph-tertiary)]">
-          <span>{copy.label}</span>
-          <span aria-hidden="true">·</span>
-          <span>Typed route</span>
-        </span>
-        <span className="mt-1 block truncate text-sm font-medium" title={String(match.value)}>
-          Open {copy.label.toLowerCase()} <span className="font-mono">{displayValue}</span>
-        </span>
-        <span className="mt-0.5 block truncate text-xs text-[var(--glyph-tertiary)]">
-          {copy.detail} · {copy.context}
+        <span className="block truncate text-sm font-medium" title={String(match.value)}>
+          {copy.label} <span className="font-mono">{displayValue}</span>
         </span>
       </span>
       <kbd aria-hidden="true" className="hidden shrink-0 rounded-md border border-[var(--glyph-line)] px-1.5 py-1 font-mono text-[10px] text-[var(--glyph-tertiary)] sm:inline-block">
@@ -278,7 +267,6 @@ function NavigationCommandItem({ command, onSelect }: { command: NavigationComma
       <CommandIcon type={command.id} />
       <span className="min-w-0 flex-1">
         <span className="block text-sm font-medium">{command.label}</span>
-        <span className="mt-0.5 block truncate text-xs text-[var(--glyph-tertiary)]">{command.description}</span>
       </span>
       <span aria-hidden="true" className="hidden shrink-0 font-mono text-xs text-[var(--glyph-tertiary)] sm:inline-block">
         {command.href}
@@ -298,16 +286,8 @@ function RecentLookupItem({ lookup, onSelect }: { lookup: RecentLookup; onSelect
     >
       <CommandIcon type={lookup.kind} />
       <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--glyph-tertiary)]">
-          <span>{copy.label}</span>
-          <span aria-hidden="true">·</span>
-          <span>Recent</span>
-        </span>
-        <span className="mt-1 block truncate text-sm font-medium" title={String(lookup.value)}>
-          Reopen <span className="font-mono">{formatMatchValue(lookup)}</span>
-        </span>
-        <span className="mt-0.5 block truncate text-xs text-[var(--glyph-tertiary)]">
-          {copy.context}
+        <span className="block truncate text-sm font-medium" title={String(lookup.value)}>
+          {copy.label} <span className="font-mono">{formatMatchValue(lookup)}</span>
         </span>
       </span>
     </Command.Item>

@@ -20,38 +20,23 @@ export type GlyphNavigationProps = {
 type NavigationRoute = {
   id: "overview" | "tokens";
   label: string;
-  description: string;
   href: "/" | "/tokens";
   icon: HugeiconsIconProps["icon"];
 };
 
-type NavigationGroup = {
-  label: string;
-  routes: readonly NavigationRoute[];
-};
-
-// Keep the shell list tied to destinations that can be opened without an
-// identifier. Assets and contract metadata remain contextual to their backed
-// identity and transaction routes until collection routes exist.
-const DEFAULT_NAVIGATION_GROUPS: readonly NavigationGroup[] = [
+// Destinations that can be opened without an identifier.
+const DEFAULT_NAVIGATION_ROUTES: readonly NavigationRoute[] = [
   {
-    label: "Explore",
-    routes: [
-      {
-        id: "overview",
-        label: "Overview",
-        description: "Network telemetry",
-        href: "/",
-        icon: Home01Icon,
-      },
-      {
-        id: "tokens",
-        label: "Tokens",
-        description: "Official asset issuance",
-        href: "/tokens",
-        icon: Coins01Icon,
-      },
-    ],
+    id: "overview",
+    label: "Overview",
+    href: "/",
+    icon: Home01Icon,
+  },
+  {
+    id: "tokens",
+    label: "Tokens",
+    href: "/tokens",
+    icon: Coins01Icon,
   },
 ];
 
@@ -69,10 +54,7 @@ function NavigationRouteLink({ route }: { route: NavigationRoute }) {
       <span aria-hidden="true" className="glyph-nav__route-icon">
         <HugeiconsIcon icon={route.icon} size="1em" strokeWidth={1.5} />
       </span>
-      <span className="glyph-nav__route-copy">
-        <span className="glyph-nav__route-label">{route.label}</span>
-        <span className="glyph-nav__route-description">{route.description}</span>
-      </span>
+      <span className="glyph-nav__route-label">{route.label}</span>
     </Link>
   );
 }
@@ -80,15 +62,8 @@ function NavigationRouteLink({ route }: { route: NavigationRoute }) {
 function DefaultNavigationLinks() {
   return (
     <div className="glyph-nav__groups">
-      {DEFAULT_NAVIGATION_GROUPS.map((group) => (
-        <div className="glyph-nav__group" key={group.label}>
-          <span className="glyph-nav__group-label">{group.label}</span>
-          <div className="glyph-nav__group-list">
-            {group.routes.map((route) => (
-              <NavigationRouteLink key={route.id} route={route} />
-            ))}
-          </div>
-        </div>
+      {DEFAULT_NAVIGATION_ROUTES.map((route) => (
+        <NavigationRouteLink key={route.id} route={route} />
       ))}
     </div>
   );
