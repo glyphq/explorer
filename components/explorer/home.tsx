@@ -7,7 +7,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 
 import { useLastProcessedTick, useLiveTickInfo } from "@/lib/rpc/queries";
-import { useLatestStats, useRecentTickActivity, type LatestStats, type RecentTickActivityQuery } from "@/lib/stats";
+import { useLatestStats, type LatestStats } from "@/lib/stats";
 
 import {
   ExplorerFrame,
@@ -80,98 +80,6 @@ function TickQualityStrip({ quality }: { quality: number }) {
   );
 }
 
-function RecentActivityStrip({ activity }: { activity: RecentTickActivityQuery }) {
-  if (activity.ticks.length === 0) return null;
-
-  const availableCounts = activity.activities
-    .map((item) => item.transactionCount)
-    .filter((count): count is number => count !== null);
-  const maxCount = Math.max(1, ...availableCounts);
-  const tickCount = activity.ticks.length;
-  const firstTick = activity.ticks[0];
-  const lastTick = activity.ticks.at(-1);
-  const loadingCount = activity.activities.filter((item) => item.state === "loading").length;
-  const unavailableCount = activity.activities.filter((item) => item.state === "unavailable").length;
-  const availableCount = activity.activities.filter((item) => item.state === "available").length;
-  const label = `Archive activity for ${tickCount} real ticks, ${firstTick} through ${lastTick}`;
-  const status = activity.isPending
-    ? `loading ${tickCount} real ticks`
-    : activity.isFetching
-      ? `refreshing ${tickCount} real ticks`
-      : `${tickCount} real ticks`;
-  const availabilitySummary = activity.isPending
-    ? `${availableCount} available · ${loadingCount} loading · ${unavailableCount} unavailable`
-    : unavailableCount > 0
-      ? `${availableCount} available · ${unavailableCount} unavailable · unavailable ticks are not inferred`
-      : `${availableCount} available · all returned by the archive`;
-  const barStep = activity.activities.length >= 50 ? 5 : 24;
-  const barWidth = activity.activities.length >= 50 ? 3.5 : 10;
-  const chartWidth = activity.activities.length * barStep;
-
-  return (
-    <section className="border-t border-[var(--glyph-line)] px-5 py-4 md:px-7" aria-label={label}>
-      <div className="flex items-baseline justify-between gap-4">
-        <p className="text-xs text-[var(--glyph-tertiary)]">
-          Recent archive ticks <span className="font-mono">· {tickCount} real</span>
-        </p>
-        <p className="font-mono text-[0.68rem] text-[var(--glyph-tertiary)]">
-          {status}
-        </p>
-      </div>
-      <svg
-        aria-hidden="true"
-        className="mt-3 block h-8 w-full"
-        preserveAspectRatio="none"
-        viewBox={`0 0 ${chartWidth} 32`}
-      >
-        <line stroke="var(--glyph-line-strong)" x1="0" x2={chartWidth} y1="30" y2="30" />
-        {activity.activities.map((item, index) => {
-          const count = item.transactionCount;
-          const hasReportedCount = item.state === "available" && count !== null;
-          const height = hasReportedCount
-            ? count === 0
-              ? 2
-              : Math.max(5, Math.round((count / maxCount) * 24))
-            : 2;
-          const x = index * barStep + (barStep - barWidth) / 2;
-          return (
-            <rect
-              fill={hasReportedCount ? "var(--glyph-ink)" : "none"}
-              height={height}
-              key={item.tick}
-              stroke={hasReportedCount ? "none" : "var(--glyph-line-strong)"}
-              strokeDasharray={hasReportedCount ? undefined : "3 2"}
-              width={barWidth}
-              x={x}
-              y={30 - height}
-            />
-          );
-        })}
-      </svg>
-      <div className="mt-1 flex justify-between gap-4 font-mono text-[0.68rem] text-[var(--glyph-tertiary)]">
-        <span>{formatNumber(firstTick)}</span>
-        <span>{formatNumber(lastTick)}</span>
-      </div>
-      <p className="mt-2 font-mono text-[0.68rem] text-[var(--glyph-tertiary)]">{availabilitySummary}</p>
-      <table className="sr-only">
-        <caption>{label}</caption>
-        <thead>
-          <tr><th scope="col">Tick</th><th scope="col">Archive</th><th scope="col">Transactions</th></tr>
-        </thead>
-        <tbody>
-          {activity.activities.map((item) => (
-            <tr key={item.tick}>
-              <th scope="row">{item.tick}</th>
-              <td>{item.state === "available" ? "Available" : item.state === "loading" ? "Loading" : "Unavailable"}</td>
-              <td>{item.transactionCount === null ? "Not reported" : item.transactionCount}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
-  );
-}
-
 function Metric({ label, value, detail }: { label: string; value: React.ReactNode; detail?: string }) {
   return (
     <div className="min-w-0 px-4 py-4 first:pl-0 sm:px-5 lg:px-4">
@@ -186,12 +94,10 @@ function StatsContent({
   stats,
   liveTick,
   indexedTick,
-  activity,
 }: {
   stats: LatestStats;
   liveTick: number | undefined;
   indexedTick: number | undefined;
-  activity: RecentTickActivityQuery;
 }) {
   return (
     <>
@@ -222,7 +128,6 @@ function StatsContent({
         </div>
       </div>
 
-      <RecentActivityStrip activity={activity} />
 
       <dl className="grid grid-cols-2 divide-x divide-y divide-[var(--glyph-line)] border-t border-[var(--glyph-line)] sm:grid-cols-3 lg:grid-cols-4">
         <Metric detail="current epoch" label="Epoch" value={formatNumber(stats.epoch)} />
@@ -242,12 +147,10 @@ function StatsSurface({
   query,
   liveTick,
   indexedTick,
-  activity,
 }: {
   query: ReturnType<typeof useLatestStats>;
   liveTick: number | undefined;
   indexedTick: number | undefined;
-  activity: RecentTickActivityQuery;
 }) {
   const hasData = query.data !== undefined;
 
@@ -289,7 +192,7 @@ function StatsSurface({
           <IconButton icon={RefreshIcon} label="Retry telemetry" onClick={() => void query.refetch()} size="sm" />
         </div>
       ) : null}
-      <StatsContent activity={activity} indexedTick={indexedTick} liveTick={liveTick} stats={query.data} />
+      <StatsContent indexedTick={indexedTick} liveTick={liveTick} stats={query.data} />
     </>
   );
 }
@@ -298,11 +201,10 @@ export function ExplorerHome() {
   const stats = useLatestStats();
   const live = useLiveTickInfo();
   const indexed = useLastProcessedTick();
-  const activity = useRecentTickActivity(indexed.data?.tickNumber);
-  const refreshing = stats.isFetching || live.isFetching || indexed.isFetching || activity.isFetching;
+  const refreshing = stats.isFetching || live.isFetching || indexed.isFetching;
 
   async function refreshOverview() {
-    await Promise.all([stats.refetch(), live.refetch(), indexed.refetch(), activity.refetch()]);
+    await Promise.all([stats.refetch(), live.refetch(), indexed.refetch()]);
   }
 
   return (
@@ -322,7 +224,6 @@ export function ExplorerHome() {
           indexedTick={indexed.data?.tickNumber}
           liveTick={live.data?.tick}
           query={stats}
-          activity={activity}
         />
       </section>
     </ExplorerFrame>
