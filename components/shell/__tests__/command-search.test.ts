@@ -38,6 +38,16 @@ test("command lookup classifies the supported typed route shapes", () => {
     value: 4294967295,
     href: "/tick/4294967295",
   });
+  expect(classifyCommandQuery("token:00035")).toEqual({
+    kind: "token",
+    value: 35,
+    href: "/tokens/35",
+  });
+  expect(classifyCommandQuery("/contracts/9")).toEqual({
+    kind: "contract",
+    value: 9,
+    href: "/contracts/9",
+  });
 });
 
 test("command lookup rejects near misses instead of guessing a route", () => {
@@ -47,6 +57,8 @@ test("command lookup rejects near misses instead of guessing a route", () => {
   expect(classifyCommandQuery(transaction.toUpperCase()).kind).toBe("identity");
   expect(classifyCommandQuery("a".repeat(59)).kind).toBe("invalid");
   expect(classifyCommandQuery("4294967296").kind).toBe("invalid");
+  expect(classifyCommandQuery("token:4294967296").kind).toBe("invalid");
+  expect(classifyCommandQuery("contract:nope").kind).toBe("invalid");
   expect(classifyCommandQuery("12.5").kind).toBe("invalid");
   expect(classifyCommandQuery(" ").kind).toBe("empty");
 });
@@ -82,6 +94,14 @@ test("typed result copy points to the data journeys already on detail routes", (
   expect(getMatchCopy("tick")).toEqual(expect.objectContaining({
     label: "Tick",
     context: "Transactions for this tick",
+  }));
+  expect(getMatchCopy("token")).toEqual(expect.objectContaining({
+    label: "Token",
+    context: "Asset issuance details",
+  }));
+  expect(getMatchCopy("contract")).toEqual(expect.objectContaining({
+    label: "Contract",
+    context: "Published contract metadata",
   }));
 });
 

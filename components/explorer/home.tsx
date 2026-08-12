@@ -18,6 +18,7 @@ import {
   IconButton,
   StatusMessage,
 } from "./primitives";
+import { OverviewHero } from "./overview-hero";
 import { formatNumber } from "./utils";
 
 function formatBigInt(value: bigint | undefined): string {
@@ -221,6 +222,7 @@ export function ExplorerHome() {
 
   return (
     <ExplorerFrame>
+      <OverviewHero />
       <section aria-label="Network stats" className="w-full border border-[var(--glyph-line)] bg-[var(--glyph-surface)]">
         <StatsSurface query={stats} />
       </section>

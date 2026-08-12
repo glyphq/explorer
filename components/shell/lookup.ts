@@ -1,0 +1,134 @@
+import {
+  formatIdentity,
+  formatTick,
+  formatTransactionHash,
+  normalizeAssetIndex,
+  normalizeIdentity,
+  normalizeTick,
+  normalizeTransactionHash,
+} from "@/lib/rpc/validation";
+
+export type DirectQueryMatch =
+  | { kind: "identity"; value: string; href: string }
+  | { kind: "transaction"; value: string; href: string }
+  | { kind: "tick"; value: number; href: string }
+  | { kind: "token"; value: number; href: string }
+  | { kind: "contract"; value: number; href: string };
+
+export type QueryMatch =
+  | { kind: "empty"; value: "" }
+  | DirectQueryMatch
+  | { kind: "ambiguous"; value: string; matches: readonly DirectQueryMatch[] }
+  | { kind: "invalid"; value: string };
+
+export function classifyCommandQuery(input: string): QueryMatch {
+  const value = input.trim();
+  if (!value) return { kind: "empty", value: "" };
+
+  const typedIndex = value.match(/^(?:\/?)((?:token|tokens|asset|assets|contract|contracts|tick))\s*(?::|\/|\s)\s*(\d+)$/i);
+  if (typedIndex) {
+    const prefix = typedIndex[1].toLowerCase();
+    const kind = prefix === "token" || prefix === "tokens" || prefix === "asset" || prefix === "assets"
+      ? "token"
+      : prefix === "contract" || prefix === "contracts"
+        ? "contract"
+        : "tick";
+    const index = kind === "tick" ? normalizeTick(typedIndex[2]) : normalizeAssetIndex(typedIndex[2]);
+    if (index === null) return { kind: "invalid", value };
+
+    return {
+      kind,
+      value: index,
+      href: `/${kind === "token" ? "tokens" : kind === "contract" ? "contracts" : "tick"}/${index}`,
+    };
+  }
+
+  const identity = normalizeIdentity(value);
+  const transactionHash = value === value.toLowerCase()
+    ? normalizeTransactionHash(value)
+    : null;
+  const matches: DirectQueryMatch[] = [];
+
+  if (identity) {
+    matches.push({
+      kind: "identity",
+      value: identity,
+      href: `/identity/${encodeURIComponent(identity)}`,
+    });
+  }
+  if (transactionHash) {
+    matches.push({
+      kind: "transaction",
+      value: transactionHash,
+      href: `/transaction/${encodeURIComponent(transactionHash)}`,
+    });
+  }
+
+  if (matches.length === 1) return matches[0];
+  if (matches.length > 1) {
+    return { kind: "ambiguous", value, matches };
+  }
+
+  const tick = normalizeTick(value);
+  if (tick !== null) {
+    return {
+      kind: "tick",
+      value: tick,
+      href: `/tick/${tick}`,
+    };
+  }
+
+  return { kind: "invalid", value };
+}
+
+export type MatchCopy = {
+  detail: string;
+  label: string;
+  context: string;
+};
+
+export function getMatchCopy(kind: DirectQueryMatch["kind"]): MatchCopy {
+  if (kind === "identity") {
+    return {
+      detail: "60 uppercase letters",
+      label: "Identity",
+      context: "Assets and transaction history",
+    };
+  }
+
+  if (kind === "transaction") {
+    return {
+      detail: "60 lowercase hex",
+      label: "Transaction",
+      context: "Tick and contract metadata",
+    };
+  }
+
+  if (kind === "token") {
+    return {
+      detail: "Numeric universe index",
+      label: "Token",
+      context: "Asset issuance details",
+    };
+  }
+
+  if (kind === "contract") {
+    return {
+      detail: "Numeric contract index",
+      label: "Contract",
+      context: "Published contract metadata",
+    };
+  }
+
+  return {
+    detail: "Numeric tick",
+    label: "Tick",
+    context: "Transactions for this tick",
+  };
+}
+
+export function formatMatchValue(match: DirectQueryMatch): string {
+  if (match.kind === "identity") return formatIdentity(match.value);
+  if (match.kind === "transaction") return formatTransactionHash(match.value);
+  return formatTick(match.value);
+}

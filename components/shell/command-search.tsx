@@ -26,13 +26,14 @@ import {
 
 import { GlyphButton } from "@/components/ui/button";
 import {
-  formatIdentity,
-  formatTick,
-  formatTransactionHash,
-  normalizeIdentity,
-  normalizeTick,
-  normalizeTransactionHash,
-} from "@/lib/rpc/validation";
+  classifyCommandQuery,
+  formatMatchValue,
+  getMatchCopy,
+  type DirectQueryMatch,
+} from "./lookup";
+
+export { classifyCommandQuery, formatMatchValue, getMatchCopy } from "./lookup";
+export type { DirectQueryMatch, QueryMatch } from "./lookup";
 
 type CommandSearchProps = {
   onClick?: () => void;
@@ -46,17 +47,6 @@ export type NavigationCommand = {
   href: "/" | "/tokens" | "/contracts" | "/rich-list";
   keywords: string[];
 };
-
-export type DirectQueryMatch =
-  | { kind: "identity"; value: string; href: string }
-  | { kind: "transaction"; value: string; href: string }
-  | { kind: "tick"; value: number; href: string };
-
-export type QueryMatch =
-  | { kind: "empty"; value: "" }
-  | DirectQueryMatch
-  | { kind: "ambiguous"; value: string; matches: readonly DirectQueryMatch[] }
-  | { kind: "invalid"; value: string };
 
 export type RecentLookup = DirectQueryMatch;
 
@@ -87,48 +77,6 @@ const NAVIGATION_COMMANDS: NavigationCommand[] = [
     keywords: ["rich list", "rich-list", "balances", "balance", "ranking"],
   },
 ];
-
-export function classifyCommandQuery(input: string): QueryMatch {
-  const value = input.trim();
-  if (!value) return { kind: "empty", value: "" };
-
-  const identity = normalizeIdentity(value);
-  const transactionHash = value === value.toLowerCase()
-    ? normalizeTransactionHash(value)
-    : null;
-  const matches: DirectQueryMatch[] = [];
-
-  if (identity) {
-    matches.push({
-      kind: "identity",
-      value: identity,
-      href: `/identity/${encodeURIComponent(identity)}`,
-    });
-  }
-  if (transactionHash) {
-    matches.push({
-      kind: "transaction",
-      value: transactionHash,
-      href: `/transaction/${encodeURIComponent(transactionHash)}`,
-    });
-  }
-
-  if (matches.length === 1) return matches[0];
-  if (matches.length > 1) {
-    return { kind: "ambiguous", value, matches };
-  }
-
-  const tick = normalizeTick(value);
-  if (tick !== null) {
-    return {
-      kind: "tick",
-      value: tick,
-      href: `/tick/${tick}`,
-    };
-  }
-
-  return { kind: "invalid", value };
-}
 
 export function rememberRecentLookup(
   recent: readonly RecentLookup[],
@@ -206,47 +154,27 @@ function CommandIcon({ type }: { type: NavigationCommand["id"] | DirectQueryMatc
     );
   }
 
+  if (type === "token") {
+    return (
+      <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-lg border border-[var(--glyph-line-strong)] text-sm text-[var(--glyph-muted)]">
+        <ExplorerIcon className="size-4" icon={Coins01Icon} />
+      </span>
+    );
+  }
+
+  if (type === "contract") {
+    return (
+      <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-lg border border-[var(--glyph-line-strong)] text-sm text-[var(--glyph-muted)]">
+        <ExplorerIcon className="size-4" icon={ContractsIcon} />
+      </span>
+    );
+  }
+
   return (
     <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-lg border border-[var(--glyph-line-strong)] text-sm text-[var(--glyph-muted)]">
       <ExplorerIcon className="size-4" icon={SearchRemoveIcon} />
     </span>
   );
-}
-
-export type MatchCopy = {
-  detail: string;
-  label: string;
-  context: string;
-};
-
-export function getMatchCopy(kind: DirectQueryMatch["kind"]): MatchCopy {
-  if (kind === "identity") {
-    return {
-      detail: "60 uppercase letters",
-      label: "Identity",
-      context: "Assets and transaction history",
-    };
-  }
-
-  if (kind === "transaction") {
-    return {
-      detail: "60 lowercase hex",
-      label: "Transaction",
-      context: "Tick and contract metadata",
-    };
-  }
-
-  return {
-    detail: "Numeric tick",
-    label: "Tick",
-    context: "Transactions for this tick",
-  };
-}
-
-function formatMatchValue(match: DirectQueryMatch): string {
-  if (match.kind === "identity") return formatIdentity(match.value);
-  if (match.kind === "transaction") return formatTransactionHash(match.value);
-  return formatTick(match.value);
 }
 
 function DirectRouteItem({ match, onSelect }: { match: DirectQueryMatch; onSelect: () => void }) {
@@ -264,6 +192,7 @@ function DirectRouteItem({ match, onSelect }: { match: DirectQueryMatch; onSelec
         <span className="block truncate text-sm font-medium" title={String(match.value)}>
           {copy.label} <span className="font-mono">{displayValue}</span>
         </span>
+        <span className="mt-0.5 block truncate text-[11px] text-[var(--glyph-tertiary)]">{copy.context}</span>
       </span>
       <kbd aria-hidden="true" className="hidden shrink-0 rounded-md border border-[var(--glyph-line)] px-1.5 py-1 font-mono text-[10px] text-[var(--glyph-tertiary)] sm:inline-block">
         ↵
@@ -383,7 +312,7 @@ function CommandPalette({
       </div>
 
       <p className="sr-only" id={descriptionId}>
-        Open the network overview or a validated identity, transaction, or tick route. Lookup stays in this tab and does not make network requests.
+        Open the network overview or a validated identity, transaction, tick, token, or contract route. Lookup stays in this tab and does not make network requests.
       </p>
       <p aria-live="polite" className="sr-only" role="status">
         {hasDirectMatch
