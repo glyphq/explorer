@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransactionByHash } from "@/lib/rpc/queries";
+import { useTickData, useTransactionByHash } from "@/lib/rpc/queries";
 import { formatAtomicAmount } from "@/lib/rpc/validation";
 import { IdentityIdentifier } from "@/components/identity";
 
@@ -38,6 +38,9 @@ function RawTransactionValue({ label, value }: { label: string; value: string | 
 
 export function TransactionPage({ hash }: { hash: string | null }) {
   const query = useTransactionByHash(hash);
+  const transaction = query.data;
+  const shouldDecodeContract = Boolean(transaction && isSmartContractCall(transaction.inputType));
+  const tickQuery = useTickData(transaction?.tickNumber, { enabled: shouldDecodeContract });
 
   if (!hash) {
     return (
@@ -51,12 +54,14 @@ export function TransactionPage({ hash }: { hash: string | null }) {
     );
   }
 
-  const transaction = query.data;
-  const contractInvocation = transaction && isSmartContractCall(transaction.inputType)
-    ? identifyContractInvocation(transaction)
+  const contractInvocation = shouldDecodeContract && transaction
+    ? identifyContractInvocation({ ...transaction, epoch: tickQuery.data?.epoch })
     : null;
   const contractInvocationDisplay = contractInvocation
     ? formatContractInvocation(contractInvocation)
+    : null;
+  const decodedArguments = contractInvocation?.status === "recognized" && contractInvocation.argumentDecoding.status === "decoded"
+    ? contractInvocation.argumentDecoding.arguments
     : null;
 
   return (
@@ -106,6 +111,21 @@ export function TransactionPage({ hash }: { hash: string | null }) {
                 <h2 className="text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]">Contract invocation</h2>
                 <p className="mt-2 text-sm font-semibold text-[var(--glyph-ink)]">{contractInvocationDisplay.title}</p>
                 <p className="mt-1 text-sm leading-6 text-[var(--glyph-muted)]">{contractInvocationDisplay.description}</p>
+                {decodedArguments ? (
+                  <div className="mt-5">
+                    <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Decoded arguments</h3>
+                    {decodedArguments.length > 0 ? (
+                      <KeyValueList
+                        items={decodedArguments.map((argument) => ({
+                          label: argument.name,
+                          value: <code className="font-mono text-xs">{argument.value}</code>,
+                        }))}
+                      />
+                    ) : (
+                      <p className="mt-1 text-sm text-[var(--glyph-muted)]">This procedure has no input arguments.</p>
+                    )}
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </>

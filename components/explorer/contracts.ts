@@ -1,5 +1,12 @@
-import { contractIndexToIdentity } from "@qubic.org/crypto";
+import { contractIndexToIdentity, publicKeyToIdentity } from "@qubic.org/crypto";
 import * as officialContracts from "@qubic.org/contracts";
+import {
+  decodePayload,
+  getAbi,
+  getProcedure,
+  type ContractRegistry,
+} from "@qubic.org/registry";
+import officialRegistryData from "@qubic.org/registry/registry.json";
 import type { QueryTransaction } from "@qubic.org/rpc";
 
 type ExportRecord = Record<string, unknown>;
@@ -7,7 +14,26 @@ type ExportRecord = Record<string, unknown>;
 type TransactionContractFields = Pick<
   QueryTransaction,
   "destination" | "inputType" | "inputSize" | "inputData"
->;
+> & {
+  /** The epoch containing the transaction, when the archive provides it separately. */
+  epoch?: number;
+};
+
+export interface DecodedContractArgument {
+  name: string;
+  value: string;
+}
+
+export type ContractArgumentDecoding =
+  | {
+      status: "decoded";
+      epoch: number;
+      arguments: DecodedContractArgument[];
+    }
+  | {
+      status: "unavailable";
+      reason: "abi" | "decode" | "epoch" | "input-data" | "payload-size" | "procedure" | "registry-stale";
+    };
 
 export type ContractInvocation =
   | {
@@ -18,6 +44,7 @@ export type ContractInvocation =
       inputType: number;
       inputSize: number | null;
       payloadSize: number | null;
+      argumentDecoding: ContractArgumentDecoding;
     }
   | {
       status: "unknown";
@@ -141,9 +168,14 @@ function buildKnownContracts(): KnownContract[] {
       .filter((key) => key.startsWith("decode") && key.endsWith("Output"))
       .flatMap((key) => {
         const procedureName = key.slice("decode".length, -"Output".length);
-        const inputType = contractExports[
-          `${indexExport.prefix}_${pascalCaseToConstantPart(procedureName)}_INPUT_TYPE`
-        ];
+        const inputTypeExportName = `${indexExport.prefix}_${pascalCaseToConstantPart(procedureName)}_INPUT_TYPE`;
+        const inputType = contractExports[inputTypeExportName];
+        const inputSizeExportName = `${indexExport.prefix}_${pascalCaseToConstantPart(procedureName)}_INPUT_SIZE`;
+
+        // Generated query functions have an INPUT_SIZE export. Transaction
+        // inputType identifies procedures only, so never classify functions as
+        // transaction procedures just because they also expose output decoders.
+        if (typeof contractExports[inputSizeExportName] === "number") return [];
         if (typeof inputType !== "number") return [];
 
         return [
@@ -165,6 +197,8 @@ const KNOWN_CONTRACTS = buildKnownContracts();
 const KNOWN_CONTRACTS_BY_DESTINATION = new Map(
   KNOWN_CONTRACTS.map((contract) => [contract.destination, contract]),
 );
+
+const OFFICIAL_REGISTRY = officialRegistryData as unknown as ContractRegistry;
 
 const BASE64_PATTERN = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
 
@@ -200,11 +234,86 @@ function isNonNegativeInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isInteger(value) && value >= 0;
 }
 
+function formatDecodedValue(value: unknown): string {
+  if (typeof value === "string" || typeof value === "number" || typeof value === "bigint") {
+    return String(value);
+  }
+
+  if (value instanceof Uint8Array) {
+    return `0x${Array.from(value, (byte) => byte.toString(16).padStart(2, "0")).join("")}`;
+  }
+
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => formatDecodedValue(item)).join(", ")}]`;
+  }
+
+  if (typeof value === "object" && value !== null) {
+    return `{ ${Object.entries(value)
+      .map(([key, item]) => `${key}: ${formatDecodedValue(item)}`)
+      .join(", ")} }`;
+  }
+
+  return String(value);
+}
+
+function decodeOfficialArguments(
+  contractIndex: number,
+  inputType: number,
+  payload: Uint8Array | null,
+  epoch: number | undefined,
+): ContractArgumentDecoding {
+  if (!payload) return { status: "unavailable", reason: "input-data" };
+  if (!isNonNegativeInteger(epoch)) return { status: "unavailable", reason: "epoch" };
+
+  let abi: ReturnType<typeof getAbi>;
+  try {
+    abi = getAbi(OFFICIAL_REGISTRY, contractIndex, epoch);
+  } catch {
+    return { status: "unavailable", reason: "abi" };
+  }
+
+  if (abi.isRegistryPossiblyStale) {
+    return { status: "unavailable", reason: "registry-stale" };
+  }
+
+  let procedure: ReturnType<typeof getProcedure>;
+  try {
+    procedure = getProcedure(abi.version, inputType);
+  } catch {
+    return { status: "unavailable", reason: "procedure" };
+  }
+
+  if (procedure.inputSize !== payload.byteLength) {
+    return { status: "unavailable", reason: "payload-size" };
+  }
+
+  try {
+    const decoded = decodePayload(
+      payload,
+      procedure.inputFields,
+      abi.version.structs,
+      publicKeyToIdentity,
+    );
+
+    return {
+      status: "decoded",
+      epoch,
+      arguments: procedure.inputFields.map((field) => ({
+        name: field.name,
+        value: formatDecodedValue(decoded[field.name]),
+      })),
+    };
+  } catch {
+    return { status: "unavailable", reason: "decode" };
+  }
+}
+
 /**
- * Identifies only metadata exposed by the generated contracts package.
- * The archive schema says inputData is base64 and inputType is a procedure index.
- * The package exposes procedure output decoders and input builders, not input
- * decoders, so this helper intentionally does not invent argument field names.
+ * Identifies metadata exposed by the generated contracts package and decodes
+ * arguments only from the official epoch-aware registry ABI. The archive
+ * schema says inputData is base64 and inputType is a smart-contract procedure
+ * index. A transaction without an epoch, a matching registry ABI, or a payload
+ * matching that ABI keeps its raw payload and receives an honest fallback.
  */
 export function identifyContractInvocation(transaction: TransactionContractFields): ContractInvocation {
   const destination = normalizeDestination(transaction.destination);
@@ -245,7 +354,7 @@ export function identifyContractInvocation(transaction: TransactionContractField
     };
   }
 
-  let payloadSize: number | null = null;
+  let payload: Uint8Array | null = null;
   if (transaction.inputData !== undefined) {
     if (typeof transaction.inputData !== "string") {
       return {
@@ -258,7 +367,7 @@ export function identifyContractInvocation(transaction: TransactionContractField
       };
     }
 
-    const payload = decodeBase64(transaction.inputData);
+    payload = decodeBase64(transaction.inputData);
     if (!payload) {
       return {
         status: "invalid",
@@ -269,10 +378,9 @@ export function identifyContractInvocation(transaction: TransactionContractField
         inputType: procedure.inputType,
       };
     }
-    payloadSize = payload.byteLength;
   }
 
-  if (transaction.inputSize !== undefined && payloadSize !== null && transaction.inputSize !== payloadSize) {
+  if (transaction.inputSize !== undefined && payload !== null && transaction.inputSize !== payload.byteLength) {
     return {
       status: "invalid",
       reason: "input-size",
@@ -283,6 +391,13 @@ export function identifyContractInvocation(transaction: TransactionContractField
     };
   }
 
+  const argumentDecoding = decodeOfficialArguments(
+    procedure.contractIndex,
+    procedure.inputType,
+    payload,
+    transaction.epoch,
+  );
+
   return {
     status: "recognized",
     contractIndex: procedure.contractIndex,
@@ -290,7 +405,8 @@ export function identifyContractInvocation(transaction: TransactionContractField
     procedureName: procedure.procedureName,
     inputType: procedure.inputType,
     inputSize: transaction.inputSize ?? null,
-    payloadSize,
+    payloadSize: payload?.byteLength ?? null,
+    argumentDecoding,
   };
 }
 
@@ -298,9 +414,12 @@ export function formatContractInvocation(invocation: ContractInvocation): Contra
   if (invocation.status === "recognized") {
     const payload = invocation.payloadSize === null ? "payload not reported" : `${invocation.payloadSize} decoded bytes`;
     const reportedSize = invocation.inputSize === null ? "input size not reported" : `${invocation.inputSize} reported bytes`;
+    const argumentsDescription = invocation.argumentDecoding.status === "decoded"
+      ? `${invocation.argumentDecoding.arguments.length} argument${invocation.argumentDecoding.arguments.length === 1 ? "" : "s"} decoded using the official ABI for epoch ${invocation.argumentDecoding.epoch}`
+      : `arguments not decoded: ${formatArgumentFallback(invocation.argumentDecoding.reason)}`;
     return {
       title: `${invocation.contractName} · ${invocation.procedureName}`,
-      description: `Contract index ${invocation.contractIndex} · input type ${invocation.inputType} · ${reportedSize} · ${payload}.`,
+      description: `Contract index ${invocation.contractIndex} · input type ${invocation.inputType} · ${reportedSize} · ${payload} · ${argumentsDescription}.`,
     };
   }
 
@@ -333,4 +452,23 @@ export function formatContractInvocation(invocation: ContractInvocation): Contra
           ? "The reported input size does not match the decoded RPC payload."
           : "The RPC input type is not a valid positive integer.",
   };
+}
+
+function formatArgumentFallback(reason: Exclude<ContractArgumentDecoding, { status: "decoded" }>["reason"]): string {
+  switch (reason) {
+    case "abi":
+      return "the official registry has no ABI for this contract at the transaction epoch";
+    case "decode":
+      return "the official registry decoder could not decode this payload";
+    case "epoch":
+      return "the transaction epoch is not reported";
+    case "input-data":
+      return "input data is not reported";
+    case "payload-size":
+      return "the payload length does not match the official ABI";
+    case "procedure":
+      return "the official registry has no procedure for this input type at the transaction epoch";
+    case "registry-stale":
+      return "the installed official registry may be stale for this transaction epoch";
+  }
 }
