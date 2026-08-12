@@ -29,10 +29,9 @@ import { explorerData, type ExplorerTransactionsForIdentityRequest } from "@/lib
 import { formatAtomicAmount, formatIdentifier, formatTransactionHash } from "@/lib/rpc/validation";
 import { useLatestStats } from "@/lib/stats";
 import {
-  createGlyphTransferPreparationClient,
+  createGlyphTransferClient,
   createIdentityTransferDraft,
-  GLYPH_TRANSFER_UNAVAILABLE_REASON,
-  type GlyphTransferPreparationClient,
+  type GlyphTransferClient,
 } from "@/lib/glyph";
 
 import {
@@ -124,7 +123,7 @@ function IdentityCopyButton({ value }: { value: string }) {
   return (
     <button
       aria-label={label}
-      className={identityActionClass}
+      className={`${identityActionClass} gap-2 px-2 text-xs font-medium`}
       onClick={() => void copyValue()}
       title={label}
       type="button"
@@ -136,6 +135,7 @@ function IdentityCopyButton({ value }: { value: string }) {
         size={16}
         strokeWidth={1.5}
       />
+      <span className="text-[0.7rem]">Copy identity</span>
     </button>
   );
 }
@@ -197,7 +197,7 @@ function IdentityQrDialog({ identity }: { identity: string }) {
     event.preventDefault();
     close();
   };
-  const label = "Show identity QR code";
+  const label = "Show QR code";
 
   return (
     <>
@@ -205,12 +205,13 @@ function IdentityQrDialog({ identity }: { identity: string }) {
         aria-controls="identity-qr-dialog"
         aria-expanded={open}
         aria-label={label}
-        className={identityActionClass}
+        className={`${identityActionClass} gap-2 px-2 text-xs font-medium`}
         onClick={() => setOpen(true)}
         title={label}
         type="button"
       >
         <HugeiconsIcon aria-hidden="true" focusable="false" icon={QrCode01Icon} size={16} strokeWidth={1.5} />
+        <span className="text-[0.7rem]">Show QR code</span>
       </button>
       <dialog
         aria-labelledby="identity-qr-dialog-title"
@@ -253,24 +254,50 @@ function IdentityQrDialog({ identity }: { identity: string }) {
   );
 }
 
+function glyphDappOrigin(): string {
+  const configuredOrigin = process.env.NEXT_PUBLIC_GLYPH_DAPP_ORIGIN?.trim();
+  return configuredOrigin ?? "";
+}
+
+function glyphCallbackPublicKeys(): string[] {
+  const configuredKeys = process.env.NEXT_PUBLIC_GLYPH_WALLET_CALLBACK_PUBLIC_KEYS
+    ?? process.env.NEXT_PUBLIC_GLYPH_WALLET_CALLBACK_PUBLIC_KEY
+    ?? "";
+  return configuredKeys.split(",").map((key) => key.trim()).filter(Boolean);
+}
+
 function IdentityGlyphSendButton({ identity }: { identity: string }) {
   const transferDraft = createIdentityTransferDraft(identity);
-  const [client] = useState<GlyphTransferPreparationClient>(() => createGlyphTransferPreparationClient());
+  const [client] = useState<GlyphTransferClient>(() => createGlyphTransferClient({
+    dappOrigin: glyphDappOrigin(),
+    recipient: transferDraft.to,
+    recipientOnly: true,
+    trustedPublicKeys: glyphCallbackPublicKeys(),
+  }));
   const state = useSyncExternalStore(client.subscribe, client.getState, client.getState);
   const label = "Send with Glyph Wallet";
   const statusId = "identity-glyph-send-status";
   const isPreparing = state.status === "preparing";
-  const isRetry = state.status === "failed" || state.status === "ready";
+  const isWaiting = state.status === "waiting";
+  const isRetry = state.status === "failed" || state.status === "rejected" || state.status === "signed";
   const statusMessage = state.status === "preparing"
     ? "Preparing a one-use Glyph Relay session. Glyph will not open automatically."
-    : state.status === "failed"
-      ? `Glyph preparation failed: ${state.error}. Try again.`
-      : state.status === "ready"
-        ? GLYPH_TRANSFER_UNAVAILABLE_REASON
-        : "Click to prepare a recipient-only Glyph transfer draft. No amount is preset and Glyph will not open automatically.";
+    : state.status === "unavailable"
+      ? state.reason
+      : state.status === "failed"
+        ? `Glyph transfer failed: ${state.error}. Try again.`
+        : state.status === "ready"
+          ? "Relay ready. Glyph requires an explicit transfer amount before it can open."
+          : state.status === "waiting"
+            ? "Waiting for Glyph Wallet approval."
+            : state.status === "signed"
+              ? `Glyph signed the transfer. Transaction ${state.result.tx_hash} is targeting tick ${formatNumber(state.result.target_tick)}.`
+              : state.status === "rejected"
+                ? "Glyph transfer was rejected. Click Send to prepare a new request."
+                : "Click Send to prepare a secure Glyph transfer. No amount is preset.";
 
   const handleClick = () => {
-    if (isPreparing) return;
+    if (state.status === "unavailable" || isPreparing || isWaiting) return;
     if (isRetry) client.reset();
     void client.prepare().catch(() => undefined);
   };
@@ -280,18 +307,34 @@ function IdentityGlyphSendButton({ identity }: { identity: string }) {
       <button
         aria-describedby={statusId}
         aria-label={label}
-        aria-busy={isPreparing}
-        className={`${identityActionClass} gap-2 px-2 text-sm font-medium`}
+        aria-busy={isPreparing || isWaiting}
+        className={`${identityActionClass} gap-2 px-2 text-xs font-medium`}
         data-glyph-recipient={transferDraft.to}
-        disabled={isPreparing}
+        disabled={state.status === "unavailable" || isPreparing || isWaiting}
         onClick={handleClick}
-        title={isPreparing ? "Preparing Glyph Wallet" : isRetry ? `Retry ${label}` : label}
+        title={state.status === "unavailable"
+          ? state.reason
+          : isPreparing
+            ? "Preparing Glyph Wallet"
+            : isWaiting
+              ? "Waiting for Glyph Wallet"
+              : state.status === "ready"
+                ? "Enter amount to send with Glyph Wallet"
+                : isRetry
+                  ? `Retry ${label}`
+                  : label}
         type="button"
       >
         <GlyphMark className="inline-flex size-4 shrink-0" />
-        <span>Send</span>
+        <span className="text-[0.7rem]">Send</span>
       </button>
-      <span aria-live="polite" className="sr-only" id={statusId}>{statusMessage}</span>
+      <p
+        aria-live="polite"
+        className={state.status === "idle" ? "sr-only" : "mt-2 max-w-full text-center text-xs text-[var(--glyph-muted)]"}
+        id={statusId}
+      >
+        {statusMessage}
+      </p>
     </>
   );
 }

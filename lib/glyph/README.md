@@ -10,15 +10,43 @@ connect/launch behavior.
 `@glyph-oss/connect@4.0.1` performs strict request, nonce, type, network, origin,
 request-hash, expiry, callback-binding, result-hash, and signed-envelope checks.
 It intentionally delegates the final `qubic-schnorrq-sha256` signature check to
-an injected verifier. This repository currently has no audited portable SchnorrQ
-verifier dependency, so this module does not fake one. The capability remains
-disabled until an audited Qubic SchnorrQ implementation and the trusted Glyph
-wallet callback public key are supplied by the application owner.
+an injected verifier. The Explorer supplies that verifier from
+`@qubic.org/crypto`, but still requires the trusted Glyph wallet callback public
+key as a deployment trust anchor. It never trusts a callback merely because it
+contains a public key.
 
 The trusted callback public key is a public verification trust anchor. This
 module never generates, stores, or persists private keys or relay capabilities.
 
-## Integration contract
+## Identity transfer integration
+
+The identity page keeps the current Send action unavailable rather than
+fabricating a request the SDK rejects. The intended flow is a recipient-bound
+`transfer` request opened by an explicit click, with the wallet asking for the
+amount. The installed SDK has no amountless transfer request, so the identity
+action reports that exact API limitation until a compatible `@glyph-oss/connect`
+release or wallet request type exists.
+
+The general `createGlyphTransferClient()` still constructs amountful transfer
+requests with `createTransferRequest()`, prepares one ephemeral Relay v2 session,
+launches `launchGlyphRequest()` synchronously from a user activation, and waits
+for signed results, wallet rejection, Relay failures, and retryable preparation
+failures.
+
+Glyph's transfer schema requires a positive whole-number `amount`. An amountless
+transfer request is rejected by the SDK, so the Explorer does not fabricate one
+or silently choose a default. The deployment must provide:
+
+- `NEXT_PUBLIC_GLYPH_WALLET_CALLBACK_PUBLIC_KEY` or a comma-separated
+  `NEXT_PUBLIC_GLYPH_WALLET_CALLBACK_PUBLIC_KEYS` value containing the official
+  wallet callback verification key.
+- `NEXT_PUBLIC_GLYPH_DAPP_ORIGIN` when the canonical HTTPS origin cannot be
+automatically derived.
+
+Until those trust/configuration values exist, the action stays honest and reports
+why signed transfer callbacks cannot be accepted.
+
+## Sign in integration contract
 
 ```tsx
 import { GlyphSignInButton } from "@/components/glyph";
