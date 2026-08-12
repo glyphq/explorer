@@ -173,7 +173,7 @@ function TransactionHistory({
         ) : null}
       </QueryState>
       <p className="mt-5 border-t border-[var(--glyph-line)] pt-4 text-xs text-[var(--glyph-tertiary)]">
-        The archive response is scoped to <code className="font-mono">{formatIdentity(identity)}</code> and limited to the first 8 results.
+        <code className="font-mono">{formatIdentity(identity)}</code> · first 8 results
       </p>
       <QueryRefreshMeta query={query} />
     </Panel>
@@ -211,7 +211,7 @@ export function IdentityPage({ identity }: { identity: string | null }) {
   return (
     <ExplorerFrame>
       <ExplorerPageHeader
-        description="Live balance and asset state are shown alongside a read-only archive history. A missing field is displayed as not reported, never inferred."
+        description="Balance, assets, and archive history."
         eyebrow="Glyph Explorer / identity"
         title="Identity detail"
       >

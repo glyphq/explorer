@@ -22,7 +22,7 @@ const surfaceClass = "border border-[var(--glyph-line)] bg-[var(--glyph-surface)
 export function ExplorerFrame({ children }: { children: ReactNode }) {
   return (
     <main className="min-h-[calc(100svh-72px)]">
-      <div className="mx-auto w-full max-w-6xl px-[var(--glyph-gutter)] py-10 md:py-16">
+      <div className="mx-auto w-full max-w-6xl px-[var(--glyph-gutter)] py-6 md:py-8">
         {children}
       </div>
     </main>
@@ -41,15 +41,15 @@ export function ExplorerPageHeader({
   children?: ReactNode;
 }) {
   return (
-    <header className="mb-10 flex flex-col gap-6 border-b border-[var(--glyph-line)] pb-8 md:mb-12 md:flex-row md:items-end md:justify-between">
-      <div className="max-w-3xl">
-        <p className="mb-3 font-mono text-xs font-medium uppercase tracking-[0.18em] text-[var(--glyph-tertiary)]">
+    <header className="mb-6 flex flex-col gap-4 border-b border-[var(--glyph-line)] pb-5 md:flex-row md:items-end md:justify-between">
+      <div className="min-w-0">
+        <p className="mb-1 font-mono text-[0.65rem] font-medium uppercase tracking-[0.16em] text-[var(--glyph-tertiary)]">
           {eyebrow}
         </p>
-        <h1 className="text-4xl font-semibold tracking-[-0.06em] text-[var(--glyph-ink)] md:text-6xl">
+        <h1 className="text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)] md:text-3xl">
           {title}
         </h1>
-        <p className="mt-5 max-w-2xl text-base leading-7 text-[var(--glyph-muted)] md:text-lg">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--glyph-muted)]">
           {description}
         </p>
       </div>
@@ -130,7 +130,7 @@ export function Panel({
 }) {
   return (
     <section className={`${surfaceClass} ${className}`}>
-      <div className="border-b border-[var(--glyph-line)] px-5 py-4 md:px-6">
+      <div className="border-b border-[var(--glyph-line)] px-4 py-3">
         {eyebrow ? (
           <p className="mb-1 font-mono text-[0.65rem] font-medium uppercase tracking-[0.16em] text-[var(--glyph-tertiary)]">
             {eyebrow}
@@ -138,7 +138,7 @@ export function Panel({
         ) : null}
         <h2 className="text-lg font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]">{title}</h2>
       </div>
-      <div className="p-5 md:p-6">{children}</div>
+      <div className="p-4">{children}</div>
     </section>
   );
 }

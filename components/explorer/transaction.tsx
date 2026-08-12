@@ -42,7 +42,7 @@ export function TransactionPage({ hash }: { hash: string | null }) {
   return (
     <ExplorerFrame>
       <ExplorerPageHeader
-        description="Archive transaction data is presented exactly as returned by the query RPC. Missing fields remain explicitly unreported."
+        description="Archive transaction record."
         eyebrow="Glyph Explorer / transaction"
         title="Transaction detail"
       >

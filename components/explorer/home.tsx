@@ -6,37 +6,44 @@ import { GlyphButton } from "@/components/ui/button";
 import {
   ExplorerFrame,
   ExplorerPageHeader,
-  KeyValueList,
   Panel,
   QueryRefreshMeta,
   QueryState,
   SearchForm,
+  type ExplorerQuery,
 } from "./primitives";
 import { formatNumber } from "./utils";
 
-function OverviewStatus({
-  liveReady,
-  indexedReady,
-  loading,
+function HealthRow({
+  label,
+  query,
 }: {
-  liveReady: boolean;
-  indexedReady: boolean;
-  loading: boolean;
+  label: string;
+  query: Pick<ExplorerQuery<unknown>, "data" | "isError" | "isPending" | "isFetching">;
 }) {
-  const label = loading
-    ? "Loading network data"
-    : liveReady && indexedReady
-      ? "Live and indexed data available"
-      : liveReady
-        ? "Live data available"
-        : indexedReady
-          ? "Indexed data available"
-          : "Network data unavailable";
+  const state = query.isPending && query.data === undefined
+    ? "Loading"
+    : query.isError && query.data === undefined
+      ? "Unavailable"
+      : query.isError
+        ? "Stale data"
+        : query.data === undefined
+          ? "No data"
+          : query.isFetching
+            ? "Refreshing"
+            : "Available";
+  const stateClass = state === "Available" || state === "Refreshing"
+    ? "text-[var(--glyph-ink)]"
+    : state === "Stale data" || state === "Loading"
+      ? "text-[var(--glyph-muted)]"
+      : "text-[var(--glyph-tertiary)]";
 
   return (
-    <div className="inline-flex items-center gap-2 border border-[var(--glyph-line-strong)] bg-[var(--glyph-surface)] px-3 py-2 text-xs font-medium text-[var(--glyph-muted)]">
-      <span aria-hidden="true" className="h-2 w-2 rounded-full bg-[var(--glyph-ink)]" />
-      <span>{label}</span>
+    <div className="flex items-center justify-between gap-4 py-2.5 text-sm">
+      <span className="text-[var(--glyph-muted)]">{label}</span>
+      <span className={`font-mono text-xs font-medium ${stateClass}`}>
+        <span aria-hidden="true">● </span>{state}
+      </span>
     </div>
   );
 }
@@ -44,8 +51,6 @@ function OverviewStatus({
 export function ExplorerHome() {
   const live = useLiveTickInfo();
   const indexed = useLastProcessedTick();
-  const hasLiveData = live.data !== undefined && !live.isError;
-  const hasIndexedData = indexed.data !== undefined && !indexed.isError;
   const refreshing = live.isFetching || indexed.isFetching;
 
   async function refreshOverview() {
@@ -55,97 +60,78 @@ export function ExplorerHome() {
   return (
     <ExplorerFrame>
       <ExplorerPageHeader
-        eyebrow="Glyph Explorer / network overview"
-        title="Read the network as it moves."
-        description="A direct, read-only view of Qubic live activity and archive coverage. Values below come from the configured RPC services and are never filled with placeholders."
+        description="Live network state and archive coverage."
+        eyebrow="Explorer / overview"
+        title="Network overview"
       >
-        <OverviewStatus
-          indexedReady={hasIndexedData}
-          liveReady={hasLiveData}
-          loading={live.isPending || indexed.isPending}
-        />
+        <GlyphButton
+          aria-busy={refreshing}
+          disabled={refreshing}
+          onClick={() => void refreshOverview()}
+          size="sm"
+          variant="secondary"
+        >
+          {refreshing ? "Refreshing…" : "Refresh"}
+        </GlyphButton>
       </ExplorerPageHeader>
 
-      <section aria-labelledby="explorer-search-heading" className="mb-12">
-        <div className="border border-[var(--glyph-ink)] bg-[var(--glyph-ink)] p-5 text-[var(--glyph-canvas)] md:p-8">
-          <p className="font-mono text-[0.65rem] font-medium uppercase tracking-[0.16em] text-[var(--glyph-line-strong)]">
-            Read-only lookup
-          </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] md:text-3xl" id="explorer-search-heading">
-            Find an identity, transaction, or tick.
-          </h2>
-          <div className="mt-6 [&_input]:border-[var(--glyph-muted)] [&_input]:bg-[var(--glyph-canvas)] [&_input]:text-[var(--glyph-ink)] [&_label]:text-[var(--glyph-canvas)] [&_p]:text-[var(--glyph-line-strong)]">
-            <SearchForm />
-          </div>
+      <section aria-labelledby="lookup-heading" className="mb-6 border-b border-[var(--glyph-line)] pb-6">
+        <div className="mb-3 flex items-baseline justify-between gap-4">
+          <h2 className="text-base font-semibold tracking-[-0.02em]" id="lookup-heading">Lookup</h2>
+          <span className="font-mono text-[0.65rem] uppercase tracking-[0.12em] text-[var(--glyph-tertiary)]">Read only</span>
         </div>
+        <SearchForm compact />
       </section>
 
-      <section aria-labelledby="network-overview-heading">
-        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p className="font-mono text-[0.65rem] font-medium uppercase tracking-[0.16em] text-[var(--glyph-tertiary)]">
-              Network pulse
-            </p>
-            <h2 className="mt-1 text-2xl font-semibold tracking-[-0.04em]" id="network-overview-heading">
-              Current and indexed progress
-            </h2>
-          </div>
-          <GlyphButton
-            aria-busy={refreshing}
-            disabled={refreshing}
-            onClick={() => void refreshOverview()}
-            size="sm"
-            variant="secondary"
-          >
-            {refreshing ? "Refreshing…" : "Refresh overview"}
-          </GlyphButton>
+      <section aria-labelledby="metrics-heading">
+        <div className="mb-3 flex items-baseline justify-between gap-4">
+          <h2 className="text-base font-semibold tracking-[-0.02em]" id="metrics-heading">Network metrics</h2>
+          <span className="text-xs text-[var(--glyph-tertiary)]">RPC-backed</span>
         </div>
-
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Panel eyebrow="Live RPC" title="Network tick">
-            <QueryState
-              label="live network tick"
-              noResultMessage="No live tick data was returned."
-              query={live}
-            >
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Panel eyebrow="Live" title="Current tick">
+            <QueryState label="current tick" noResultMessage="No live tick" query={live}>
               {live.data ? (
-                <KeyValueList
-                  items={[
-                    { label: "Current tick", value: formatNumber(live.data.tick) },
-                    { label: "Current epoch", value: formatNumber(live.data.epoch) },
-                    { label: "Epoch initial tick", value: formatNumber(live.data.initialTick) },
-                  ]}
-                />
+                <>
+                  <p className="font-mono text-3xl font-semibold tracking-[-0.05em]">{formatNumber(live.data.tick)}</p>
+                  <p className="mt-2 text-xs text-[var(--glyph-tertiary)]">Epoch {formatNumber(live.data.epoch)}</p>
+                </>
               ) : null}
             </QueryState>
             <QueryRefreshMeta query={live} />
           </Panel>
 
-          <Panel eyebrow="Archive query RPC" title="Indexed archive">
-            <QueryState
-              label="indexed tick"
-              noResultMessage="No indexed tick data was returned."
-              query={indexed}
-            >
+          <Panel eyebrow="Archive" title="Indexed tick">
+            <QueryState label="indexed tick" noResultMessage="No indexed tick" query={indexed}>
               {indexed.data ? (
-                <KeyValueList
-                  items={[
-                    { label: "Indexed tick", value: formatNumber(indexed.data.tickNumber) },
-                    { label: "Indexed epoch", value: formatNumber(indexed.data.epoch) },
-                    { label: "Indexed event-log tick", value: formatNumber(indexed.data.logTickNumber) },
-                  ]}
-                />
+                <>
+                  <p className="font-mono text-3xl font-semibold tracking-[-0.05em]">{formatNumber(indexed.data.tickNumber)}</p>
+                  <p className="mt-2 text-xs text-[var(--glyph-tertiary)]">Epoch {formatNumber(indexed.data.epoch)}</p>
+                </>
               ) : null}
             </QueryState>
             <QueryRefreshMeta query={indexed} />
           </Panel>
+
+          <Panel eyebrow="Live endpoint" title="Live API">
+            <HealthRow label="Status" query={live} />
+            <p className="mt-3 border-t border-[var(--glyph-line)] pt-3 text-xs text-[var(--glyph-tertiary)]">
+              Tick info endpoint
+            </p>
+          </Panel>
+
+          <Panel eyebrow="Archive endpoint" title="Query API">
+            <HealthRow label="Status" query={indexed} />
+            <p className="mt-3 border-t border-[var(--glyph-line)] pt-3 text-xs text-[var(--glyph-tertiary)]">
+              Archive progress endpoint
+            </p>
+          </Panel>
         </div>
       </section>
 
-      <p className="mt-8 max-w-3xl text-xs leading-5 text-[var(--glyph-tertiary)]">
-        “Current tick” is supplied by the live network endpoint. “Indexed tick” is supplied by the archive endpoint and can trail the live network. Each timestamp above describes the last successful response for that panel.
+      <p className="mt-4 text-xs leading-5 text-[var(--glyph-tertiary)]">
+        Available means the latest response returned data. Stale data means refresh failed after an earlier response.
       </p>
     </ExplorerFrame>
   );
 }
-

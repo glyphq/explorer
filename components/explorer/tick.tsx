@@ -41,7 +41,7 @@ export function TickPage({ tick }: { tick: number | null }) {
   return (
     <ExplorerFrame>
       <ExplorerPageHeader
-        description="Tick metadata and transactions are loaded independently from the archive query service, so a partial response remains visible and clearly labeled."
+        description="Archive tick record and transactions."
         eyebrow="Glyph Explorer / tick"
         title="Tick detail"
       >
@@ -112,9 +112,6 @@ export function TickPage({ tick }: { tick: number | null }) {
         </Panel>
       </div>
 
-      <p className="mt-8 max-w-3xl text-xs leading-5 text-[var(--glyph-tertiary)]">
-        A tick can have no transactions, or the archive may be unavailable. Those states are kept distinct above. Values labeled “raw units” preserve the RPC amount without assuming a display denomination.
-      </p>
     </ExplorerFrame>
   );
 }
