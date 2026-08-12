@@ -2,6 +2,8 @@ import { expect, test } from "bun:test";
 
 import {
   classifyCommandQuery,
+  getMatchCopy,
+  getNavigationCommands,
   rememberRecentLookup,
   type DirectQueryMatch,
 } from "@/components/shell/command-search";
@@ -47,6 +49,33 @@ test("command lookup rejects near misses instead of guessing a route", () => {
   expect(classifyCommandQuery("4294967296").kind).toBe("invalid");
   expect(classifyCommandQuery("12.5").kind).toBe("invalid");
   expect(classifyCommandQuery(" ").kind).toBe("empty");
+});
+
+test("quick routes stay backed by the overview and tokens destinations", () => {
+  expect(getNavigationCommands(""))
+    .toEqual([
+      expect.objectContaining({ id: "overview", href: "/" }),
+      expect.objectContaining({ id: "tokens", href: "/tokens" }),
+    ]);
+  expect(getNavigationCommands("assets")).toEqual([
+    expect.objectContaining({ id: "tokens", href: "/tokens" }),
+  ]);
+  expect(getNavigationCommands("contracts")).toEqual([]);
+});
+
+test("typed result copy points to the data journeys already on detail routes", () => {
+  expect(getMatchCopy("identity")).toEqual(expect.objectContaining({
+    label: "Identity",
+    context: "Assets and transaction history",
+  }));
+  expect(getMatchCopy("transaction")).toEqual(expect.objectContaining({
+    label: "Transaction",
+    context: "Tick and contract metadata",
+  }));
+  expect(getMatchCopy("tick")).toEqual(expect.objectContaining({
+    label: "Tick",
+    context: "Transactions for this tick",
+  }));
 });
 
 test("recent lookups stay bounded, newest first, and deduplicated", () => {

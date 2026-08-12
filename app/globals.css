@@ -219,22 +219,98 @@ textarea:focus-visible {
 .glyph-nav__links {
   display: flex;
   align-items: center;
-  gap: clamp(1rem, 2.2vw, 2.25rem);
   min-width: 0;
   color: var(--glyph-muted);
   font-size: 0.875rem;
 }
 
-.glyph-nav__links a {
-  display: inline-flex;
+.glyph-nav__groups,
+.glyph-nav__group,
+.glyph-nav__group-list,
+.glyph-nav__route,
+.glyph-nav__route-copy {
+  display: flex;
   align-items: center;
-  min-height: 44px;
-  transition: color 160ms ease;
 }
 
-.glyph-nav__links a:hover,
-.glyph-nav__links a[aria-current="page"] {
+.glyph-nav__groups {
+  gap: clamp(1rem, 2.2vw, 2.25rem);
+  min-width: 0;
+}
+
+.glyph-nav__group {
+  gap: 0.7rem;
+  min-width: 0;
+}
+
+.glyph-nav__group-label {
+  color: var(--glyph-tertiary);
+  font-size: 0.625rem;
+  font-weight: 650;
+  letter-spacing: 0.13em;
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.glyph-nav__group-list {
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.glyph-nav__route {
+  min-width: 0;
+  display: inline-flex;
+  min-height: 44px;
+  gap: 0.5rem;
+  border-bottom: 1px solid transparent;
+  color: var(--glyph-muted);
+  text-decoration: none;
+  transition:
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.glyph-nav__route:hover,
+.glyph-nav__route[data-current="true"] {
   color: var(--glyph-ink);
+}
+
+.glyph-nav__route[data-current="true"] {
+  border-bottom-color: var(--glyph-ink);
+}
+
+.glyph-nav__route-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  color: currentColor;
+}
+
+.glyph-nav__route-copy {
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.05rem;
+  line-height: 1.15;
+}
+
+.glyph-nav__route-label {
+  font-size: 0.8125rem;
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+.glyph-nav__route-description {
+  max-width: 11rem;
+  overflow: hidden;
+  color: var(--glyph-tertiary);
+  font-size: 0.625rem;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .glyph-nav__actions {

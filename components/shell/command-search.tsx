@@ -9,6 +9,7 @@ import {
   Search01Icon,
   SearchRemoveIcon,
   TransactionIcon,
+  Coins01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
 import { useRouter } from "next/navigation";
@@ -37,11 +38,11 @@ type CommandSearchProps = {
   label?: string;
 };
 
-type NavigationCommand = {
-  id: "overview";
+export type NavigationCommand = {
+  id: "overview" | "tokens";
   label: string;
   description: string;
-  href: "/";
+  href: "/" | "/tokens";
   keywords: string[];
 };
 
@@ -62,10 +63,17 @@ const MAX_RECENT_LOOKUPS = 3;
 const NAVIGATION_COMMANDS: NavigationCommand[] = [
   {
     id: "overview",
-    label: "Network overview",
-    description: "Open the network overview",
+    label: "Overview",
+    description: "Network telemetry and latest tick",
     href: "/",
-    keywords: ["home", "dashboard", "network", "overview"],
+    keywords: ["home", "dashboard", "network", "overview", "telemetry", "latest"],
+  },
+  {
+    id: "tokens",
+    label: "Tokens",
+    description: "Browse official asset issuance events",
+    href: "/tokens",
+    keywords: ["assets", "asset", "issuance", "token", "tokens", "registry"],
   },
 ];
 
@@ -124,7 +132,7 @@ export function rememberRecentLookup(
   ].slice(0, MAX_RECENT_LOOKUPS);
 }
 
-function getNavigationCommands(query: string): NavigationCommand[] {
+export function getNavigationCommands(query: string): NavigationCommand[] {
   const normalizedQuery = query.trim().toLowerCase();
   if (!normalizedQuery) return NAVIGATION_COMMANDS;
 
@@ -159,6 +167,7 @@ function ExplorerIcon({
 
 function CommandIcon({ type }: { type: NavigationCommand["id"] | DirectQueryMatch["kind"] | "invalid" }) {
   if (type === "overview") return <ExplorerIcon icon={Home01Icon} />;
+  if (type === "tokens") return <ExplorerIcon icon={Coins01Icon} />;
 
   if (type === "identity") {
     return (
@@ -191,16 +200,34 @@ function CommandIcon({ type }: { type: NavigationCommand["id"] | DirectQueryMatc
   );
 }
 
-function getMatchCopy(kind: DirectQueryMatch["kind"]) {
+export type MatchCopy = {
+  detail: string;
+  label: string;
+  context: string;
+};
+
+export function getMatchCopy(kind: DirectQueryMatch["kind"]): MatchCopy {
   if (kind === "identity") {
-    return { detail: "60 uppercase letters", label: "Identity" };
+    return {
+      detail: "60 uppercase letters",
+      label: "Identity",
+      context: "Assets and transaction history",
+    };
   }
 
   if (kind === "transaction") {
-    return { detail: "60 lowercase hex", label: "Transaction" };
+    return {
+      detail: "60 lowercase hex",
+      label: "Transaction",
+      context: "Tick and contract metadata",
+    };
   }
 
-  return { detail: "Numeric tick", label: "Tick" };
+  return {
+    detail: "Numeric tick",
+    label: "Tick",
+    context: "Transactions for this tick",
+  };
 }
 
 function formatMatchValue(match: DirectQueryMatch): string {
@@ -221,10 +248,16 @@ function DirectRouteItem({ match, onSelect }: { match: DirectQueryMatch; onSelec
     >
       <CommandIcon type={match.kind} />
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-medium">Open {copy.label.toLowerCase()}</span>
-        <span className="mt-0.5 block truncate font-mono text-xs text-[var(--glyph-tertiary)]" title={String(match.value)}>
-          {displayValue}
-          <span className="ml-2 font-sans text-[var(--glyph-tertiary)]">{copy.detail}</span>
+        <span className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--glyph-tertiary)]">
+          <span>{copy.label}</span>
+          <span aria-hidden="true">·</span>
+          <span>Typed route</span>
+        </span>
+        <span className="mt-1 block truncate text-sm font-medium" title={String(match.value)}>
+          Open {copy.label.toLowerCase()} <span className="font-mono">{displayValue}</span>
+        </span>
+        <span className="mt-0.5 block truncate text-xs text-[var(--glyph-tertiary)]">
+          {copy.detail} · {copy.context}
         </span>
       </span>
       <kbd aria-hidden="true" className="hidden shrink-0 rounded-md border border-[var(--glyph-line)] px-1.5 py-1 font-mono text-[10px] text-[var(--glyph-tertiary)] sm:inline-block">
@@ -265,10 +298,16 @@ function RecentLookupItem({ lookup, onSelect }: { lookup: RecentLookup; onSelect
     >
       <CommandIcon type={lookup.kind} />
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-medium">{copy.label}</span>
-        <span className="mt-0.5 block truncate font-mono text-xs text-[var(--glyph-tertiary)]" title={String(lookup.value)}>
-          {formatMatchValue(lookup)}
-          <span className="ml-2 font-sans text-[var(--glyph-tertiary)]">Recent lookup</span>
+        <span className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--glyph-tertiary)]">
+          <span>{copy.label}</span>
+          <span aria-hidden="true">·</span>
+          <span>Recent</span>
+        </span>
+        <span className="mt-1 block truncate text-sm font-medium" title={String(lookup.value)}>
+          Reopen <span className="font-mono">{formatMatchValue(lookup)}</span>
+        </span>
+        <span className="mt-0.5 block truncate text-xs text-[var(--glyph-tertiary)]">
+          {copy.context}
         </span>
       </span>
     </Command.Item>
@@ -378,7 +417,7 @@ function CommandPalette({
         ) : null}
 
         {hasDirectMatch ? (
-          <Command.Group heading={directMatches.length > 1 ? "Choose a route" : "Direct route"} className={groupClassName}>
+          <Command.Group heading={directMatches.length > 1 ? "Choose a typed route" : "Typed lookup"} className={groupClassName}>
             {directMatches.map((directMatch) => (
               <DirectRouteItem
                 key={`${directMatch.kind}:${directMatch.value}`}
@@ -397,7 +436,7 @@ function CommandPalette({
       </Command.List>
 
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t border-[var(--glyph-line)] px-4 py-2.5 text-[11px] text-[var(--glyph-tertiary)]">
-        <span>Local lookup</span>
+        <span>Session-only lookup</span>
         <span className="flex items-center gap-3" aria-hidden="true">
           <span><kbd className="mr-1 rounded border border-[var(--glyph-line)] px-1 py-0.5 font-mono text-[10px]">↑↓</kbd> move</span>
           <span><kbd className="mr-1 rounded border border-[var(--glyph-line)] px-1 py-0.5 font-mono text-[10px]">↵</kbd> open</span>
