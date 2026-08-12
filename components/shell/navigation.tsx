@@ -1,6 +1,6 @@
 "use client";
 
-import { Coins01Icon, Home01Icon } from "@hugeicons/core-free-icons";
+import { Coins01Icon, ContractsIcon, Home01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -16,9 +16,9 @@ export type GlyphNavigationProps = {
 };
 
 type NavigationRoute = {
-  id: "overview" | "tokens";
+  id: "overview" | "tokens" | "contracts";
   label: string;
-  href: "/" | "/tokens";
+  href: "/" | "/tokens" | "/contracts";
   icon: HugeiconsIconProps["icon"];
 };
 
@@ -35,6 +35,12 @@ const DEFAULT_NAVIGATION_ROUTES: readonly NavigationRoute[] = [
     label: "Tokens",
     href: "/tokens",
     icon: Coins01Icon,
+  },
+  {
+    id: "contracts",
+    label: "Contracts",
+    href: "/contracts",
+    icon: ContractsIcon,
   },
 ];
 

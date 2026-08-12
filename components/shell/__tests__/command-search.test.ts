@@ -51,16 +51,19 @@ test("command lookup rejects near misses instead of guessing a route", () => {
   expect(classifyCommandQuery(" ").kind).toBe("empty");
 });
 
-test("quick routes stay backed by the overview and tokens destinations", () => {
+test("quick routes stay backed by the overview, tokens, and contracts destinations", () => {
   expect(getNavigationCommands(""))
     .toEqual([
       expect.objectContaining({ id: "overview", href: "/" }),
       expect.objectContaining({ id: "tokens", href: "/tokens" }),
+      expect.objectContaining({ id: "contracts", href: "/contracts" }),
     ]);
   expect(getNavigationCommands("assets")).toEqual([
     expect.objectContaining({ id: "tokens", href: "/tokens" }),
   ]);
-  expect(getNavigationCommands("contracts")).toEqual([]);
+  expect(getNavigationCommands("contracts")).toEqual([
+    expect.objectContaining({ id: "contracts", href: "/contracts" }),
+  ]);
 });
 
 test("typed result copy points to the data journeys already on detail routes", () => {

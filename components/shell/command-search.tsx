@@ -10,6 +10,7 @@ import {
   SearchRemoveIcon,
   TransactionIcon,
   Coins01Icon,
+  ContractsIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
 import { useRouter } from "next/navigation";
@@ -39,9 +40,9 @@ type CommandSearchProps = {
 };
 
 export type NavigationCommand = {
-  id: "overview" | "tokens";
+  id: "overview" | "tokens" | "contracts";
   label: string;
-  href: "/" | "/tokens";
+  href: "/" | "/tokens" | "/contracts";
   keywords: string[];
 };
 
@@ -71,6 +72,12 @@ const NAVIGATION_COMMANDS: NavigationCommand[] = [
     label: "Tokens",
     href: "/tokens",
     keywords: ["assets", "asset", "issuance", "token", "tokens", "registry"],
+  },
+  {
+    id: "contracts",
+    label: "Contracts",
+    href: "/contracts",
+    keywords: ["contract", "contracts", "smart contract", "procedure", "input", "identity"],
   },
 ];
 
@@ -165,6 +172,7 @@ function ExplorerIcon({
 function CommandIcon({ type }: { type: NavigationCommand["id"] | DirectQueryMatch["kind"] | "invalid" }) {
   if (type === "overview") return <ExplorerIcon icon={Home01Icon} />;
   if (type === "tokens") return <ExplorerIcon icon={Coins01Icon} />;
+  if (type === "contracts") return <ExplorerIcon icon={ContractsIcon} />;
 
   if (type === "identity") {
     return (
