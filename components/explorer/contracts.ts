@@ -191,6 +191,11 @@ function isPositiveInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isInteger(value) && value > 0;
 }
 
+/** A Qubic input type of zero is a normal transfer, not a smart-contract call. */
+export function isSmartContractCall(inputType: unknown): inputType is number {
+  return isPositiveInteger(inputType);
+}
+
 function isNonNegativeInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isInteger(value) && value >= 0;
 }
@@ -209,7 +214,7 @@ export function identifyContractInvocation(transaction: TransactionContractField
   if (!contract) return { status: "unknown", reason: "destination" };
 
   if (transaction.inputType === undefined) return { status: "unavailable", reason: "input-type" };
-  if (!isPositiveInteger(transaction.inputType)) {
+  if (!isSmartContractCall(transaction.inputType)) {
     return {
       status: "invalid",
       reason: "input-type",

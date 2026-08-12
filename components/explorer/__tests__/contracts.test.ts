@@ -1,11 +1,18 @@
 import { contractIndexToIdentity } from "@qubic.org/crypto";
 import { describe, expect, test } from "bun:test";
 
-import { formatContractInvocation, identifyContractInvocation } from "../contracts";
+import { formatContractInvocation, identifyContractInvocation, isSmartContractCall } from "../contracts";
 
 function base64ForByteLength(length: number): string {
   return btoa(String.fromCharCode(...new Uint8Array(length)));
 }
+
+test("classifies input type zero as a normal transfer", () => {
+  expect(isSmartContractCall(0)).toBe(false);
+  expect(isSmartContractCall(1)).toBe(true);
+  expect(isSmartContractCall(-1)).toBe(false);
+  expect(isSmartContractCall(undefined)).toBe(false);
+});
 
 describe("contract invocation metadata", () => {
   test("recognizes a generated Qearn procedure from RPC transaction fields", () => {

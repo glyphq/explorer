@@ -13,7 +13,7 @@ import {
   QueryRefreshMeta,
   QueryState,
 } from "./primitives";
-import { formatContractInvocation, identifyContractInvocation } from "./contracts";
+import { formatContractInvocation, identifyContractInvocation, isSmartContractCall } from "./contracts";
 import { formatNumber, formatTimestamp } from "./utils";
 
 function RawTransactionValue({ label, value }: { label: string; value: string | undefined }) {
@@ -52,7 +52,9 @@ export function TransactionPage({ hash }: { hash: string | null }) {
   }
 
   const transaction = query.data;
-  const contractInvocation = transaction ? identifyContractInvocation(transaction) : null;
+  const contractInvocation = transaction && isSmartContractCall(transaction.inputType)
+    ? identifyContractInvocation(transaction)
+    : null;
   const contractInvocationDisplay = contractInvocation
     ? formatContractInvocation(contractInvocation)
     : null;
