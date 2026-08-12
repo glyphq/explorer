@@ -8,7 +8,7 @@ import {
   useTransactionsForIdentity,
 } from "@/lib/rpc/queries";
 import { explorerData, type ExplorerTransactionsForIdentityRequest } from "@/lib/rpc/adapter";
-import { formatAtomicAmount, formatIdentity } from "@/lib/rpc/validation";
+import { formatAtomicAmount, formatTransactionHash } from "@/lib/rpc/validation";
 import { IdentityAvatar } from "@/components/identity";
 
 import {
@@ -16,8 +16,6 @@ import {
   CopyButton,
   ExplorerLink,
   InvalidLookup,
-  KeyValueList,
-  Panel,
   QueryRefreshMeta,
   QueryState,
 } from "./primitives";
@@ -58,7 +56,17 @@ function AssetList({
   if (assets.length === 0) return null;
 
   return (
-    <ul className="divide-y divide-[var(--glyph-line)]">
+    <div className="overflow-x-auto">
+      <table className="min-w-[520px] w-full border-collapse text-left">
+        <thead>
+          <tr className="border-b border-[var(--glyph-line)] text-[0.68rem] uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">
+            <th className="pb-3 pr-4 font-medium" scope="col">Asset</th>
+            {kind !== "issued" ? <th className="pb-3 pr-4 text-right font-medium" scope="col">Units</th> : null}
+            <th className="pb-3 pr-4 text-right font-medium" scope="col">Index</th>
+            <th className="pb-3 text-right font-medium" scope="col">Tick</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-[var(--glyph-line)]">
       {assets.slice(0, 8).map((asset, index) => {
         const data = asset.data;
         const info = asset.info;
@@ -76,20 +84,21 @@ function AssetList({
               : (data as PossessedAsset["data"])?.numberOfUnits;
 
         return (
-          <li className="grid gap-2 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center" key={`${info?.universeIndex ?? index}-${name ?? "asset"}`}>
-            <div>
-              <p className="font-medium text-[var(--glyph-ink)]">{name || "Unnamed asset"}</p>
-              <p className="mt-1 text-xs text-[var(--glyph-tertiary)]">
-                Universe index: {formatNumber(info?.universeIndex)} · Tick: {formatNumber(info?.tick)}
-              </p>
-            </div>
-            {units !== undefined ? (
-              <p className="font-mono text-sm text-[var(--glyph-ink)]">{formatAtomicAmount(units)} raw units</p>
+          <tr className="align-top text-sm" key={`${info?.universeIndex ?? index}-${name ?? "asset"}`}>
+            <td className="py-3 pr-4 font-medium text-[var(--glyph-ink)]">{name || "Unnamed asset"}</td>
+            {kind !== "issued" ? (
+              <td className="whitespace-nowrap py-3 pr-4 text-right font-mono text-xs text-[var(--glyph-ink)]">
+                {units !== undefined ? `${formatAtomicAmount(units)} raw units` : "Not reported"}
+              </td>
             ) : null}
-          </li>
+            <td className="whitespace-nowrap py-3 pr-4 text-right font-mono text-xs text-[var(--glyph-muted)]">{formatNumber(info?.universeIndex)}</td>
+            <td className="whitespace-nowrap py-3 text-right font-mono text-xs text-[var(--glyph-muted)]">{formatNumber(info?.tick)}</td>
+          </tr>
         );
       })}
-    </ul>
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -103,15 +112,13 @@ function AssetPanel({
   query: ReturnType<typeof useIdentityAssets>["issued"];
 }) {
   return (
-    <Panel title={title}>
-      {Array.isArray(query.data) ? (
-        <div className="mb-4 flex items-baseline justify-between border-b border-[var(--glyph-line)] pb-3 text-xs">
-          <span className="text-[var(--glyph-tertiary)]">Assets returned</span>
-          <span className="font-mono text-[var(--glyph-ink)]">{formatNumber(query.data.length)}</span>
-        </div>
-      ) : null}
+    <div className="min-w-0">
+      <div className="mb-3 flex items-baseline justify-between gap-3">
+        <h3 className="text-sm font-semibold text-[var(--glyph-ink)]">{title}</h3>
+        {Array.isArray(query.data) ? <span className="font-mono text-xs text-[var(--glyph-tertiary)]">{formatNumber(query.data.length)}</span> : null}
+      </div>
       <QueryState
-        emptyMessage={`No ${kind} assets were returned for this identity.`}
+        emptyMessage={`No ${kind} assets.`}
         emptyWhen={(data) => Array.isArray(data) && data.length === 0}
         label={`${kind} assets`}
         query={query}
@@ -119,21 +126,29 @@ function AssetPanel({
         {Array.isArray(query.data) ? <AssetList assets={query.data} kind={kind} /> : null}
       </QueryState>
       <QueryRefreshMeta query={query} />
-    </Panel>
+    </div>
   );
 }
 
 function TransactionHistory({
-  identity,
   query,
 }: {
-  identity: string;
   query: ReturnType<typeof useTransactionsForIdentity>;
 }) {
   return (
-    <Panel title="Transaction history">
+    <section aria-labelledby="identity-transactions" className="border-t border-[var(--glyph-line)] pt-6">
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+        <h2 className="text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]" id="identity-transactions">Transactions</h2>
+        {query.data ? (
+          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--glyph-tertiary)]">
+            <span><span className="mr-1 uppercase tracking-[0.08em]">Showing</span><span className="font-mono text-[var(--glyph-ink)]">{formatNumber(query.data.transactions.length)}</span></span>
+            <span><span className="mr-1 uppercase tracking-[0.08em]">Matches</span><span className="font-mono text-[var(--glyph-ink)]">{formatNumber(query.data.hits.total)}</span></span>
+            <span><span className="mr-1 uppercase tracking-[0.08em]">Valid tick</span><span className="font-mono text-[var(--glyph-ink)]">{formatNumber(query.data.validForTick)}</span></span>
+          </div>
+        ) : null}
+      </div>
       <QueryState
-        emptyMessage="No transactions were returned for this identity."
+        emptyMessage="No transactions."
         emptyWhen={(data) => {
           if (!data || typeof data !== "object") return false;
           const result = data as { transactions?: unknown[] };
@@ -143,46 +158,42 @@ function TransactionHistory({
         query={query}
       >
         {query.data ? (
-          <>
-            <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2 border-b border-[var(--glyph-line)] pb-4">
-              <p className="text-sm text-[var(--glyph-muted)]">
-                Returned {formatNumber(query.data.transactions.length)} of {formatNumber(query.data.hits.total)} indexed matches.
-              </p>
-              <p className="text-xs text-[var(--glyph-tertiary)]">
-                Response valid for tick {formatNumber(query.data.validForTick)}
-              </p>
-            </div>
-            <ul className="divide-y divide-[var(--glyph-line)]">
+          <div className="overflow-x-auto">
+            <table className="min-w-[680px] w-full border-collapse text-left">
+              <thead>
+                <tr className="border-b border-[var(--glyph-line)] text-[0.68rem] uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">
+                  <th className="pb-3 pr-4 font-medium" scope="col">Hash</th>
+                  <th className="pb-3 pr-4 text-right font-medium" scope="col">Tick</th>
+                  <th className="pb-3 pr-4 font-medium" scope="col">Time</th>
+                  <th className="pb-3 text-right font-medium" scope="col">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--glyph-line)]">
               {query.data.transactions.map((transaction, index) => (
-                <li className="py-4" key={`${transaction.hash ?? "transaction"}-${index}`}>
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="min-w-0">
-                      {transaction.hash ? (
-                        <ExplorerLink href={`/transaction/${transaction.hash}`}>
-                          {transaction.hash}
-                        </ExplorerLink>
-                      ) : (
-                        <p className="font-mono text-xs text-[var(--glyph-tertiary)]">Hash not reported</p>
-                      )}
-                      <p className="mt-2 text-xs text-[var(--glyph-tertiary)]">
-                        Tick {formatNumber(transaction.tickNumber)} · {formatTimestamp(transaction.timestamp)}
-                      </p>
-                    </div>
-                    <p className="font-mono text-sm text-[var(--glyph-ink)]">
-                      {transaction.amount !== undefined && transaction.amount !== null ? `${formatAtomicAmount(transaction.amount)} raw units` : "Amount not reported"}
-                    </p>
-                  </div>
-                </li>
+                <tr className="align-top text-sm" key={`${transaction.hash ?? "transaction"}-${index}`}>
+                  <td className="max-w-[22rem] break-all py-3 pr-4">
+                    {transaction.hash ? (
+                      <ExplorerLink href={`/transaction/${transaction.hash}`}>
+                        <span title={transaction.hash}>{formatTransactionHash(transaction.hash)}</span>
+                      </ExplorerLink>
+                    ) : (
+                      <span className="text-xs text-[var(--glyph-tertiary)]">Not reported</span>
+                    )}
+                  </td>
+                  <td className="whitespace-nowrap py-3 pr-4 text-right font-mono text-xs text-[var(--glyph-muted)]">{formatNumber(transaction.tickNumber)}</td>
+                  <td className="whitespace-nowrap py-3 pr-4 text-xs text-[var(--glyph-muted)]">{formatTimestamp(transaction.timestamp)}</td>
+                  <td className="whitespace-nowrap py-3 text-right font-mono text-xs text-[var(--glyph-ink)]">
+                    {transaction.amount !== undefined && transaction.amount !== null ? `${formatAtomicAmount(transaction.amount)} raw units` : "Not reported"}
+                  </td>
+                </tr>
               ))}
-            </ul>
-          </>
+              </tbody>
+            </table>
+          </div>
         ) : null}
       </QueryState>
-      <p className="mt-5 border-t border-[var(--glyph-line)] pt-4 text-xs text-[var(--glyph-tertiary)]">
-        <code className="font-mono">{formatIdentity(identity)}</code> · first 8 results
-      </p>
       <QueryRefreshMeta query={query} />
-    </Panel>
+    </section>
   );
 }
 
@@ -219,36 +230,60 @@ export function IdentityPage({ identity }: { identity: string | null }) {
         <CopyButton label="Copy identity" value={identity} />
       </div>
 
-      <div>
-        <Panel title="Balance">
-          <QueryState label="identity balance" noResultMessage="No balance was returned for this identity." query={balance}>
+      <div className="space-y-8">
+        <section aria-labelledby="identity-balance" className="border-b border-[var(--glyph-line)] pb-7">
+          <h2 className="mb-4 text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]" id="identity-balance">Balance</h2>
+          <QueryState label="identity balance" noResultMessage="No balance." query={balance}>
             {balance.data ? (
-              <KeyValueList
-                items={[
-                  { label: "Balance", value: `${formatAtomicAmount(balance.data.balance)} raw units`, wide: true },
-                  { label: "Balance valid for tick", value: formatNumber(balance.data.validForTick) },
-                  { label: "Incoming transfers", value: formatNumber(balance.data.numberOfIncomingTransfers) },
-                  { label: "Outgoing transfers", value: formatNumber(balance.data.numberOfOutgoingTransfers) },
-                  { label: "Total received", value: `${formatAtomicAmount(balance.data.incomingAmount)} raw units` },
-                  { label: "Total sent", value: `${formatAtomicAmount(balance.data.outgoingAmount)} raw units` },
-                  { label: "Latest incoming tick", value: formatNumber(balance.data.latestIncomingTransferTick) },
-                  { label: "Latest outgoing tick", value: formatNumber(balance.data.latestOutgoingTransferTick) },
-                ]}
-              />
+              <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="sm:col-span-2 lg:col-span-2">
+                  <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Balance</dt>
+                  <dd className="mt-1 font-mono text-lg font-semibold text-[var(--glyph-ink)]">{formatAtomicAmount(balance.data.balance)} raw units</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Valid tick</dt>
+                  <dd className="mt-1 font-mono text-sm text-[var(--glyph-ink)]">{formatNumber(balance.data.validForTick)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Incoming</dt>
+                  <dd className="mt-1 font-mono text-sm text-[var(--glyph-ink)]">{formatNumber(balance.data.numberOfIncomingTransfers)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Outgoing</dt>
+                  <dd className="mt-1 font-mono text-sm text-[var(--glyph-ink)]">{formatNumber(balance.data.numberOfOutgoingTransfers)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Received</dt>
+                  <dd className="mt-1 font-mono text-sm text-[var(--glyph-ink)]">{formatAtomicAmount(balance.data.incomingAmount)} raw units</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Sent</dt>
+                  <dd className="mt-1 font-mono text-sm text-[var(--glyph-ink)]">{formatAtomicAmount(balance.data.outgoingAmount)} raw units</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Latest incoming</dt>
+                  <dd className="mt-1 font-mono text-sm text-[var(--glyph-ink)]">{formatNumber(balance.data.latestIncomingTransferTick)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Latest outgoing</dt>
+                  <dd className="mt-1 font-mono text-sm text-[var(--glyph-ink)]">{formatNumber(balance.data.latestOutgoingTransferTick)}</dd>
+                </div>
+              </dl>
             ) : null}
           </QueryState>
           <QueryRefreshMeta query={balance} />
-        </Panel>
-      </div>
+        </section>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        <AssetPanel kind="issued" query={assets.issued} title="Issued assets" />
-        <AssetPanel kind="owned" query={assets.owned} title="Owned assets" />
-        <AssetPanel kind="possessed" query={assets.possessed} title="Possessed assets" />
-      </div>
+        <section aria-labelledby="identity-assets">
+          <h2 className="mb-4 text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]" id="identity-assets">Assets</h2>
+          <div className="grid gap-7 lg:grid-cols-3 lg:gap-6">
+            <AssetPanel kind="issued" query={assets.issued} title="Issued" />
+            <AssetPanel kind="owned" query={assets.owned} title="Owned" />
+            <AssetPanel kind="possessed" query={assets.possessed} title="Possessed" />
+          </div>
+        </section>
 
-      <div className="mt-4">
-        <TransactionHistory identity={identity} query={history} />
+        <TransactionHistory query={history} />
       </div>
     </ExplorerFrame>
   );

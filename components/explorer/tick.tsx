@@ -8,8 +8,6 @@ import {
   ExplorerLink,
   IdentifierValue,
   InvalidLookup,
-  KeyValueList,
-  Panel,
   QueryRefreshMeta,
   QueryState,
 } from "./primitives";
@@ -32,48 +30,61 @@ export function TickPage({ tick }: { tick: number | null }) {
 
   return (
     <ExplorerFrame>
-      <div className="mb-4 flex items-center gap-2 border-b border-[var(--glyph-line)] pb-4">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--glyph-line)] pb-4">
         <p className="min-w-0 flex-1 font-mono text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)]">{formatNumber(tick)}</p>
-        <CopyButton label="Copy tick" value={String(tick)} />
+        <div className="flex items-center gap-3">
+          <ExplorerLink href={`/tick/${tick}/transactions`}>Transactions</ExplorerLink>
+          <CopyButton label="Copy tick" value={String(tick)} />
+        </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
-        <Panel title="Tick record">
-          <QueryState
-            label="tick data"
-            noResultMessage="No tick record was found for this tick."
-            query={tickData}
-          >
-            {tickData.data ? (
-              <KeyValueList
-                items={[
-                  { label: "Tick", value: formatNumber(tickData.data.tickNumber ?? tick) },
-                  { label: "Archive record", value: "Available" },
-                  { label: "Epoch", value: formatNumber(tickData.data.epoch) },
-                  { label: "Computor index", value: formatNumber(tickData.data.computorIndex) },
-                  { label: "Timestamp", value: formatTimestamp(tickData.data.timestamp) },
-                  { label: "Transaction hashes", value: formatNumber(tickData.data.transactionHashes?.length) },
-                  { label: "Contract fees", value: tickData.data.contractFees?.length ? `${formatNumber(tickData.data.contractFees.length)} reported` : "None reported" },
-                  { label: "Signature", value: <IdentifierValue value={tickData.data.signature} />, wide: true },
-                ]}
-              />
-            ) : null}
-          </QueryState>
-          <QueryRefreshMeta query={tickData} />
-        </Panel>
-
-        <Panel title="Transactions in tick">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-mono text-sm text-[var(--glyph-ink)]">
-                {tickData.data ? `${formatNumber(tickData.data.transactionHashes?.length)} transaction hashes` : "Archive record required"}
-              </p>
-              <p className="mt-1 text-xs text-[var(--glyph-tertiary)]">Source · destination · amount · input type</p>
-            </div>
-            <ExplorerLink href={`/tick/${tick}/transactions`}>View transactions</ExplorerLink>
-          </div>
-        </Panel>
-      </div>
+      <section aria-labelledby="tick-metadata">
+        <h2 className="mb-4 text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]" id="tick-metadata">Metadata</h2>
+        <QueryState
+          label="tick data"
+          noResultMessage="No tick data."
+          query={tickData}
+        >
+          {tickData.data ? (
+            <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Tick</dt>
+                <dd className="mt-1 font-mono text-sm text-[var(--glyph-ink)]">{formatNumber(tickData.data.tickNumber ?? tick)}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Epoch</dt>
+                <dd className="mt-1 font-mono text-sm text-[var(--glyph-ink)]">{formatNumber(tickData.data.epoch)}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Computor</dt>
+                <dd className="mt-1 font-mono text-sm text-[var(--glyph-ink)]">{formatNumber(tickData.data.computorIndex)}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Timestamp</dt>
+                <dd className="mt-1 text-sm text-[var(--glyph-ink)]">{formatTimestamp(tickData.data.timestamp)}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Transaction hashes</dt>
+                <dd className="mt-1 font-mono text-sm text-[var(--glyph-ink)]">{formatNumber(tickData.data.transactionHashes?.length)}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Contract fees</dt>
+                <dd className="mt-1 font-mono text-sm text-[var(--glyph-ink)]">
+                  {tickData.data.contractFees?.length ? formatNumber(tickData.data.contractFees.length) : "None reported"}
+                </dd>
+              </div>
+              <div className="sm:col-span-2 lg:col-span-4">
+                <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Signature</dt>
+                <dd className="mt-1 flex items-start gap-2 text-sm text-[var(--glyph-ink)]">
+                  <span className="min-w-0 flex-1"><IdentifierValue value={tickData.data.signature} /></span>
+                  {tickData.data.signature ? <CopyButton label="Copy signature" value={tickData.data.signature} /> : null}
+                </dd>
+              </div>
+            </dl>
+          ) : null}
+        </QueryState>
+        <QueryRefreshMeta query={tickData} />
+      </section>
 
     </ExplorerFrame>
   );
