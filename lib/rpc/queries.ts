@@ -51,6 +51,7 @@ export const explorerQueryKeys = {
       request: ExplorerTransactionsForIdentityRequest | null,
       filter: IdentityTransactionFilter = "all",
       pageSize = IDENTITY_TRANSACTION_PAGE_SIZE,
+      offset?: number,
     ) => [
       "qubic",
       "query",
@@ -58,6 +59,7 @@ export const explorerQueryKeys = {
       request,
       filter,
       pageSize,
+      offset,
     ] as const,
     eventLogs: (request: GetEventLogsRequest) => ["qubic", "query", "event-logs", request] as const,
     assetIssuanceEvents: (pageSize: number) => ["qubic", "query", "asset-issuance-events", pageSize] as const,
@@ -320,6 +322,43 @@ export function useTransactionsForIdentity(
     typeof queryKey,
     number
   >);
+}
+
+export function useTransactionsForIdentityPage(
+  request: ExplorerTransactionsForIdentityRequest | null | undefined,
+  filter: IdentityTransactionFilter = "all",
+  offset = 0,
+  pageSize = IDENTITY_TRANSACTION_PAGE_SIZE,
+) {
+  const normalizedIdentity = normalizeIdentity(request?.identity);
+  const normalizedRequest = normalizedIdentity && request
+    ? { ...request, identity: normalizedIdentity }
+    : null;
+  const queryKey = explorerQueryKeys.query.transactionsForIdentity(
+    normalizedRequest,
+    filter,
+    pageSize,
+    offset,
+  );
+
+  return useQuery({
+    queryKey,
+    queryFn: ({ signal }: { signal: AbortSignal }) => {
+      if (!normalizedRequest) {
+        throw new ExplorerRpcError("Invalid Qubic identity.", {
+          kind: "validation",
+          endpoint: "/query/v1/getTransactionsForIdentity",
+        });
+      }
+
+      return explorerData.getTransactionsForIdentity(
+        createIdentityTransactionsPageRequest(normalizedRequest, filter, offset, pageSize),
+        { signal },
+      );
+    },
+    ...explorerQueryPolicies.search,
+    enabled: Boolean(normalizedRequest),
+  });
 }
 
 export function useEventLogs(

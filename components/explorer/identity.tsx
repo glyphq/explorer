@@ -8,16 +8,17 @@ import {
   type SortingState,
   useTable,
 } from "@tanstack/react-table";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useState } from "react";
 import type { QueryTransaction } from "@qubic.org/rpc";
 import { useQuery } from "@tanstack/react-query";
 
 import { IdentityAvatar } from "@/components/identity";
 import {
+  getNextIdentityTransactionsOffset,
   IDENTITY_TRANSACTION_PAGE_SIZE,
   type IdentityTransactionFilter,
   useQubicBalance,
-  useTransactionsForIdentity,
+  useTransactionsForIdentityPage,
 } from "@/lib/rpc/queries";
 import { explorerData, type ExplorerTransactionsForIdentityRequest } from "@/lib/rpc/adapter";
 import { formatAtomicAmount, formatIdentifier, formatTransactionHash } from "@/lib/rpc/validation";
@@ -294,54 +295,17 @@ function TransactionTable({ transactions }: { transactions: QueryTransaction[] }
   );
 }
 
-function isEmptyTransactionQueryData(data: unknown): boolean {
-  if (!data || typeof data !== "object" || !("pages" in data)) return false;
-  const pages = (data as { pages?: unknown }).pages;
-  return Array.isArray(pages) && pages.every((page) => {
-    if (!page || typeof page !== "object" || !("transactions" in page)) return false;
-    const transactions = (page as { transactions?: unknown }).transactions;
-    return Array.isArray(transactions) && transactions.length === 0;
-  });
-}
-
 function TransactionHistory({ request }: { request: ExplorerTransactionsForIdentityRequest }) {
   const [filter, setFilter] = useState<IdentityTransactionFilter>("all");
-  const query = useTransactionsForIdentity(request, filter, IDENTITY_TRANSACTION_PAGE_SIZE);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-  const hasScrolledRef = useRef(false);
-  const { fetchNextPage, hasNextPage, isFetchingNextPage } = query;
-  const transactions = useMemo(
-    () => query.data?.pages.flatMap((page) => page.transactions) ?? [],
-    [query.data],
-  );
-  const total = query.data?.pages[0]?.hits.total;
-  const validForTick = query.data?.pages[0]?.validForTick;
-
-  useEffect(() => {
-    const markScrolled = () => {
-      hasScrolledRef.current = true;
-      window.removeEventListener("scroll", markScrolled);
-    };
-
-    window.addEventListener("scroll", markScrolled, { passive: true });
-    return () => window.removeEventListener("scroll", markScrolled);
-  }, []);
-
-  useEffect(() => {
-    const target = loadMoreRef.current;
-    if (!target || !hasNextPage || isFetchingNextPage || !("IntersectionObserver" in window)) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting && hasScrolledRef.current) {
-          void fetchNextPage();
-        }
-      },
-      { rootMargin: "320px 0px" },
-    );
-    observer.observe(target);
-    return () => observer.disconnect();
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+  const [page, setPage] = useState(0);
+  const offset = page * IDENTITY_TRANSACTION_PAGE_SIZE;
+  const query = useTransactionsForIdentityPage(request, filter, offset, IDENTITY_TRANSACTION_PAGE_SIZE);
+  const transactions = query.data?.transactions ?? [];
+  const total = query.data?.hits.total;
+  const validForTick = query.data?.validForTick;
+  const hasNextPage = query.data
+    ? getNextIdentityTransactionsOffset(query.data, offset, IDENTITY_TRANSACTION_PAGE_SIZE) !== undefined
+    : false;
 
   return (
     <section aria-labelledby="identity-transactions" className="border-t border-[var(--glyph-line)] pt-6">
@@ -355,7 +319,10 @@ function TransactionHistory({ request }: { request: ExplorerTransactionsForIdent
           <select
             aria-label="Transaction type filter"
             className="min-h-10 border border-[var(--glyph-line-strong)] bg-[var(--glyph-surface)] px-3 font-medium text-[var(--glyph-ink)]"
-            onChange={(event) => setFilter(event.target.value as IdentityTransactionFilter)}
+            onChange={(event) => {
+              setFilter(event.target.value as IdentityTransactionFilter);
+              setPage(0);
+            }}
             value={filter}
           >
             <option value="all">All transactions</option>
@@ -367,7 +334,11 @@ function TransactionHistory({ request }: { request: ExplorerTransactionsForIdent
 
       <QueryState
         emptyMessage="No transactions match this filter."
-        emptyWhen={isEmptyTransactionQueryData}
+        emptyWhen={(data) => {
+          if (!data || typeof data !== "object" || !("transactions" in data)) return false;
+          return Array.isArray((data as { transactions?: unknown }).transactions)
+            && (data as { transactions: unknown[] }).transactions.length === 0;
+        }}
         label="identity transaction history"
         query={query}
       >
@@ -392,21 +363,27 @@ function TransactionHistory({ request }: { request: ExplorerTransactionsForIdent
               ) : null}
             </div>
             <TransactionTable transactions={transactions} />
-            <div className="mt-5 flex flex-wrap items-center gap-3" ref={loadMoreRef}>
-              {query.hasNextPage ? (
-                <button
-                  className="min-h-11 border border-[var(--glyph-line-strong)] bg-[var(--glyph-ink)] px-4 text-sm font-semibold text-[var(--glyph-canvas)] disabled:cursor-wait disabled:opacity-60"
-                  disabled={query.isFetchingNextPage}
-                  onClick={() => void query.fetchNextPage()}
-                  type="button"
-                >
-                  {query.isFetchingNextPage ? "Loading more…" : "Load more transactions"}
-                </button>
-              ) : (
-                <p className="text-xs text-[var(--glyph-tertiary)]">All available transactions are loaded.</p>
-              )}
-              {query.isFetchingNextPage ? <span aria-live="polite" className="text-xs text-[var(--glyph-muted)]">Loading the next page…</span> : null}
-            </div>
+            <nav aria-label="Transaction pages" className="mt-5 flex flex-wrap items-center gap-3">
+              <button
+                className="min-h-11 border border-[var(--glyph-line-strong)] bg-[var(--glyph-surface)] px-4 text-sm font-semibold text-[var(--glyph-ink)] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={page === 0 || query.isFetching}
+                onClick={() => setPage((current) => Math.max(0, current - 1))}
+                type="button"
+              >
+                Previous
+              </button>
+              <span aria-live="polite" className="font-mono text-xs text-[var(--glyph-muted)]">
+                Page {formatNumber(page + 1)}
+              </span>
+              <button
+                className="min-h-11 border border-[var(--glyph-line-strong)] bg-[var(--glyph-ink)] px-4 text-sm font-semibold text-[var(--glyph-canvas)] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!hasNextPage || query.isFetching}
+                onClick={() => setPage((current) => current + 1)}
+                type="button"
+              >
+                Next
+              </button>
+            </nav>
           </>
         ) : null}
       </QueryState>
