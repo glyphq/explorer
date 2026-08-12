@@ -29,11 +29,13 @@ export type ExplorerQuery<T> = {
 type ExplorerIcon = HugeiconsIconProps["icon"];
 
 const surfaceClass = "border border-[var(--glyph-line)] bg-[var(--glyph-surface)]";
+export const EXPLORER_FRAME_CONTENT_CLASS =
+  "mx-auto w-full max-w-screen-2xl px-[var(--glyph-gutter)] py-5 md:py-7";
 
 export function ExplorerFrame({ children }: { children: ReactNode }) {
   return (
     <main className="min-h-[calc(100svh-72px)]">
-      <div className="mx-auto w-full max-w-6xl px-[var(--glyph-gutter)] py-5 md:py-7">
+      <div className={EXPLORER_FRAME_CONTENT_CLASS}>
         {children}
       </div>
     </main>

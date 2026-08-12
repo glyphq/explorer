@@ -1,10 +1,12 @@
 import { describe, expect, test } from "bun:test";
 
 import { ExplorerRpcError } from "@/lib/rpc/errors";
+import { normalizeTransactionHash } from "@/lib/rpc/validation";
 import { resolveExplorerLookup, isMissingLookupResult } from "../utils";
 
 const IDENTITY = "A".repeat(60);
 const LOWERCASE_AMBIGUOUS_IDENTIFIER = "a".repeat(60);
+const REPORTED_TRANSACTION = "paissljworvkxgbwbwtscsylxcpglljzcxybowhyackeswdlpiatzmsbjelk";
 
 describe("Explorer lookup helpers", () => {
   test("routes canonical identities, transaction hashes, and ticks", () => {
@@ -33,6 +35,10 @@ describe("Explorer lookup helpers", () => {
   test("rejects values that are not supported lookup inputs", () => {
     expect(resolveExplorerLookup("not a lookup")).toBeNull();
     expect(resolveExplorerLookup("4294967296")).toBeNull();
+  });
+
+  test("keeps the reported identifier as its official transaction hash", () => {
+    expect(normalizeTransactionHash(REPORTED_TRANSACTION)?.toString()).toBe(REPORTED_TRANSACTION);
   });
 
   test("classifies missing archive records separately from service errors", () => {

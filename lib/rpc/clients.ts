@@ -33,6 +33,38 @@ export function createExplorerRpcClients(
   options: ExplorerRpcClientOptions = {},
 ): ExplorerRpcClients {
   const fetchOptions = options.fetch ? { fetch: options.fetch } : {};
+  const queryBaseUrl = publicBaseUrl(options.queryBaseUrl, DEFAULT_QUERY_RPC_URL);
+  const upstreamFetch = options.fetch ?? ((input: Request) => fetch(input));
+
+  // The official endpoint currently returns a transaction object directly,
+  // while @qubic.org/rpc@1.0.0 still expects { transaction: object }.
+  // Normalize only this successful official response before the SDK parses it.
+  const queryFetch = async (input: Request): Promise<Response> => {
+    const response = await upstreamFetch(input);
+    const pathname = new URL(input.url).pathname;
+
+    if (!response.ok || !pathname.endsWith("/getTransactionByHash")) return response;
+
+    const payload: unknown = await response.json();
+    if (
+      !payload ||
+      typeof payload !== "object" ||
+      "transaction" in payload ||
+      typeof (payload as { hash?: unknown }).hash !== "string"
+    ) {
+      return new Response(JSON.stringify(payload), {
+        headers: { "content-type": "application/json" },
+        status: response.status,
+        statusText: response.statusText,
+      });
+    }
+
+    return new Response(JSON.stringify({ transaction: payload }), {
+      headers: { "content-type": "application/json" },
+      status: response.status,
+      statusText: response.statusText,
+    });
+  };
 
   return {
     live: createQubicLiveClient({
@@ -40,8 +72,8 @@ export function createExplorerRpcClients(
       ...fetchOptions,
     }),
     query: createQubicQueryClient({
-      baseUrl: publicBaseUrl(options.queryBaseUrl, DEFAULT_QUERY_RPC_URL),
-      ...fetchOptions,
+      baseUrl: queryBaseUrl,
+      fetch: queryFetch,
     }),
   };
 }
