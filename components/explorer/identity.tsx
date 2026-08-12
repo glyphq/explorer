@@ -1,6 +1,6 @@
 "use client";
 
-import { Cancel01Icon, Clock01Icon, Coins01Icon, Copy01Icon, CopyCheckIcon, FunctionIcon, QrCode01Icon, Tick01Icon, TransactionIcon, UserArrowLeftRightIcon, UserIcon, Wallet01Icon } from "@hugeicons/core-free-icons";
+import { Cancel01Icon, Clock01Icon, Coins01Icon, Copy01Icon, CopyCheckIcon, FunctionIcon, QrCode01Icon, Tick01Icon, TransactionIcon, UserArrowLeftRightIcon, UserIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Image from "next/image";
 import QRCode from "qrcode";
@@ -17,6 +17,8 @@ import type { QueryTransaction } from "@qubic.org/rpc";
 import { useQuery } from "@tanstack/react-query";
 
 import { IdentityAvatar } from "@/components/identity";
+import { GlyphMark } from "@/components/shell/glyph-mark";
+import { GlyphButton } from "@/components/ui/button";
 import {
   getNextIdentityTransactionsOffset,
   IDENTITY_TRANSACTION_PAGE_SIZE,
@@ -277,20 +279,22 @@ function IdentityGlyphSendButton({ identity }: { identity: string }) {
 
   return (
     <>
-      <button
+      <GlyphButton
         aria-describedby={statusId}
         aria-label={buttonLabel}
         aria-busy={isPreparing}
-        className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 border-0 bg-transparent px-2 text-sm font-medium text-[var(--glyph-muted)] transition-colors hover:text-[var(--glyph-ink)] focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[var(--glyph-focus)] disabled:cursor-not-allowed disabled:opacity-50"
+        className="gap-2"
         data-glyph-recipient={transferDraft.to}
         disabled={isPreparing}
         onClick={handleClick}
+        size="md"
         title={buttonLabel}
         type="button"
+        variant="primary"
       >
-        <HugeiconsIcon aria-hidden="true" focusable="false" icon={Wallet01Icon} size={16} strokeWidth={1.5} />
+        <GlyphMark className="inline-flex size-4 shrink-0" />
         <span>{buttonLabel}</span>
-      </button>
+      </GlyphButton>
       <span aria-live="polite" className="sr-only" id={statusId}>{statusMessage}</span>
     </>
   );
@@ -649,10 +653,12 @@ export function IdentityPage({ identity }: { identity: string | null }) {
             <span className="font-mono text-[var(--glyph-muted)]">≈ {queryUsdBalance(balance, stats)}</span>
           </p>
           <IdentityAssetChips assets={assets} />
-          <div className="mt-2 flex flex-wrap items-center justify-center gap-0">
+          <div className="mt-2 flex flex-col items-center gap-1.5">
             <IdentityGlyphSendButton identity={identity} />
-            <IdentityCopyButton value={identity} />
-            <IdentityQrDialog identity={identity} />
+            <div className="flex items-center justify-center gap-0">
+              <IdentityCopyButton value={identity} />
+              <IdentityQrDialog identity={identity} />
+            </div>
           </div>
         </section>
       </header>
