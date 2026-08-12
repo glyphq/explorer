@@ -1,7 +1,7 @@
 "use client";
 
-import { Search01Icon } from "@hugeicons/core-free-icons";
 import { useRouter } from "next/navigation";
+import { Search01Icon } from "@hugeicons/core-free-icons";
 
 import { GlyphButton } from "@/components/ui/button";
 
@@ -24,8 +24,8 @@ export function LookupTrigger() {
   }
 
   return (
-    <GlyphButton icon={Search01Icon} variant="secondary" onClick={openLookup}>
-      Lookup
+    <GlyphButton className="w-full sm:w-auto" icon={Search01Icon} variant="secondary" onClick={openLookup}>
+      Open lookup
     </GlyphButton>
   );
 }
