@@ -101,7 +101,7 @@ function Metric({
         strokeWidth={1.15}
       />
       <dt className="truncate text-xs text-[var(--glyph-tertiary)]">{label}</dt>
-      <dd className="mt-1 truncate font-mono text-sm font-medium text-[var(--glyph-ink)]">{value}</dd>
+      <dd className="mt-1 truncate font-mono text-lg font-semibold leading-tight tracking-[-0.03em] text-[var(--glyph-ink)] sm:text-xl">{value}</dd>
       {detail ? <p className="mt-1 truncate text-[0.68rem] text-[var(--glyph-tertiary)]">{detail}</p> : null}
     </div>
   );
@@ -139,7 +139,7 @@ function StatsContent({
         <div className="mt-8" aria-label="Epoch tick quality">
           <div className="mb-2 flex items-baseline justify-between gap-4">
             <span className="text-xs text-[var(--glyph-tertiary)]">Tick quality</span>
-            <span className="font-mono text-sm font-medium text-[var(--glyph-ink)]">
+            <span className="font-mono text-base font-semibold leading-tight tracking-[-0.03em] text-[var(--glyph-ink)] sm:text-lg">
               {formatQuality(stats.epochTickQuality)}
             </span>
           </div>
