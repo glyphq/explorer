@@ -5,6 +5,19 @@ import "./globals.css";
 
 import ExplorerProviders from "./providers";
 
+const themeBootstrapScript = `
+(function () {
+  try {
+    var key = "glyph-explorer:theme";
+    var theme = window.localStorage.getItem(key);
+    if (theme !== "light" && theme !== "dark" && theme !== "system") theme = "system";
+    document.documentElement.setAttribute("data-theme", theme);
+  } catch (_) {
+    document.documentElement.setAttribute("data-theme", "system");
+  }
+})();
+`;
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -25,7 +38,15 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable}`}
+      data-theme="system"
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
+      </head>
       <body>
         <ExplorerProviders>
           <GlyphShell>{children}</GlyphShell>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { CommandSearch } from "@/components/shell/command-search";
 import { GlyphBrand } from "@/components/shell/glyph-mark";
+import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { WalletButton } from "@/components/shell/wallet-button";
 
 export type GlyphNavigationProps = {
@@ -32,6 +33,7 @@ export function GlyphNavigation({
         ) : null}
         <div className="glyph-nav__actions">
           {commandSearch}
+          <ThemeToggle />
           {wallet}
         </div>
       </div>
