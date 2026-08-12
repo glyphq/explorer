@@ -89,6 +89,9 @@ export const explorerQueryPolicies = {
     gcTime: 2 * 60_000,
     refetchInterval: 15_000,
   },
+  // Tokens, historical transactions, ticks, and generated lookup data do not need
+  // live polling. Retain successful snapshots for five minutes, exceeding the
+  // one-minute minimum while preventing refetches on routine route changes.
   archiveSnapshot: {
     staleTime: 5 * 60_000,
     gcTime: 15 * 60_000,
