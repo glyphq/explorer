@@ -47,9 +47,11 @@ describe("RPC request boundary", () => {
   test("aborts promptly when the caller aborts", async () => {
     const controller = new AbortController();
     const promise = executeRpcRequest(
-      async () => {
-        await new Promise<void>((resolve) => setTimeout(resolve, 100));
-        return ok("late");
+      async (signal) => {
+        await new Promise<void>((_, reject) => {
+          signal.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")), { once: true });
+        });
+        return ok("unreachable");
       },
       { endpoint: "/abort", signal: controller.signal, timeoutMs: 100 },
     );

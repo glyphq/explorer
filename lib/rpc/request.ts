@@ -27,39 +27,29 @@ export async function executeRpcRequest<T, E>(
     throw createAbortedError(context.endpoint, context.signal.reason);
   }
 
-  const controller = new AbortController();
+  const timeoutController = new AbortController();
+  const signal = context.signal
+    ? AbortSignal.any([context.signal, timeoutController.signal])
+    : timeoutController.signal;
   let timedOut = false;
   let settled = false;
-  let rejectCallerAbort: ((reason?: unknown) => void) | undefined;
-
-  const abortFromCaller = () => {
-    controller.abort();
-    rejectCallerAbort?.(createAbortedError(context.endpoint, context.signal?.reason));
-  };
-  context.signal?.addEventListener("abort", abortFromCaller, { once: true });
 
   let rejectTimeout: ((reason?: unknown) => void) | undefined;
   const timeoutPromise = new Promise<never>((_, reject) => {
     rejectTimeout = reject;
   });
-  const callerAbortPromise = context.signal
-    ? new Promise<never>((_, reject) => {
-        rejectCallerAbort = reject;
-      })
-    : null;
   const timeoutId = setTimeout(() => {
     if (settled) return;
     timedOut = true;
-    controller.abort();
+    timeoutController.abort();
     rejectTimeout?.(createTimeoutError(context.endpoint, timeoutMs));
   }, timeoutMs);
 
   try {
-    const operationPromise = operation(controller.signal);
+    const operationPromise = operation(signal);
     const result = await Promise.race([
       operationPromise,
       timeoutPromise,
-      ...(callerAbortPromise ? [callerAbortPromise] : []),
     ]);
     if (timedOut) throw createTimeoutError(context.endpoint, timeoutMs);
     if (context.signal?.aborted) {
@@ -75,6 +65,5 @@ export async function executeRpcRequest<T, E>(
   } finally {
     settled = true;
     clearTimeout(timeoutId);
-    context.signal?.removeEventListener("abort", abortFromCaller);
   }
 }
