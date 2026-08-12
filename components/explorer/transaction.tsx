@@ -14,6 +14,7 @@ import {
   QueryRefreshMeta,
   QueryState,
 } from "./primitives";
+import { formatContractInvocation, identifyContractInvocation } from "./contracts";
 import { formatNumber, formatTimestamp } from "./utils";
 
 export function TransactionPage({ hash }: { hash: string | null }) {
@@ -32,6 +33,10 @@ export function TransactionPage({ hash }: { hash: string | null }) {
   }
 
   const transaction = query.data;
+  const contractInvocation = transaction ? identifyContractInvocation(transaction) : null;
+  const contractInvocationDisplay = contractInvocation
+    ? formatContractInvocation(contractInvocation)
+    : null;
 
   return (
     <ExplorerFrame>
@@ -71,6 +76,14 @@ export function TransactionPage({ hash }: { hash: string | null }) {
                   ]}
                 />
               </div>
+
+              {contractInvocationDisplay ? (
+                <div className="mt-8 border-t border-[var(--glyph-line)] pt-5">
+                  <p className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Contract invocation</p>
+                  <p className="mt-2 text-sm font-semibold text-[var(--glyph-ink)]">{contractInvocationDisplay.title}</p>
+                  <p className="mt-1 text-sm leading-6 text-[var(--glyph-muted)]">{contractInvocationDisplay.description}</p>
+                </div>
+              ) : null}
             </>
           ) : null}
         </QueryState>
