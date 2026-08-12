@@ -539,7 +539,6 @@ textarea:focus-visible {
   width: min(100%, var(--glyph-content));
   min-height: calc(100svh - var(--glyph-header));
   margin: 0 auto;
-  border-inline: 1px solid var(--glyph-line);
 }
 
 @media (max-width: 780px) {
