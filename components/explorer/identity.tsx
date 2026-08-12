@@ -1,6 +1,6 @@
 "use client";
 
-import { Cancel01Icon, Clock01Icon, Coins01Icon, Copy01Icon, CopyCheckIcon, FunctionIcon, QrCode01Icon, Tick01Icon, TransactionIcon, UserArrowLeftRightIcon, UserIcon } from "@hugeicons/core-free-icons";
+import { ArrowLeft01Icon, ArrowRight01Icon, Cancel01Icon, Clock01Icon, Coins01Icon, Copy01Icon, CopyCheckIcon, FunctionIcon, QrCode01Icon, Tick01Icon, TransactionIcon, UserArrowLeftRightIcon, UserIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Image from "next/image";
 import QRCode from "qrcode";
@@ -18,6 +18,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { IdentityAvatar } from "@/components/identity";
 import { GlyphMark } from "@/components/shell/glyph-mark";
+import { GlyphButton } from "@/components/ui/button";
 import {
   getNextIdentityTransactionsOffset,
   IDENTITY_TRANSACTION_PAGE_SIZE,
@@ -123,7 +124,7 @@ function IdentityCopyButton({ value }: { value: string }) {
   return (
     <button
       aria-label={label}
-      className={`${identityActionClass} gap-2 px-2 text-xs font-medium`}
+      className={identityActionClass}
       onClick={() => void copyValue()}
       title={label}
       type="button"
@@ -132,10 +133,9 @@ function IdentityCopyButton({ value }: { value: string }) {
         aria-hidden="true"
         focusable="false"
         icon={copied ? CopyCheckIcon : Copy01Icon}
-        size={16}
+        size={18}
         strokeWidth={1.5}
       />
-      <span className="text-[0.7rem]">Copy identity</span>
     </button>
   );
 }
@@ -205,13 +205,12 @@ function IdentityQrDialog({ identity }: { identity: string }) {
         aria-controls="identity-qr-dialog"
         aria-expanded={open}
         aria-label={label}
-        className={`${identityActionClass} gap-2 px-2 text-xs font-medium`}
+        className={identityActionClass}
         onClick={() => setOpen(true)}
         title={label}
         type="button"
       >
-        <HugeiconsIcon aria-hidden="true" focusable="false" icon={QrCode01Icon} size={16} strokeWidth={1.5} />
-        <span className="text-[0.7rem]">Show QR code</span>
+        <HugeiconsIcon aria-hidden="true" focusable="false" icon={QrCode01Icon} size={18} strokeWidth={1.5} />
       </button>
       <dialog
         aria-labelledby="identity-qr-dialog-title"
@@ -276,41 +275,33 @@ function IdentityGlyphSendButton({ identity }: { identity: string }) {
   }));
   const state = useSyncExternalStore(client.subscribe, client.getState, client.getState);
   const label = "Send with Glyph Wallet";
-  const statusId = "identity-glyph-send-status";
+  const unavailableReasonId = "identity-glyph-send-unavailable-reason";
+  const [unavailableHelpOpen, setUnavailableHelpOpen] = useState(false);
   const isPreparing = state.status === "preparing";
   const isWaiting = state.status === "waiting";
   const isRetry = state.status === "failed" || state.status === "rejected" || state.status === "signed";
-  const statusMessage = state.status === "preparing"
-    ? "Preparing a one-use Glyph Relay session. Glyph will not open automatically."
-    : state.status === "unavailable"
-      ? state.reason
-      : state.status === "failed"
-        ? `Glyph transfer failed: ${state.error}. Try again.`
-        : state.status === "ready"
-          ? "Relay ready. Glyph requires an explicit transfer amount before it can open."
-          : state.status === "waiting"
-            ? "Waiting for Glyph Wallet approval."
-            : state.status === "signed"
-              ? `Glyph signed the transfer. Transaction ${state.result.tx_hash} is targeting tick ${formatNumber(state.result.target_tick)}.`
-              : state.status === "rejected"
-                ? "Glyph transfer was rejected. Click Send to prepare a new request."
-                : "Click Send to prepare a secure Glyph transfer. No amount is preset.";
 
   const handleClick = () => {
-    if (state.status === "unavailable" || isPreparing || isWaiting) return;
+    if (state.status === "unavailable") {
+      setUnavailableHelpOpen(true);
+      return;
+    }
+    if (isPreparing || isWaiting) return;
     if (isRetry) client.reset();
     void client.prepare().catch(() => undefined);
   };
 
   return (
-    <>
+    <div className="group relative inline-flex items-center">
       <button
-        aria-describedby={statusId}
+        aria-describedby={state.status === "unavailable" ? unavailableReasonId : undefined}
         aria-label={label}
         aria-busy={isPreparing || isWaiting}
-        className={`${identityActionClass} gap-2 px-2 text-xs font-medium`}
+        aria-disabled={state.status === "unavailable" ? true : undefined}
+        aria-expanded={state.status === "unavailable" ? unavailableHelpOpen : undefined}
+        className={identityActionClass}
         data-glyph-recipient={transferDraft.to}
-        disabled={state.status === "unavailable" || isPreparing || isWaiting}
+        disabled={isPreparing || isWaiting}
         onClick={handleClick}
         title={state.status === "unavailable"
           ? state.reason
@@ -325,17 +316,18 @@ function IdentityGlyphSendButton({ identity }: { identity: string }) {
                   : label}
         type="button"
       >
-        <GlyphMark className="inline-flex size-4 shrink-0" />
-        <span className="text-[0.7rem]">Send</span>
+        <GlyphMark className="inline-flex size-[18px] shrink-0" />
       </button>
-      <p
-        aria-live="polite"
-        className={state.status === "idle" ? "sr-only" : "mt-2 max-w-full text-center text-xs text-[var(--glyph-muted)]"}
-        id={statusId}
-      >
-        {statusMessage}
-      </p>
-    </>
+      {state.status === "unavailable" ? (
+        <span
+          className={`pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-[min(80vw,24rem)] -translate-x-1/2 rounded-lg border border-[var(--glyph-danger-line)] bg-[var(--glyph-danger-surface)] px-3 py-2 text-left text-xs leading-5 text-[var(--glyph-danger-ink)] shadow-[0_8px_24px_var(--glyph-shadow)] transition-opacity motion-reduce:transition-none ${unavailableHelpOpen ? "opacity-100" : "opacity-0 group-focus-within:opacity-100 group-hover:opacity-100"}`}
+          id={unavailableReasonId}
+          role="tooltip"
+        >
+          {state.reason}
+        </span>
+      ) : null}
+    </div>
   );
 }
 
@@ -563,8 +555,6 @@ function TransactionHistory({ request }: { request: ExplorerTransactionsForIdent
   const offset = page * IDENTITY_TRANSACTION_PAGE_SIZE;
   const query = useTransactionsForIdentityPage(request, filter, offset, IDENTITY_TRANSACTION_PAGE_SIZE);
   const transactions = query.data?.transactions ?? [];
-  const total = query.data?.hits.total;
-  const validForTick = query.data?.validForTick;
   const hasNextPage = query.data
     ? getNextIdentityTransactionsOffset(query.data, offset, IDENTITY_TRANSACTION_PAGE_SIZE) !== undefined
     : false;
@@ -574,7 +564,6 @@ function TransactionHistory({ request }: { request: ExplorerTransactionsForIdent
       <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 className="text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]" id="identity-transactions">Transactions</h2>
-          <p className="mt-1 text-sm text-[var(--glyph-muted)]">Archive history for this identity.</p>
         </div>
         <label className="flex items-center gap-2 text-xs text-[var(--glyph-muted)]">
           <span>Type</span>
@@ -606,45 +595,33 @@ function TransactionHistory({ request }: { request: ExplorerTransactionsForIdent
       >
         {query.data ? (
           <>
-            <div className="mb-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--glyph-tertiary)]" aria-live="polite">
-              <span>
-                <span className="mr-1 uppercase tracking-[0.08em]">Loaded</span>
-                <span className="font-mono text-[var(--glyph-ink)]">{formatNumber(transactions.length)}</span>
-              </span>
-              {total !== undefined ? (
-                <span>
-                  <span className="mr-1 uppercase tracking-[0.08em]">Matches</span>
-                  <span className="font-mono text-[var(--glyph-ink)]">{formatNumber(total)}</span>
-                </span>
-              ) : null}
-              {validForTick !== undefined ? (
-                <span>
-                  <span className="mr-1 uppercase tracking-[0.08em]">Valid tick</span>
-                  <span className="font-mono text-[var(--glyph-ink)]">{formatNumber(validForTick)}</span>
-                </span>
-              ) : null}
-            </div>
             <TransactionTable transactions={transactions} />
-            <nav aria-label="Transaction pages" className="mt-5 flex flex-wrap items-center gap-3">
-              <button
-                className="min-h-11 border border-[var(--glyph-line-strong)] bg-[var(--glyph-surface)] px-4 text-sm font-semibold text-[var(--glyph-ink)] disabled:cursor-not-allowed disabled:opacity-50"
+            <nav aria-label="Transaction pages" className="mt-5 flex flex-wrap items-center justify-center gap-3">
+              <GlyphButton
+                aria-label="Previous identity transaction page"
+                className="rounded-lg"
                 disabled={page === 0 || query.isFetching}
+                icon={ArrowLeft01Icon}
                 onClick={() => setPage((current) => Math.max(0, current - 1))}
-                type="button"
+                size="sm"
+                variant="secondary"
               >
                 Previous
-              </button>
+              </GlyphButton>
               <span aria-live="polite" className="font-mono text-xs text-[var(--glyph-muted)]">
                 Page {formatNumber(page + 1)}
               </span>
-              <button
-                className="min-h-11 border border-[var(--glyph-line-strong)] bg-[var(--glyph-ink)] px-4 text-sm font-semibold text-[var(--glyph-canvas)] disabled:cursor-not-allowed disabled:opacity-50"
+              <GlyphButton
+                aria-label="Next identity transaction page"
+                className="rounded-lg"
                 disabled={!hasNextPage || query.isFetching}
+                icon={ArrowRight01Icon}
                 onClick={() => setPage((current) => current + 1)}
-                type="button"
+                size="sm"
+                variant="secondary"
               >
                 Next
-              </button>
+              </GlyphButton>
             </nav>
           </>
         ) : null}

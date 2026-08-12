@@ -18,6 +18,9 @@
   --glyph-table-hover: #e5e5e5;
   --glyph-mark-filter: none;
   --glyph-mark-on-ink-filter: invert(1);
+  --glyph-danger-surface: #fff1f2;
+  --glyph-danger-line: #fecdd3;
+  --glyph-danger-ink: #9f1239;
   --glyph-header: 72px;
   --glyph-content: 1440px;
   --glyph-gutter: clamp(1.25rem, 3vw, 3rem);
@@ -44,6 +47,9 @@
   --glyph-table-hover: #181818;
   --glyph-mark-filter: invert(1);
   --glyph-mark-on-ink-filter: none;
+  --glyph-danger-surface: #450a0a;
+  --glyph-danger-line: #7f1d1d;
+  --glyph-danger-ink: #fecaca;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -65,6 +71,9 @@
     --glyph-table-hover: #181818;
     --glyph-mark-filter: invert(1);
     --glyph-mark-on-ink-filter: none;
+    --glyph-danger-surface: #450a0a;
+    --glyph-danger-line: #7f1d1d;
+    --glyph-danger-ink: #fecaca;
   }
 }
 
