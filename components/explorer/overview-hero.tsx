@@ -69,7 +69,7 @@ export function OverviewHero() {
         </p>
 
         <form aria-label="Lookup an explorer identifier" className="mx-auto mt-6 max-w-2xl text-left" onSubmit={handleSubmit}>
-          <div className="flex min-h-14 items-center gap-3 border border-[var(--glyph-line-strong)] bg-[var(--glyph-canvas)] px-3 shadow-[0_3px_0_var(--glyph-shadow)] transition-colors focus-within:border-[var(--glyph-ink)]">
+          <div className="flex min-h-14 items-center gap-3 rounded-[var(--glyph-radius-md)] border border-[var(--glyph-line-strong)] bg-[var(--glyph-canvas)] px-3 transition-colors focus-within:border-[var(--glyph-muted)] focus-within:bg-[var(--glyph-surface)]">
             <HugeiconsIcon aria-hidden="true" className="shrink-0 text-[var(--glyph-muted)]" focusable="false" icon={Search01Icon} size={19} strokeWidth={1.5} />
             <input
               aria-describedby="overview-lookup-status"
