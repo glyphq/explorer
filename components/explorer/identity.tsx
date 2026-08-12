@@ -219,26 +219,22 @@ function IdentityQrDialog({ identity }: { identity: string }) {
 }
 
 function IdentityAssetChips({ assets }: { assets: ReturnType<typeof useIdentityAssets> }) {
-  const records = [
-    ...(assets.owned.data ?? []).map((asset) => ({
-      asset,
-      name: asset.data?.issuedAsset?.name,
-    })),
-    ...(assets.possessed.data ?? []).map((asset) => ({
-      asset,
-      name: asset.data?.ownedAsset?.issuedAsset?.name,
-    })),
-  ];
+  const records = (assets.owned.data ?? []).map((asset) => ({
+    asset,
+    name: asset.data?.issuedAsset?.name,
+    units: asset.data?.numberOfUnits,
+  }));
   const chips = new Map<string, { label: string; index?: number }>();
 
   for (const record of records) {
     const index = record.asset.info?.universeIndex;
     const name = record.name?.trim();
+    if (record.units === undefined) continue;
     const label = name || (index === undefined ? undefined : `#${formatNumber(index)}`);
     if (!label) continue;
 
     const key = index === undefined ? `name:${label}` : `index:${index}`;
-    chips.set(key, { index, label });
+    chips.set(key, { index, label: `${label} · ${formatAtomicAmount(record.units, { unit: "units" })}` });
   }
 
   if (chips.size === 0) return null;
@@ -564,10 +560,6 @@ export function IdentityPage({ identity }: { identity: string | null }) {
           <div className="mt-3 min-w-0 max-w-full">
             <div className="flex min-w-0 items-center justify-center">
               <h1 className="min-w-0 break-all font-mono text-2xl leading-7 text-[var(--glyph-ink)]">{identity}</h1>
-              <span className="flex shrink-0 items-center gap-0">
-                <IdentityCopyButton value={identity} />
-                <IdentityQrDialog identity={identity} />
-              </span>
             </div>
           </div>
         </div>
@@ -581,6 +573,10 @@ export function IdentityPage({ identity }: { identity: string | null }) {
           </p>
           <IdentityAssetChips assets={assets} />
           <QueryRefreshMeta query={balance} />
+          <div className="mt-2 flex items-center justify-center gap-0">
+            <IdentityCopyButton value={identity} />
+            <IdentityQrDialog identity={identity} />
+          </div>
         </section>
       </header>
 
