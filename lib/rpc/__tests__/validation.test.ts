@@ -5,10 +5,12 @@ import {
   formatIdentity,
   formatTick,
   formatTransactionHash,
+  isValidAssetIndex,
   isValidIdentity,
   isValidTick,
   isValidTransactionHash,
   normalizeIdentity,
+  normalizeAssetIndex,
   normalizeTick,
   normalizeTransactionHash,
 } from "../validation";
@@ -33,6 +35,13 @@ describe("Qubic input validation and formatting", () => {
     expect(normalizeTick("4294967295") as number).toBe(4294967295);
     expect(normalizeTick("12.5")).toBeNull();
     expect(normalizeTick(4294967296)).toBeNull();
+  });
+
+  test("validates official asset universe indexes as uint32 values", () => {
+    expect(isValidAssetIndex(0)).toBe(true);
+    expect(normalizeAssetIndex("4294967295")).toBe(4294967295);
+    expect(normalizeAssetIndex("12.5")).toBeNull();
+    expect(normalizeAssetIndex(4294967296)).toBeNull();
   });
 
   test("formats explorer identifiers, ticks, and bigint amounts without precision loss", () => {

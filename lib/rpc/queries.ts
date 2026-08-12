@@ -1,6 +1,7 @@
 "use client";
 
 import type {
+  AssetIssuance,
   GetEventLogsRequest,
   LiveTickInfo,
   QueryComputorList,
@@ -9,12 +10,24 @@ import type {
   QubicBalance,
   ProcessedTickInterval,
 } from "@qubic.org/rpc";
-import { useQuery, type QueryKey, type UseQueryOptions } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useQuery,
+  type QueryKey,
+  type UseInfiniteQueryOptions,
+  type UseQueryOptions,
+} from "@tanstack/react-query";
 
-import { explorerData, type ExplorerTransactionsForIdentityRequest } from "./adapter";
+import {
+  explorerData,
+  type ExplorerAssetIssuanceEventsPage,
+  type ExplorerTransactionsForIdentityRequest,
+} from "./adapter";
+import { getNextAssetIssuanceOffset } from "../assets";
 import { ExplorerRpcError } from "./errors";
 import {
   normalizeIdentity,
+  normalizeAssetIndex,
   normalizeTick,
   normalizeTransactionHash,
 } from "./validation";
@@ -41,6 +54,10 @@ export const explorerQueryKeys = {
       request,
     ] as const,
     eventLogs: (request: GetEventLogsRequest) => ["qubic", "query", "event-logs", request] as const,
+    assetIssuanceEvents: (pageSize: number) => ["qubic", "query", "asset-issuance-events", pageSize] as const,
+  },
+  assets: {
+    issuance: (index: number | null) => ["qubic", "assets", "issuance", index] as const,
   },
 } as const;
 
@@ -83,6 +100,7 @@ type TransactionsForIdentity = Awaited<
   ReturnType<typeof explorerData.getTransactionsForIdentity>
 >;
 type EventLogs = Awaited<ReturnType<typeof explorerData.getEventLogs>>;
+type AssetIssuanceEvents = Awaited<ReturnType<typeof explorerData.getAssetIssuanceEvents>>;
 
 export function liveTickInfoQueryOptions() {
   const queryKey = explorerQueryKeys.live.tickInfo();
@@ -230,6 +248,41 @@ export function useEventLogs(
     queryFn: ({ signal }: { signal: AbortSignal }) => explorerData.getEventLogs(request, { signal }),
     ...explorerQueryPolicies.search,
     ...options,
+  });
+}
+
+export function useAssetIssuanceEvents(pageSize = 30) {
+  const queryKey = explorerQueryKeys.query.assetIssuanceEvents(pageSize);
+
+  return useInfiniteQuery({
+    queryKey,
+    queryFn: ({ pageParam, signal }: { pageParam: number; signal: AbortSignal }) =>
+      explorerData.getAssetIssuanceEvents({ offset: pageParam, size: pageSize }, { signal }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage: AssetIssuanceEvents) => getNextAssetIssuanceOffset(lastPage),
+    ...explorerQueryPolicies.search,
+  } satisfies UseInfiniteQueryOptions<
+    ExplorerAssetIssuanceEventsPage,
+    ExplorerRpcError,
+    ExplorerAssetIssuanceEventsPage,
+    typeof queryKey,
+    number
+  >);
+}
+
+export function useAssetIssuance(
+  index: number | string | null | undefined,
+  options?: QueryOverrides<AssetIssuance, ReturnType<typeof explorerQueryKeys.assets.issuance>>,
+) {
+  const normalized = normalizeAssetIndex(index);
+  const queryKey = explorerQueryKeys.assets.issuance(normalized);
+
+  return useQuery({
+    queryKey,
+    queryFn: ({ signal }: { signal: AbortSignal }) => explorerData.getAssetIssuanceByIndex(normalized as number, { signal }),
+    ...explorerQueryPolicies.archiveSnapshot,
+    ...options,
+    enabled: normalized !== null && options?.enabled !== false,
   });
 }
 

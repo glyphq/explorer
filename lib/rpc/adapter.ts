@@ -24,6 +24,7 @@ import type { ExplorerRpcClients } from "./clients";
 import { explorerRpc } from "./clients";
 import { executeRpcRequest, type RpcRequestOptions } from "./request";
 import {
+  assertValidAssetIndex,
   assertValidEpoch,
   assertValidIdentity,
   assertValidTick,
@@ -36,6 +37,19 @@ export type ExplorerTransactionsForIdentityRequest = Omit<
   "identity"
 > & { identity: string };
 
+export interface ExplorerAssetIssuanceEventsRequest {
+  readonly offset?: number;
+  readonly size?: number;
+}
+
+export interface ExplorerAssetIssuanceEventsPage {
+  readonly eventLogs: QueryEvent[];
+  readonly hits: Hits;
+  readonly requestedOffset?: number;
+  readonly requestedSize?: number;
+  readonly validForTick: number;
+}
+
 export interface ExplorerRpcAdapter {
   getTickInfo(options?: RpcRequestOptions): Promise<LiveTickInfo>;
   getBalance(identity: string, options?: RpcRequestOptions): Promise<QubicBalance>;
@@ -46,6 +60,11 @@ export interface ExplorerRpcAdapter {
     filter?: { issuerIdentity?: string; assetName?: string },
     options?: RpcRequestOptions,
   ): Promise<AssetIssuance[]>;
+  getAssetIssuanceByIndex(index: number, options?: RpcRequestOptions): Promise<AssetIssuance>;
+  getAssetIssuanceEvents(
+    request?: ExplorerAssetIssuanceEventsRequest,
+    options?: RpcRequestOptions,
+  ): Promise<ExplorerAssetIssuanceEventsPage>;
   getAssetOwnerships(
     filter?: {
       issuerIdentity?: string;
@@ -146,6 +165,40 @@ export function createExplorerRpcAdapter(
       executeRpcRequest(
         (signal) => clients.live.getAssetIssuances(filter, { signal }),
         { endpoint: "/live/v1/assets/issuances", ...options },
+      ),
+
+    getAssetIssuanceByIndex: (index, options) => {
+      const validIndex = assertValidAssetIndex(index);
+      return executeRpcRequest(
+        (signal) => clients.live.getAssetIssuanceByIndex(validIndex, { signal }),
+        { endpoint: "/live/v1/assets/issuances/{index}", ...options },
+      );
+    },
+
+    getAssetIssuanceEvents: (request = {}, options) =>
+      executeRpcRequest(
+        async (signal) => {
+          const result = await clients.query.getEventLogs(
+            {
+              filters: { logType: "1" },
+              pagination: request,
+            },
+            { signal },
+          );
+
+          if (!result.ok) return result;
+          return {
+            ok: true,
+            value: {
+              eventLogs: result.value.eventLogs,
+              hits: result.value.hits,
+              requestedOffset: request.offset ?? 0,
+              requestedSize: request.size,
+              validForTick: result.value.validForTick,
+            },
+          };
+        },
+        { endpoint: "/query/v1/getEventLogs", ...options },
       ),
 
     getAssetOwnerships: (filter, options) =>

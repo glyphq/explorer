@@ -83,6 +83,29 @@ export function assertValidEpoch(value: unknown): number {
   return value;
 }
 
+export function isValidAssetIndex(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isInteger(value) &&
+    value >= 0 &&
+    value <= MAX_UINT32
+  );
+}
+
+export function normalizeAssetIndex(value: unknown): number | null {
+  if (typeof value === "number") return isValidAssetIndex(value) ? value : null;
+  if (typeof value !== "string" || !/^\d+$/.test(value.trim())) return null;
+
+  const parsed = Number(value.trim());
+  return isValidAssetIndex(parsed) ? parsed : null;
+}
+
+export function assertValidAssetIndex(value: unknown): number {
+  const index = normalizeAssetIndex(value);
+  if (index === null) throw new ExplorerInputError("asset index", "Invalid Qubic asset index.");
+  return index;
+}
+
 export function formatIdentifier(value: string, head = 8, tail = 8): string {
   if (value.length <= head + tail + 1) return value;
   return `${value.slice(0, head)}…${value.slice(-tail)}`;
