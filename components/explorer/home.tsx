@@ -6,7 +6,6 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
-import { useLastProcessedTick, useLiveTickInfo } from "@/lib/rpc/queries";
 import { useLatestStats, type LatestStats } from "@/lib/stats";
 
 import {
@@ -80,9 +79,17 @@ function TickQualityStrip({ quality }: { quality: number }) {
   );
 }
 
-function Metric({ label, value, detail }: { label: string; value: React.ReactNode; detail?: string }) {
+function Metric({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: React.ReactNode;
+  detail?: string;
+}) {
   return (
-    <div className="min-w-0 px-4 py-4 first:pl-0 sm:px-5 lg:px-4">
+    <div className="min-w-0 px-4 py-4 sm:px-5">
       <dt className="truncate text-xs text-[var(--glyph-tertiary)]">{label}</dt>
       <dd className="mt-1 truncate font-mono text-sm font-medium text-[var(--glyph-ink)]">{value}</dd>
       {detail ? <p className="mt-1 truncate text-[0.68rem] text-[var(--glyph-tertiary)]">{detail}</p> : null}
@@ -91,73 +98,80 @@ function Metric({ label, value, detail }: { label: string; value: React.ReactNod
 }
 
 function StatsContent({
+  query,
   stats,
-  liveTick,
-  indexedTick,
 }: {
+  query: ReturnType<typeof useLatestStats>;
   stats: LatestStats;
-  liveTick: number | undefined;
-  indexedTick: number | undefined;
 }) {
   return (
     <>
-      <div className="p-5 md:p-7">
-        <div className="flex flex-wrap items-end justify-between gap-5">
-          <div>
-            <p className="text-xs text-[var(--glyph-tertiary)]">Current tick</p>
-            <p className="mt-2 font-mono text-5xl font-semibold tracking-[-0.08em] text-[var(--glyph-ink)] md:text-7xl">
-              {formatNumber(stats.currentTick)}
-            </p>
+      <div className="border-b border-[var(--glyph-line)] p-5 md:p-7 lg:border-b-0 lg:border-r">
+        <div className="flex items-start justify-between gap-5">
+          <dl className="grid min-w-0 flex-1 grid-cols-2 gap-x-6">
+            <div className="min-w-0">
+              <dt className="text-xs text-[var(--glyph-tertiary)]">Current tick</dt>
+              <dd className="mt-2 truncate font-mono text-4xl font-semibold tracking-[-0.08em] text-[var(--glyph-ink)] md:text-6xl">
+                {formatNumber(stats.currentTick)}
+              </dd>
+            </div>
+            <div className="min-w-0 text-right">
+              <dt className="text-xs text-[var(--glyph-tertiary)]">Price</dt>
+              <dd className="mt-2 truncate font-mono text-xl font-medium tracking-[-0.04em] text-[var(--glyph-ink)] md:text-2xl">
+                {formatPrice(stats.price)}
+              </dd>
+            </div>
+          </dl>
+          <IconButton
+            aria-busy={query.isFetching}
+            disabled={query.isFetching}
+            icon={RefreshIcon}
+            label="Refresh network stats"
+            onClick={() => void query.refetch()}
+            size="sm"
+          />
+        </div>
+
+        <div className="mt-8" aria-label="Epoch tick quality">
+          <div className="mb-2 flex items-baseline justify-between gap-4">
+            <span className="text-xs text-[var(--glyph-tertiary)]">Tick quality</span>
+            <span className="font-mono text-sm font-medium text-[var(--glyph-ink)]">
+              {formatQuality(stats.epochTickQuality)}
+            </span>
           </div>
-          <div className="text-left sm:text-right">
-            <p className="text-xs text-[var(--glyph-tertiary)]">Epoch</p>
-            <p className="mt-1 font-mono text-lg font-medium text-[var(--glyph-ink)]">{formatNumber(stats.epoch)}</p>
-            <p className="mt-1 text-xs text-[var(--glyph-tertiary)]">epoch progress · {formatNumber(stats.ticksInCurrentEpoch)} ticks</p>
-            <time className="mt-1 block font-mono text-[0.68rem] text-[var(--glyph-tertiary)]" dateTime={new Date(stats.timestamp * 1_000).toISOString()}>
-              {formatStatsTimestamp(stats.timestamp)}
-            </time>
+          <TickQualityStrip quality={stats.epochTickQuality} />
+          <div className="mt-2 flex flex-wrap justify-between gap-x-4 gap-y-1 font-mono text-[0.68rem] text-[var(--glyph-muted)]">
+            <span>{formatNumber(stats.ticksInCurrentEpoch)} epoch ticks</span>
+            <span>{formatNumber(stats.emptyTicksInCurrentEpoch)} empty</span>
           </div>
         </div>
 
-        <div className="mt-7" aria-label="Epoch tick quality">
-          <TickQualityStrip quality={stats.epochTickQuality} />
-          <div className="mt-2 flex flex-wrap justify-between gap-x-4 gap-y-1 font-mono text-xs text-[var(--glyph-muted)]">
-            <span>{formatQuality(stats.epochTickQuality)} quality</span>
-            <span>{formatNumber(stats.ticksInCurrentEpoch)} total · {formatNumber(stats.emptyTicksInCurrentEpoch)} empty</span>
-          </div>
-        </div>
+        <time
+          className="mt-7 block font-mono text-[0.68rem] text-[var(--glyph-tertiary)]"
+          dateTime={new Date(stats.timestamp * 1_000).toISOString()}
+        >
+          Updated {formatStatsTimestamp(stats.timestamp)}
+        </time>
       </div>
 
-
-      <dl className="grid grid-cols-2 divide-x divide-y divide-[var(--glyph-line)] border-t border-[var(--glyph-line)] sm:grid-cols-3 lg:grid-cols-4">
-        <Metric detail="current epoch" label="Epoch" value={formatNumber(stats.epoch)} />
-        <Metric detail="query endpoint" label="Indexed tick" value={formatNumber(indexedTick)} />
-        <Metric detail="live endpoint" label="Live tick" value={formatNumber(liveTick)} />
+      <dl className="grid grid-cols-2 divide-x divide-y divide-[var(--glyph-line)] sm:grid-cols-3">
+        <Metric label="Epoch" value={formatNumber(stats.epoch)} />
         <Metric label="Active addresses" value={formatNumber(stats.activeAddresses)} />
         <Metric detail="QUS" label="Circulating supply" value={formatCompactBigInt(stats.circulatingSupply)} />
-        <Metric detail="QUS" label="Burned" value={formatCompactBigInt(stats.burnedQus)} />
-        <Metric label="Price" value={formatPrice(stats.price)} />
         <Metric detail="USD" label="Market cap" value={`$${formatCompactBigInt(stats.marketCap)}`} />
+        <Metric detail="QUS" label="Burned" value={formatCompactBigInt(stats.burnedQus)} />
       </dl>
     </>
   );
 }
 
-function StatsSurface({
-  query,
-  liveTick,
-  indexedTick,
-}: {
-  query: ReturnType<typeof useLatestStats>;
-  liveTick: number | undefined;
-  indexedTick: number | undefined;
-}) {
+function StatsSurface({ query }: { query: ReturnType<typeof useLatestStats> }) {
   const hasData = query.data !== undefined;
 
   if (query.isPending && !hasData) {
     return (
       <div className="p-4">
-        <StatusMessage status="loading" title="Loading network telemetry…" />
+        <StatusMessage status="loading" title="Loading network stats…" />
       </div>
     );
   }
@@ -166,10 +180,10 @@ function StatsSurface({
     return (
       <div className="p-4">
         <StatusMessage
-          action={<IconButton icon={RefreshIcon} label="Retry telemetry" onClick={() => void query.refetch()} />}
-          description="The official telemetry response was unavailable or invalid."
+          action={<IconButton icon={RefreshIcon} label="Retry network stats" onClick={() => void query.refetch()} />}
+          description="Current network stats could not be loaded."
           status="error"
-          title="Telemetry unavailable"
+          title="Network stats unavailable"
         />
       </div>
     );
@@ -178,7 +192,7 @@ function StatsSurface({
   if (!query.data) {
     return (
       <div className="p-4">
-        <StatusMessage status="empty" title="No telemetry returned" />
+        <StatusMessage status="empty" title="No network stats returned" />
       </div>
     );
   }
@@ -188,43 +202,24 @@ function StatsSurface({
       {query.isError ? (
         <div className="flex items-center gap-3 border-b border-[var(--glyph-line)] bg-[var(--glyph-canvas)] px-4 py-3 text-xs text-[var(--glyph-muted)]" role="alert">
           <HugeiconsIcon aria-hidden="true" className="shrink-0" focusable="false" icon={AlertCircleIcon} size={18} strokeWidth={1.5} />
-          <span className="min-w-0 flex-1">Showing the last successful telemetry response.</span>
-          <IconButton icon={RefreshIcon} label="Retry telemetry" onClick={() => void query.refetch()} size="sm" />
+          <span className="min-w-0 flex-1">Showing the last successful stats response.</span>
+          <IconButton icon={RefreshIcon} label="Retry network stats" onClick={() => void query.refetch()} size="sm" />
         </div>
       ) : null}
-      <StatsContent indexedTick={indexedTick} liveTick={liveTick} stats={query.data} />
+      <div className="grid lg:grid-cols-[minmax(20rem,0.9fr)_minmax(0,1.7fr)]">
+        <StatsContent query={query} stats={query.data} />
+      </div>
     </>
   );
 }
 
 export function ExplorerHome() {
   const stats = useLatestStats();
-  const live = useLiveTickInfo();
-  const indexed = useLastProcessedTick();
-  const refreshing = stats.isFetching || live.isFetching || indexed.isFetching;
-
-  async function refreshOverview() {
-    await Promise.all([stats.refetch(), live.refetch(), indexed.refetch()]);
-  }
 
   return (
     <ExplorerFrame>
-      <div className="flex justify-end">
-        <IconButton
-          aria-busy={refreshing}
-          disabled={refreshing}
-          icon={RefreshIcon}
-          label="Refresh telemetry"
-          onClick={() => void refreshOverview()}
-        />
-      </div>
-
-      <section aria-label="Network telemetry" className="mt-4 border border-[var(--glyph-line)] bg-[var(--glyph-surface)]">
-        <StatsSurface
-          indexedTick={indexed.data?.tickNumber}
-          liveTick={live.data?.tick}
-          query={stats}
-        />
+      <section aria-label="Network stats" className="w-full border border-[var(--glyph-line)] bg-[var(--glyph-surface)]">
+        <StatsSurface query={stats} />
       </section>
     </ExplorerFrame>
   );
