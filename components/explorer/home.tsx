@@ -87,39 +87,61 @@ function RecentActivityStrip({ activity }: { activity: RecentTickActivityQuery }
     .map((item) => item.transactionCount)
     .filter((count): count is number => count !== null);
   const maxCount = Math.max(1, ...availableCounts);
-  const label = `Archive activity for ticks ${activity.ticks[0]} through ${activity.ticks.at(-1)}`;
+  const tickCount = activity.ticks.length;
+  const firstTick = activity.ticks[0];
+  const lastTick = activity.ticks.at(-1);
+  const loadingCount = activity.activities.filter((item) => item.state === "loading").length;
+  const unavailableCount = activity.activities.filter((item) => item.state === "unavailable").length;
+  const availableCount = activity.activities.filter((item) => item.state === "available").length;
+  const label = `Archive activity for ${tickCount} real ticks, ${firstTick} through ${lastTick}`;
+  const status = activity.isPending
+    ? `loading ${tickCount} real ticks`
+    : activity.isFetching
+      ? `refreshing ${tickCount} real ticks`
+      : `${tickCount} real ticks`;
+  const availabilitySummary = activity.isPending
+    ? `${availableCount} available · ${loadingCount} loading · ${unavailableCount} unavailable`
+    : unavailableCount > 0
+      ? `${availableCount} available · ${unavailableCount} unavailable · unavailable ticks are not inferred`
+      : `${availableCount} available · all returned by the archive`;
+  const barStep = activity.activities.length >= 50 ? 5 : 24;
+  const barWidth = activity.activities.length >= 50 ? 3.5 : 10;
+  const chartWidth = activity.activities.length * barStep;
 
   return (
-    <div className="border-t border-[var(--glyph-line)] px-5 py-4 md:px-7" aria-label={label}>
+    <section className="border-t border-[var(--glyph-line)] px-5 py-4 md:px-7" aria-label={label}>
       <div className="flex items-baseline justify-between gap-4">
-        <p className="text-xs text-[var(--glyph-tertiary)]">Recent archive ticks</p>
+        <p className="text-xs text-[var(--glyph-tertiary)]">
+          Recent archive ticks <span className="font-mono">· {tickCount} real</span>
+        </p>
         <p className="font-mono text-[0.68rem] text-[var(--glyph-tertiary)]">
-          {activity.isPending ? "loading" : activity.isFetching ? "refreshing" : `${activity.ticks.length} ticks`}
+          {status}
         </p>
       </div>
       <svg
         aria-hidden="true"
         className="mt-3 block h-8 w-full"
         preserveAspectRatio="none"
-        viewBox={`0 0 ${activity.activities.length * 24} 32`}
+        viewBox={`0 0 ${chartWidth} 32`}
       >
-        <line stroke="var(--glyph-line-strong)" x1="0" x2={activity.activities.length * 24} y1="30" y2="30" />
+        <line stroke="var(--glyph-line-strong)" x1="0" x2={chartWidth} y1="30" y2="30" />
         {activity.activities.map((item, index) => {
           const count = item.transactionCount;
-          const height = item.state === "available" && count !== null
+          const hasReportedCount = item.state === "available" && count !== null;
+          const height = hasReportedCount
             ? count === 0
               ? 2
               : Math.max(5, Math.round((count / maxCount) * 24))
             : 2;
-          const x = index * 24 + 7;
+          const x = index * barStep + (barStep - barWidth) / 2;
           return (
             <rect
-              fill={item.state === "available" ? "var(--glyph-ink)" : "none"}
+              fill={hasReportedCount ? "var(--glyph-ink)" : "none"}
               height={height}
               key={item.tick}
-              stroke={item.state === "available" ? "none" : "var(--glyph-line-strong)"}
-              strokeDasharray={item.state === "available" ? undefined : "3 2"}
-              width="10"
+              stroke={hasReportedCount ? "none" : "var(--glyph-line-strong)"}
+              strokeDasharray={hasReportedCount ? undefined : "3 2"}
+              width={barWidth}
               x={x}
               y={30 - height}
             />
@@ -127,9 +149,10 @@ function RecentActivityStrip({ activity }: { activity: RecentTickActivityQuery }
         })}
       </svg>
       <div className="mt-1 flex justify-between gap-4 font-mono text-[0.68rem] text-[var(--glyph-tertiary)]">
-        <span>{formatNumber(activity.ticks[0])}</span>
-        <span>{formatNumber(activity.ticks.at(-1))}</span>
+        <span>{formatNumber(firstTick)}</span>
+        <span>{formatNumber(lastTick)}</span>
       </div>
+      <p className="mt-2 font-mono text-[0.68rem] text-[var(--glyph-tertiary)]">{availabilitySummary}</p>
       <table className="sr-only">
         <caption>{label}</caption>
         <thead>
@@ -145,7 +168,7 @@ function RecentActivityStrip({ activity }: { activity: RecentTickActivityQuery }
           ))}
         </tbody>
       </table>
-    </div>
+    </section>
   );
 }
 
