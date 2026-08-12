@@ -13,7 +13,7 @@ import {
   QueryRefreshMeta,
   QueryState,
 } from "./primitives";
-import { formatContractInvocation, identifyContractInvocation, isSmartContractCall } from "./contracts";
+import { formatContractInvocation, identifyContractInvocation, isSmartContractCall, transactionTypeLabel } from "./contracts";
 import { formatNumber, formatTimestamp } from "./utils";
 
 function RawTransactionValue({ label, value }: { label: string; value: string | undefined }) {
@@ -90,6 +90,7 @@ export function TransactionPage({ hash }: { hash: string | null }) {
                 { label: "Timestamp", value: formatTimestamp(transaction.timestamp) },
                 { label: "Source", value: <IdentityIdentifier label="Source" value={transaction.source} />, wide: true },
                 { label: "Destination", value: <IdentityIdentifier label="Destination" value={transaction.destination} />, wide: true },
+                { label: "Type", value: transactionTypeLabel(transaction.inputType) },
                 { label: "Input type", value: formatNumber(transaction.inputType) },
                 { label: "Input size", value: formatNumber(transaction.inputSize) },
                 { label: "Money flew", value: transaction.moneyFlew === undefined ? "Not reported" : transaction.moneyFlew ? "Yes" : "No" },

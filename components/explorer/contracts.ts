@@ -230,6 +230,12 @@ export function isSmartContractCall(inputType: unknown): inputType is number {
   return isPositiveInteger(inputType);
 }
 
+export function transactionTypeLabel(inputType: unknown): string {
+  if (inputType === 0) return "Transfer";
+  if (isSmartContractCall(inputType)) return "Smart-contract call";
+  return "Input type not reported";
+}
+
 function isNonNegativeInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isInteger(value) && value >= 0;
 }

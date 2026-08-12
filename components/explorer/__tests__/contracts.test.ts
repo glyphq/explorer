@@ -2,7 +2,7 @@ import { contractIndexToIdentity } from "@qubic.org/crypto";
 import { buildQearnUnlockInput } from "@qubic.org/contracts";
 import { describe, expect, test } from "bun:test";
 
-import { formatContractInvocation, identifyContractInvocation, isSmartContractCall } from "../contracts";
+import { formatContractInvocation, identifyContractInvocation, isSmartContractCall, transactionTypeLabel } from "../contracts";
 
 function base64ForByteLength(length: number): string {
   return btoa(String.fromCharCode(...new Uint8Array(length)));
@@ -17,6 +17,12 @@ test("classifies input type zero as a normal transfer", () => {
   expect(isSmartContractCall(1)).toBe(true);
   expect(isSmartContractCall(-1)).toBe(false);
   expect(isSmartContractCall(undefined)).toBe(false);
+});
+
+test("labels input type zero as a transfer without relabeling smart-contract calls", () => {
+  expect(transactionTypeLabel(0)).toBe("Transfer");
+  expect(transactionTypeLabel(1)).toBe("Smart-contract call");
+  expect(transactionTypeLabel(undefined)).toBe("Input type not reported");
 });
 
 describe("contract invocation metadata", () => {

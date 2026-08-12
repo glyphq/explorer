@@ -1,6 +1,6 @@
 "use client";
 
-import { Cancel01Icon, Clock01Icon, Coins01Icon, Copy01Icon, CopyCheckIcon, FunctionIcon, QrCode01Icon, Tick01Icon, TransactionIcon, UserArrowLeftRightIcon, UserIcon } from "@hugeicons/core-free-icons";
+import { Cancel01Icon, Clock01Icon, Coins01Icon, Copy01Icon, CopyCheckIcon, FunctionIcon, QrCode01Icon, Tick01Icon, TransactionIcon, UserArrowLeftRightIcon, UserIcon, Wallet01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Image from "next/image";
 import QRCode from "qrcode";
@@ -12,7 +12,7 @@ import {
   type SortingState,
   useTable,
 } from "@tanstack/react-table";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type SyntheticEvent } from "react";
 import type { QueryTransaction } from "@qubic.org/rpc";
 import { useQuery } from "@tanstack/react-query";
 
@@ -27,6 +27,7 @@ import {
 import { explorerData, type ExplorerTransactionsForIdentityRequest } from "@/lib/rpc/adapter";
 import { formatAtomicAmount, formatIdentifier, formatTransactionHash } from "@/lib/rpc/validation";
 import { useLatestStats } from "@/lib/stats";
+import { createIdentityTransferDraft, GLYPH_TRANSFER_UNAVAILABLE_REASON } from "@/lib/glyph";
 
 import {
   ExplorerFrame,
@@ -37,11 +38,11 @@ import {
   TableHeaderLabel,
   TableScroll,
 } from "./primitives";
-import { identifyContractInvocation, isSmartContractCall } from "./contracts";
+import { identifyContractInvocation, isSmartContractCall, transactionTypeLabel } from "./contracts";
 import { formatNumber, formatTimestamp } from "./utils";
 
 const assetQueryPolicy = { staleTime: 30_000, gcTime: 5 * 60_000 } as const;
-const identityActionClass = "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center border-0 bg-transparent p-0 text-[var(--glyph-muted)] transition-colors hover:text-[var(--glyph-ink)]";
+const identityActionClass = "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center border-0 bg-transparent p-0 text-[var(--glyph-muted)] transition-colors hover:text-[var(--glyph-ink)] focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[var(--glyph-focus)] disabled:cursor-not-allowed disabled:opacity-50";
 
 function useIdentityAssets(identity: string | null) {
   const issued = useQuery({
@@ -135,7 +136,10 @@ function IdentityCopyButton({ value }: { value: string }) {
 
 function IdentityQrDialog({ identity }: { identity: string }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const closeTimerRef = useRef<number | undefined>(undefined);
   const [open, setOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const [visible, setVisible] = useState(false);
   const [qrCode, setQrCode] = useState<string>();
 
   useEffect(() => {
@@ -157,13 +161,36 @@ function IdentityQrDialog({ identity }: { identity: string }) {
   }, [identity]);
 
   useEffect(() => {
+    return () => {
+      if (closeTimerRef.current !== undefined) window.clearTimeout(closeTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
+    if (open && !dialog.open) {
+      dialog.showModal();
+      const frame = window.requestAnimationFrame(() => setVisible(true));
+      return () => window.cancelAnimationFrame(frame);
+    }
     if (!open && dialog.open) dialog.close();
   }, [open]);
 
-  const close = () => setOpen(false);
+  const close = () => {
+    if (!open || closing) return;
+    setClosing(true);
+    setVisible(false);
+    closeTimerRef.current = window.setTimeout(() => {
+      setOpen(false);
+      setClosing(false);
+      closeTimerRef.current = undefined;
+    }, 150);
+  };
+  const handleCancel = (event: SyntheticEvent<HTMLDialogElement>) => {
+    event.preventDefault();
+    close();
+  };
   const label = "Show identity QR code";
 
   return (
@@ -181,9 +208,9 @@ function IdentityQrDialog({ identity }: { identity: string }) {
       </button>
       <dialog
         aria-labelledby="identity-qr-dialog-title"
-        className="m-auto w-[min(92vw,24rem)] border border-[var(--glyph-line-strong)] bg-[var(--glyph-canvas)] p-0 text-[var(--glyph-ink)] shadow-[0_24px_80px_var(--glyph-shadow)] backdrop:bg-black/45"
+        className={`m-auto w-[min(92vw,24rem)] origin-center rounded-2xl border border-[var(--glyph-line-strong)] bg-[var(--glyph-canvas)] p-0 text-[var(--glyph-ink)] shadow-[0_24px_80px_var(--glyph-shadow)] transition-[opacity,transform] duration-150 ease-out motion-reduce:transform-none motion-reduce:transition-none ${visible && !closing ? "scale-100 opacity-100" : "scale-95 opacity-0"} backdrop:bg-black/45`}
         id="identity-qr-dialog"
-        onCancel={close}
+        onCancel={handleCancel}
         ref={dialogRef}
       >
         <div className="p-5">
@@ -201,19 +228,44 @@ function IdentityQrDialog({ identity }: { identity: string }) {
           </div>
           <div className="mt-5 flex flex-col items-center gap-4">
             {qrCode ? (
-              <Image
-                alt={`QR code for ${identity}`}
-                className="size-60 max-w-full"
-                height={240}
-                src={qrCode}
-                unoptimized
-                width={240}
-              />
+              <div className="rounded-xl bg-white p-3">
+                <Image
+                  alt={`QR code for ${identity}`}
+                  className="size-60 max-w-full rounded-lg"
+                  height={240}
+                  src={qrCode}
+                  unoptimized
+                  width={240}
+                />
+              </div>
             ) : <p className="text-sm text-[var(--glyph-muted)]" role="status">Preparing QR code…</p>}
             <code className="max-w-full break-all text-center font-mono text-xs text-[var(--glyph-muted)]">{identity}</code>
           </div>
         </div>
       </dialog>
+    </>
+  );
+}
+
+function IdentityGlyphSendButton({ identity }: { identity: string }) {
+  const transferDraft = createIdentityTransferDraft(identity);
+  const label = "Send with Glyph Wallet";
+  const statusId = "identity-glyph-send-status";
+
+  return (
+    <>
+      <button
+        aria-describedby={statusId}
+        aria-label={label}
+        className={identityActionClass}
+        data-glyph-recipient={transferDraft.to}
+        disabled
+        title={`${label} unavailable`}
+        type="button"
+      >
+        <HugeiconsIcon aria-hidden="true" focusable="false" icon={Wallet01Icon} size={16} strokeWidth={1.5} />
+      </button>
+      <span className="sr-only" id={statusId}>{GLYPH_TRANSFER_UNAVAILABLE_REASON}</span>
     </>
   );
 }
@@ -234,7 +286,7 @@ function IdentityAssetChips({ assets }: { assets: ReturnType<typeof useIdentityA
     if (!label) continue;
 
     const key = index === undefined ? `name:${label}` : `index:${index}`;
-    chips.set(key, { index, label: `${label} · ${formatAtomicAmount(record.units, { unit: "units" })}` });
+    chips.set(key, { index, label: `${label} · ${formatAtomicAmount(record.units)}` });
   }
 
   if (chips.size === 0) return null;
@@ -287,8 +339,7 @@ function amountSortValue(value: string | undefined): bigint | undefined {
   }
 }
 
-function transactionTypeLabel(transaction: QueryTransaction): string {
-  if (transaction.inputType === 0) return "Normal transaction";
+function identityTransactionTypeLabel(transaction: QueryTransaction): string {
   if (isSmartContractCall(transaction.inputType)) {
     const invocation = identifyContractInvocation(transaction);
     if (invocation.status === "recognized") {
@@ -296,7 +347,7 @@ function transactionTypeLabel(transaction: QueryTransaction): string {
     }
     return "Smart-contract call";
   }
-  return "Input type not reported";
+  return transactionTypeLabel(transaction.inputType);
 }
 
 const identityTableFeatures = tableFeatures({
@@ -343,7 +394,7 @@ const identityColumns = identityColumnHelper.columns([
     header: () => <TableHeaderLabel icon={FunctionIcon}>Type</TableHeaderLabel>,
     cell: ({ row }) => (
       <span className="whitespace-nowrap text-xs text-[var(--glyph-ink)]">
-        {transactionTypeLabel(row.original)}
+        {identityTransactionTypeLabel(row.original)}
         {row.original.inputType !== undefined ? (
           <span className="ml-1 font-mono text-[var(--glyph-tertiary)]">({formatNumber(row.original.inputType)})</span>
         ) : null}
@@ -468,7 +519,7 @@ function TransactionHistory({ request }: { request: ExplorerTransactionsForIdent
             value={filter}
           >
             <option value="all">All transactions</option>
-            <option value="normal">Normal transaction (input type 0)</option>
+            <option value="normal">Transfer (input type 0)</option>
             <option value="smart-contract">Smart-contract call (input type &gt; 0)</option>
           </select>
         </label>
@@ -554,7 +605,7 @@ export function IdentityPage({ identity }: { identity: string | null }) {
 
   return (
     <ExplorerFrame>
-      <header className="mb-4 border-b border-[var(--glyph-line)] pb-5 text-center">
+      <header className="mb-4 pb-5 text-center">
         <div className="flex min-w-0 flex-col items-center">
           <IdentityAvatar identity={identity} label="Wallet identity avatar" radius={12} size={64} />
           <div className="mt-3 min-w-0 max-w-full">
@@ -572,10 +623,10 @@ export function IdentityPage({ identity }: { identity: string | null }) {
             <span className="font-mono text-[var(--glyph-muted)]">≈ {queryUsdBalance(balance, stats)}</span>
           </p>
           <IdentityAssetChips assets={assets} />
-          <QueryRefreshMeta query={balance} />
           <div className="mt-2 flex items-center justify-center gap-0">
             <IdentityCopyButton value={identity} />
             <IdentityQrDialog identity={identity} />
+            <IdentityGlyphSendButton identity={identity} />
           </div>
         </section>
       </header>
