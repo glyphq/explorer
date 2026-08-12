@@ -10,6 +10,7 @@ import { GlyphButton } from "@/components/ui/button";
 import {
   filterContracts,
   getContractIdentityHref,
+  getPublishedProcedureCount,
   type ContractCatalogueEntry,
 } from "./contracts-catalogue";
 import { CopyButton, ExplorerFrame } from "./primitives";
@@ -18,24 +19,30 @@ export type ContractsPageProps = {
   contracts: readonly ContractCatalogueEntry[];
 };
 
-function PublishedInputs({ contract }: { contract: ContractCatalogueEntry }) {
-  if (contract.inputTypes.length === 0) {
-    return <span className="text-[var(--glyph-tertiary)]">0 published input types</span>;
+function PublishedProcedures({ contract }: { contract: ContractCatalogueEntry }) {
+  const procedureCount = getPublishedProcedureCount(contract);
+  const procedureLabel = procedureCount === 1 ? "published procedure" : "published procedures";
+
+  if (procedureCount === 0) {
+    return <span className="whitespace-nowrap text-[var(--glyph-tertiary)]">0 published procedures</span>;
   }
 
   return (
     <details className="group">
-      <summary className="cursor-pointer list-none text-sm text-[var(--glyph-muted)] underline decoration-[var(--glyph-line-strong)] underline-offset-4 outline-none marker:hidden focus-visible:ring-2 focus-visible:ring-[var(--glyph-focus)]">
-        <span className="font-mono text-xs font-semibold text-[var(--glyph-ink)]">{contract.inputTypes.length}</span>{" "}
-        published input types
+      <summary
+        aria-label={`${procedureCount} ${procedureLabel} for ${contract.name}`}
+        className="inline-flex cursor-pointer list-none items-center text-sm text-[var(--glyph-muted)] underline decoration-[var(--glyph-line-strong)] underline-offset-4 outline-none marker:hidden focus-visible:ring-2 focus-visible:ring-[var(--glyph-focus)]"
+      >
+        <span className="font-mono text-xs font-semibold text-[var(--glyph-ink)]">{procedureCount}</span>{" "}
+        {procedureLabel}
         <span aria-hidden="true" className="ml-2 text-[var(--glyph-tertiary)] group-open:hidden">+</span>
         <span aria-hidden="true" className="ml-2 hidden text-[var(--glyph-tertiary)] group-open:inline">−</span>
       </summary>
-      <ul className="mt-3 space-y-1.5 border-l border-[var(--glyph-line-strong)] pl-3">
+      <ul className="mt-2 space-y-1 border-l border-[var(--glyph-line-strong)] pl-3" aria-label={`Published procedures for ${contract.name}`}>
         {contract.inputTypes.map((input) => (
           <li className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs" key={input.exportName}>
             <code className="text-[var(--glyph-ink)]" title={input.exportName}>{input.name}</code>
-            <span className="font-mono text-[var(--glyph-tertiary)]">type {input.inputType}</span>
+            <span className="font-mono text-[var(--glyph-tertiary)]">input {input.inputType}</span>
           </li>
         ))}
       </ul>
@@ -45,7 +52,7 @@ function PublishedInputs({ contract }: { contract: ContractCatalogueEntry }) {
 
 function IdentityCell({ identity }: { identity: string }) {
   return (
-    <div className="flex min-w-[25rem] items-center gap-2">
+    <div className="flex min-w-[18rem] items-center gap-2">
       <Link
         className="min-w-0 flex-1 font-mono text-xs font-semibold underline decoration-[var(--glyph-line-strong)] underline-offset-4 hover:decoration-[var(--glyph-ink)]"
         href={getContractIdentityHref(identity)}
@@ -62,27 +69,27 @@ function IdentityCell({ identity }: { identity: string }) {
 function ContractsTable({ contracts }: { contracts: readonly ContractCatalogueEntry[] }) {
   return (
     <div className="overflow-x-auto border-y border-[var(--glyph-line)]">
-      <table className="min-w-[1120px] w-full border-collapse text-left" aria-label="Generated Qubic smart contracts">
+      <table className="min-w-[800px] w-full border-collapse text-left" aria-label="Generated Qubic smart contracts">
         <caption className="sr-only">
-          Contract names, indices, canonical identities, and published input types from the official generated contracts package.
+          Contract names, indices, canonical identities, and published procedure counts from the official generated contracts package.
         </caption>
         <thead>
           <tr className="border-b border-[var(--glyph-line)] text-[0.68rem] uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">
-            <th className="px-4 py-3 font-medium sm:first:pl-0" scope="col">Contract</th>
-            <th className="px-4 py-3 text-right font-medium" scope="col">Index</th>
-            <th className="px-4 py-3 font-medium" scope="col">Canonical identity</th>
-            <th className="px-4 py-3 font-medium" scope="col">Published inputs / procedures</th>
+            <th className="px-3 py-3 font-medium sm:first:pl-0" scope="col">Contract</th>
+            <th className="px-3 py-3 text-right font-medium" scope="col">Index</th>
+            <th className="px-3 py-3 font-medium" scope="col">Canonical identity</th>
+            <th className="px-3 py-3 font-medium" scope="col">Published procedures</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-[var(--glyph-line)]">
           {contracts.map((contract) => (
             <tr className="align-top text-sm text-[var(--glyph-muted)]" key={contract.index}>
-              <th className="whitespace-nowrap px-4 py-4 font-semibold text-[var(--glyph-ink)] sm:first:pl-0" scope="row">
+              <th className="whitespace-nowrap px-3 py-3 font-semibold text-[var(--glyph-ink)] sm:first:pl-0" scope="row">
                 <span title={`Generated package export: ${contract.exportName}`}>{contract.name}</span>
               </th>
-              <td className="whitespace-nowrap px-4 py-4 text-right font-mono text-xs text-[var(--glyph-ink)]">{contract.index}</td>
-              <td className="px-4 py-4"><IdentityCell identity={contract.identity} /></td>
-              <td className="min-w-[20rem] px-4 py-4"><PublishedInputs contract={contract} /></td>
+              <td className="whitespace-nowrap px-3 py-3 text-right font-mono text-xs text-[var(--glyph-ink)]">{contract.index}</td>
+              <td className="px-3 py-3"><IdentityCell identity={contract.identity} /></td>
+              <td className="min-w-[14rem] px-3 py-3"><PublishedProcedures contract={contract} /></td>
             </tr>
           ))}
         </tbody>
@@ -101,22 +108,20 @@ export function ContractsPage({ contracts }: ContractsPageProps) {
 
   return (
     <ExplorerFrame>
-      <header className="mb-5 border-b border-[var(--glyph-line)] pb-4">
+      <header className="mb-6 border-b border-[var(--glyph-line)] pb-4">
         <h1 className="text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)]">Contracts</h1>
         <p className="mt-1 max-w-2xl text-sm text-[var(--glyph-muted)]">
-          Generated names, canonical identities, and published input types from @qubic.org/contracts.
+          Canonical identities and published procedures from @qubic.org/contracts.
         </p>
       </header>
 
       <section aria-labelledby="contracts-catalogue-heading">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <h2 className="text-sm font-semibold text-[var(--glyph-ink)]" id="contracts-catalogue-heading">Contract catalogue</h2>
-            <p aria-live="polite" className="mt-1 font-mono text-xs text-[var(--glyph-tertiary)]">
-              {filteredContracts.length} of {contracts.length} contracts
-            </p>
-          </div>
-          <div className="flex min-h-11 w-full items-center gap-2 border border-[var(--glyph-line-strong)] bg-[var(--glyph-canvas)] px-3 sm:w-[min(100%,27rem)]">
+        <h2 className="sr-only" id="contracts-catalogue-heading">Contract catalogue</h2>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <p aria-live="polite" className="font-mono text-xs text-[var(--glyph-tertiary)]">
+            {filteredContracts.length} {query.trim() ? "matching " : ""}contract{filteredContracts.length === 1 ? "" : "s"}
+          </p>
+          <div className="flex min-h-9 w-full items-center gap-2 border border-[var(--glyph-line-strong)] bg-[var(--glyph-canvas)] px-2.5 sm:w-64">
             <HugeiconsIcon aria-hidden="true" className="shrink-0 text-[var(--glyph-tertiary)]" focusable="false" icon={Search01Icon} size={17} strokeWidth={1.5} />
             <label className="sr-only" htmlFor="contracts-search">Search contracts by name, index, or identity</label>
             <input
@@ -150,10 +155,6 @@ export function ContractsPage({ contracts }: ContractsPageProps) {
           </p>
         )}
       </section>
-
-      <p className="mt-5 border-t border-[var(--glyph-line)] pt-4 text-xs text-[var(--glyph-tertiary)]">
-        This catalogue is limited to names, indices, and input type exports published by the installed package. It does not add network activity or metadata that the package does not export.
-      </p>
     </ExplorerFrame>
   );
 }

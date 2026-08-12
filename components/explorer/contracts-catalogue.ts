@@ -121,6 +121,12 @@ export function filterContracts(
   return contracts.filter((contract) => contract.searchText.includes(normalizedQuery));
 }
 
+export function getPublishedProcedureCount(
+  contract: Pick<ContractCatalogueEntry, "inputTypes">,
+): number {
+  return contract.inputTypes.length;
+}
+
 export function getContractIdentityHref(identity: string): string {
   return `/identity/${encodeURIComponent(identity)}`;
 }

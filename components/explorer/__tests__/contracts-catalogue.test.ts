@@ -6,6 +6,7 @@ import {
   CONTRACTS_CATALOGUE,
   filterContracts,
   getContractIdentityHref,
+  getPublishedProcedureCount,
 } from "../contracts-catalogue";
 
 const packageExports = officialContracts as unknown as Record<string, unknown>;
@@ -41,6 +42,11 @@ describe("generated contracts catalogue", () => {
       expect.objectContaining({ exportName: "QEARN_GET_STATE_OF_ROUND_INPUT_TYPE", inputType: 3 }),
     ]));
     expect(qearn.inputTypes.every((input) => input.exportName in packageExports)).toBe(true);
+  });
+
+  test("counts published procedures from the generated input type exports", () => {
+    expect(getPublishedProcedureCount(getQearn())).toBe(getQearn().inputTypes.length);
+    expect(getPublishedProcedureCount({ inputTypes: [] })).toBe(0);
   });
 
   test("filters by generated name, index, and identity", () => {
