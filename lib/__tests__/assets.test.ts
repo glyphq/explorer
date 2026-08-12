@@ -4,6 +4,7 @@ import {
   formatReportedUnit,
   getNextAssetIssuanceOffset,
   normalizeAssetIssuanceEvent,
+  normalizeAssetIssuances,
   normalizeAssetIssuancePage,
 } from "../assets";
 import type { ExplorerAssetIssuanceEventsPage } from "../rpc/adapter";
@@ -53,6 +54,39 @@ const officialPage: ExplorerAssetIssuanceEventsPage = {
 };
 
 describe("official asset issuance normalization", () => {
+  test("keeps every asset reported by the live asset catalogue", () => {
+    const rows = normalizeAssetIssuances([
+      {
+        universeIndex: 35,
+        tick: 73857162,
+        data: {
+          issuerIdentity: QPAY_ISSUER,
+          name: "MLM",
+          numberOfDecimalPlaces: 0,
+          unitOfMeasurement: [0, 0, 0, 0, 0, 0, 0],
+        },
+      },
+      {
+        universeIndex: 32,
+        tick: 73857162,
+        data: {
+          issuerIdentity: QPAY_ISSUER,
+          name: "QX",
+          numberOfDecimalPlaces: 0,
+          unitOfMeasurement: [0, 0, 0, 0, 0, 0, 0],
+        },
+      },
+    ]);
+
+    expect(rows).toHaveLength(2);
+    expect(rows.map((row) => row.assetName)).toEqual(["MLM", "QX"]);
+    expect(rows[0]).toMatchObject({
+      key: "asset-35",
+      universeIndex: 35,
+      issuerIdentity: QPAY_ISSUER,
+      tickNumber: 73857162,
+    });
+  });
   test("keeps issuer, supply, unit, and link fields from a real query response", () => {
     const [row] = normalizeAssetIssuancePage(officialPage);
 

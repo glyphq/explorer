@@ -65,6 +65,7 @@ export const explorerQueryKeys = {
     assetIssuanceEvents: (pageSize: number) => ["qubic", "query", "asset-issuance-events", pageSize] as const,
   },
   assets: {
+    issuances: () => ["qubic", "assets", "issuances"] as const,
     issuance: (index: number | null) => ["qubic", "assets", "issuance", index] as const,
   },
 } as const;
@@ -393,6 +394,16 @@ export function useAssetIssuanceEvents(pageSize = 30) {
   >);
 }
 
+export function useAssetIssuances() {
+  const queryKey = explorerQueryKeys.assets.issuances();
+
+  return useQuery({
+    queryKey,
+    queryFn: ({ signal }: { signal: AbortSignal }) =>
+      explorerData.getAssetIssuances(undefined, { signal }),
+    ...explorerQueryPolicies.archiveSnapshot,
+  } satisfies UseQueryOptions<AssetIssuance[], ExplorerRpcError, AssetIssuance[], typeof queryKey>);
+}
 export function useAssetIssuance(
   index: number | string | null | undefined,
   options?: QueryOverrides<AssetIssuance, ReturnType<typeof explorerQueryKeys.assets.issuance>>,

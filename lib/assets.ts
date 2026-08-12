@@ -1,9 +1,10 @@
-import type { QueryEvent } from "@qubic.org/rpc";
+import type { AssetIssuance, QueryEvent } from "@qubic.org/rpc";
 
 import type { ExplorerAssetIssuanceEventsPage } from "./rpc/adapter";
 
 export interface AssetIssuanceRow {
   readonly key: string;
+  readonly universeIndex?: number;
   readonly issuerIdentity?: string;
   readonly assetName?: string;
   readonly numberOfShares?: string;
@@ -56,6 +57,26 @@ export function normalizeAssetIssuanceEvent(
   };
 }
 
+export function normalizeAssetIssuance(issuance: AssetIssuance): AssetIssuanceRow {
+  const data = issuance.data;
+  const universeIndex = reportedNumber(issuance.universeIndex);
+
+  return {
+    key: `asset-${universeIndex ?? "unknown"}`,
+    universeIndex,
+    issuerIdentity: nonEmptyString(data?.issuerIdentity),
+    assetName: nonEmptyString(data?.name),
+    numberOfDecimalPlaces: reportedNumber(data?.numberOfDecimalPlaces),
+    unitOfMeasurement: formatReportedUnit(data?.unitOfMeasurement),
+    tickNumber: reportedNumber(issuance.tick),
+  };
+}
+
+export function normalizeAssetIssuances(issuances: readonly AssetIssuance[]): AssetIssuanceRow[] {
+  return issuances
+    .map(normalizeAssetIssuance)
+    .sort((left, right) => (left.assetName ?? "").localeCompare(right.assetName ?? ""));
+}
 export function normalizeAssetIssuancePage(page: ExplorerAssetIssuanceEventsPage): AssetIssuanceRow[] {
   return page.eventLogs.map((event, index) =>
     normalizeAssetIssuanceEvent(event, index, page.requestedOffset ?? page.hits.from ?? 0),
