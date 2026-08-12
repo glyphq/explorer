@@ -1,6 +1,9 @@
 "use client";
 
-import { Clock01Icon, Coins01Icon, FunctionIcon, Tick01Icon, TransactionIcon, UserArrowLeftRightIcon, UserIcon } from "@hugeicons/core-free-icons";
+import { Cancel01Icon, Clock01Icon, Coins01Icon, Copy01Icon, CopyCheckIcon, FunctionIcon, QrCode01Icon, Tick01Icon, TransactionIcon, UserArrowLeftRightIcon, UserIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import Image from "next/image";
+import QRCode from "qrcode";
 import {
   createColumnHelper,
   createSortedRowModel,
@@ -9,7 +12,7 @@ import {
   type SortingState,
   useTable,
 } from "@tanstack/react-table";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { QueryTransaction } from "@qubic.org/rpc";
 import { useQuery } from "@tanstack/react-query";
 
@@ -26,7 +29,6 @@ import { formatAtomicAmount, formatIdentifier, formatTransactionHash } from "@/l
 import { useLatestStats } from "@/lib/stats";
 
 import {
-  CopyButton,
   ExplorerFrame,
   ExplorerLink,
   InvalidLookup,
@@ -39,6 +41,7 @@ import { identifyContractInvocation, isSmartContractCall } from "./contracts";
 import { formatNumber, formatTimestamp } from "./utils";
 
 const assetQueryPolicy = { staleTime: 30_000, gcTime: 5 * 60_000 } as const;
+const identityActionClass = "inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center border-0 bg-transparent p-0 text-[var(--glyph-muted)] transition-colors hover:text-[var(--glyph-ink)]";
 
 function useIdentityAssets(identity: string | null) {
   const issued = useQuery({
@@ -114,29 +117,134 @@ function queryUsdBalance(
   }).format(numericBalance * price);
 }
 
+function IdentityCopyButton({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+  const label = copied ? "Identity copied" : "Copy identity";
+
+  async function copyValue() {
+    if (!navigator.clipboard) return;
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1_500);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+  return (
+    <button
+      aria-label={label}
+      className={identityActionClass}
+      onClick={() => void copyValue()}
+      title={label}
+      type="button"
+    >
+      <HugeiconsIcon
+        aria-hidden="true"
+        focusable="false"
+        icon={copied ? CopyCheckIcon : Copy01Icon}
+        size={16}
+        strokeWidth={1.5}
+      />
+    </button>
+  );
+}
+
+function IdentityQrDialog({ identity }: { identity: string }) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const [open, setOpen] = useState(false);
+  const [qrCode, setQrCode] = useState<string>();
+
+  useEffect(() => {
+    let active = true;
+    void QRCode.toDataURL(identity, {
+      color: { dark: "#000000", light: "#ffffff" },
+      errorCorrectionLevel: "M",
+      margin: 1,
+      width: 240,
+    }).then((value) => {
+      if (active) setQrCode(value);
+    }).catch(() => {
+      if (active) setQrCode(undefined);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [identity]);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (open && !dialog.open) dialog.showModal();
+    if (!open && dialog.open) dialog.close();
+  }, [open]);
+
+  const close = () => setOpen(false);
+  const label = "Show identity QR code";
+
+  return (
+    <>
+      <button
+        aria-controls="identity-qr-dialog"
+        aria-expanded={open}
+        aria-label={label}
+        className={identityActionClass}
+        onClick={() => setOpen(true)}
+        title={label}
+        type="button"
+      >
+        <HugeiconsIcon aria-hidden="true" focusable="false" icon={QrCode01Icon} size={16} strokeWidth={1.5} />
+      </button>
+      <dialog
+        aria-labelledby="identity-qr-dialog-title"
+        className="m-auto w-[min(92vw,24rem)] border border-[var(--glyph-line-strong)] bg-[var(--glyph-canvas)] p-0 text-[var(--glyph-ink)] shadow-[0_24px_80px_var(--glyph-shadow)] backdrop:bg-black/45"
+        id="identity-qr-dialog"
+        onCancel={close}
+        ref={dialogRef}
+      >
+        <div className="p-5">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-base font-semibold tracking-[-0.03em]" id="identity-qr-dialog-title">Identity QR code</h2>
+            <button
+              aria-label="Close identity QR code"
+              className={identityActionClass}
+              onClick={close}
+              title="Close identity QR code"
+              type="button"
+            >
+              <HugeiconsIcon aria-hidden="true" focusable="false" icon={Cancel01Icon} size={16} strokeWidth={1.5} />
+            </button>
+          </div>
+          <div className="mt-5 flex flex-col items-center gap-4">
+            {qrCode ? (
+              <Image
+                alt={`QR code for ${identity}`}
+                className="size-60 max-w-full"
+                height={240}
+                src={qrCode}
+                unoptimized
+                width={240}
+              />
+            ) : <p className="text-sm text-[var(--glyph-muted)]" role="status">Preparing QR code…</p>}
+            <code className="max-w-full break-all text-center font-mono text-xs text-[var(--glyph-muted)]">{identity}</code>
+          </div>
+        </div>
+      </dialog>
+    </>
+  );
+}
+
 function IdentitySummary({
-  balance,
   assets,
-  stats,
 }: {
-  balance: ReturnType<typeof useQubicBalance>;
   assets: ReturnType<typeof useIdentityAssets>;
-  stats: ReturnType<typeof useLatestStats>;
 }) {
   return (
     <section aria-labelledby="identity-summary" className="border-b border-[var(--glyph-line)] pb-7">
       <h2 className="sr-only" id="identity-summary">Identity summary</h2>
       <dl className="flex flex-wrap gap-3" role="list">
-        <SummaryChip
-          detail="Current account balance"
-          label="Balance"
-          value={querySummaryValue(balance, (data) => formatAtomicAmount(data.balance))}
-        />
-        <SummaryChip
-          detail="Balance × live QUBIC price"
-          label="USD value"
-          value={queryUsdBalance(balance, stats)}
-        />
         <SummaryChip
           detail="Assets issued by this identity"
           label="Issued assets"
@@ -153,12 +261,6 @@ function IdentitySummary({
           value={querySummaryValue(assets.possessed, (data) => formatNumber(data.length))}
         />
       </dl>
-      {balance.data?.validForTick !== undefined ? (
-        <p className="mt-3 text-xs text-[var(--glyph-tertiary)]">
-          Balance snapshot valid through tick <span className="font-mono text-[var(--glyph-muted)]">{formatNumber(balance.data.validForTick)}</span>.
-        </p>
-      ) : null}
-      <QueryRefreshMeta query={balance} />
     </section>
   );
 }
@@ -463,20 +565,31 @@ export function IdentityPage({ identity }: { identity: string | null }) {
   return (
     <ExplorerFrame>
       <header className="mb-7 border-b border-[var(--glyph-line)] pb-6">
-        <div className="flex flex-col items-start gap-4">
-          <IdentityAvatar identity={identity} label="Wallet identity avatar" radius={16} size={72} />
-          <div className="min-w-0">
-            <div className="flex items-start gap-2">
-              <h1 className="min-w-0 break-all font-mono text-sm leading-6 text-[var(--glyph-ink)]">{identity}</h1>
-              <CopyButton label="Copy identity" value={identity} />
+        <div className="flex min-w-0 items-center">
+          <div className="min-w-0 max-w-full">
+            <div className="flex items-center">
+              <h1 className="min-w-0 break-all font-mono text-2xl leading-7 text-[var(--glyph-ink)]">{identity}</h1>
+              <span className="flex shrink-0 items-center gap-0">
+                <IdentityCopyButton value={identity} />
+                <IdentityQrDialog identity={identity} />
+              </span>
             </div>
-            <p className="mt-2 text-sm text-[var(--glyph-muted)]">Identity activity on Qubic.</p>
           </div>
         </div>
+        <section aria-labelledby="identity-balance" className="mt-6">
+          <h2 className="sr-only" id="identity-balance">Identity balance</h2>
+          <p className="mt-1 font-mono text-xl font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]">
+            {querySummaryValue(balance, (data) => formatAtomicAmount(data.balance))} <span className="text-base font-medium tracking-normal text-[var(--glyph-muted)]">QUBIC</span>
+          </p>
+          <p className="mt-1 text-sm text-[var(--glyph-muted)]">
+            <span className="font-mono text-[var(--glyph-muted)]">≈ {queryUsdBalance(balance, stats)}</span>
+          </p>
+          <QueryRefreshMeta query={balance} />
+        </section>
       </header>
 
       <div className="space-y-8">
-        <IdentitySummary assets={assets} balance={balance} stats={stats} />
+        <IdentitySummary assets={assets} />
         <TransactionHistory request={historyRequest} />
       </div>
     </ExplorerFrame>
