@@ -29,6 +29,16 @@ function publicBaseUrl(value: string | undefined, fallback: string): string {
   }
 }
 
+function replayJsonResponse(response: Response, payload: unknown): Response {
+  return new Response(JSON.stringify(payload), {
+    headers: {
+      "content-type": response.headers.get("content-type") ?? "application/json",
+    },
+    status: response.status,
+    statusText: response.statusText,
+  });
+}
+
 export function createExplorerRpcClients(
   options: ExplorerRpcClientOptions = {},
 ): ExplorerRpcClients {
@@ -36,34 +46,35 @@ export function createExplorerRpcClients(
   const queryBaseUrl = publicBaseUrl(options.queryBaseUrl, DEFAULT_QUERY_RPC_URL);
   const upstreamFetch = options.fetch ?? ((input: Request) => fetch(input));
 
-  // The official endpoint currently returns a transaction object directly,
-  // while @qubic.org/rpc@1.0.0 still expects { transaction: object }.
-  // Normalize only this successful official response before the SDK parses it.
+  // The official endpoints currently return a transaction object or array directly,
+  // while @qubic.org/rpc@1.0.0 still expects documented response envelopes.
+  // Normalize only these successful official responses before the SDK parses them.
   const queryFetch = async (input: Request): Promise<Response> => {
     const response = await upstreamFetch(input);
     const pathname = new URL(input.url).pathname;
 
-    if (!response.ok || !pathname.endsWith("/getTransactionByHash")) return response;
-
-    const payload: unknown = await response.json();
     if (
-      !payload ||
-      typeof payload !== "object" ||
-      "transaction" in payload ||
-      typeof (payload as { hash?: unknown }).hash !== "string"
+      !response.ok ||
+      (!pathname.endsWith("/getTransactionByHash") && !pathname.endsWith("/getTransactionsForTick"))
     ) {
-      return new Response(JSON.stringify(payload), {
-        headers: { "content-type": "application/json" },
-        status: response.status,
-        statusText: response.statusText,
-      });
+      return response;
     }
 
-    return new Response(JSON.stringify({ transaction: payload }), {
-      headers: { "content-type": "application/json" },
-      status: response.status,
-      statusText: response.statusText,
-    });
+    const payload: unknown = await response.json();
+    if (pathname.endsWith("/getTransactionsForTick")) {
+      return replayJsonResponse(response, Array.isArray(payload) ? { transactions: payload } : payload);
+    }
+
+    if (
+      payload &&
+      typeof payload === "object" &&
+      !("transaction" in payload) &&
+      typeof (payload as { hash?: unknown }).hash === "string"
+    ) {
+      return replayJsonResponse(response, { transaction: payload });
+    }
+
+    return replayJsonResponse(response, payload);
   };
 
   return {

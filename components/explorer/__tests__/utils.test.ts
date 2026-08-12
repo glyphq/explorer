@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { ExplorerRpcError } from "@/lib/rpc/errors";
 import { normalizeTransactionHash } from "@/lib/rpc/validation";
-import { resolveExplorerLookup, isMissingLookupResult } from "../utils";
+import { formatTimestamp, isMissingLookupResult, resolveExplorerLookup } from "../utils";
 
 const IDENTITY = "A".repeat(60);
 const LOWERCASE_AMBIGUOUS_IDENTIFIER = "a".repeat(60);
@@ -59,5 +59,27 @@ describe("Explorer lookup helpers", () => {
         }),
       ),
     ).toBe(false);
+  });
+});
+
+describe("timestamp formatting", () => {
+  const formatter = new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeStyle: "medium",
+  });
+
+  test("formats numeric seconds and milliseconds reported by the archive", () => {
+    const milliseconds = "1786530754000";
+    const seconds = "1786530754";
+
+    expect(formatTimestamp(milliseconds)).toBe(formatter.format(new Date(Number(milliseconds))));
+    expect(formatTimestamp(seconds)).toBe(formatTimestamp(milliseconds));
+  });
+
+  test("keeps ISO timestamps on the normal date parsing path", () => {
+    const iso = "2026-08-12T10:40:27.780Z";
+
+    expect(formatTimestamp(iso)).toBe(formatter.format(new Date(iso)));
+    expect(formatTimestamp("not-a-timestamp")).toBe("Timestamp not reported");
   });
 });
