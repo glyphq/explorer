@@ -47,11 +47,17 @@ export const explorerQueryKeys = {
     tickData: (tick: number | null) => ["qubic", "query", "tick-data", tick] as const,
     transaction: (hash: string | null) => ["qubic", "query", "transaction", hash] as const,
     transactionsForTick: (tick: number | null) => ["qubic", "query", "transactions-for-tick", tick] as const,
-    transactionsForIdentity: (request: ExplorerTransactionsForIdentityRequest | null) => [
+    transactionsForIdentity: (
+      request: ExplorerTransactionsForIdentityRequest | null,
+      filter: IdentityTransactionFilter = "all",
+      pageSize = IDENTITY_TRANSACTION_PAGE_SIZE,
+    ) => [
       "qubic",
       "query",
       "transactions-for-identity",
       request,
+      filter,
+      pageSize,
     ] as const,
     eventLogs: (request: GetEventLogsRequest) => ["qubic", "query", "event-logs", request] as const,
     assetIssuanceEvents: (pageSize: number) => ["qubic", "query", "asset-issuance-events", pageSize] as const,
@@ -96,11 +102,68 @@ type QueryOverrides<TData, TQueryKey extends QueryKey> = Omit<
 >;
 
 type LastProcessedTick = Awaited<ReturnType<typeof explorerData.getLastProcessedTick>>;
-type TransactionsForIdentity = Awaited<
+export type TransactionsForIdentity = Awaited<
   ReturnType<typeof explorerData.getTransactionsForIdentity>
 >;
 type EventLogs = Awaited<ReturnType<typeof explorerData.getEventLogs>>;
 type AssetIssuanceEvents = Awaited<ReturnType<typeof explorerData.getAssetIssuanceEvents>>;
+
+export const IDENTITY_TRANSACTION_PAGE_SIZE = 12;
+
+export type IdentityTransactionFilter = "all" | "normal" | "smart-contract";
+
+export function getIdentityTransactionFilter(
+  filter: IdentityTransactionFilter,
+): Pick<ExplorerTransactionsForIdentityRequest, "filters" | "ranges"> {
+  if (filter === "normal") {
+    return { filters: { inputType: "0" } };
+  }
+
+  if (filter === "smart-contract") {
+    return { ranges: { inputType: { gt: "0" } } };
+  }
+
+  return {};
+}
+
+export function createIdentityTransactionsPageRequest(
+  request: ExplorerTransactionsForIdentityRequest,
+  filter: IdentityTransactionFilter,
+  offset: number,
+  size: number,
+): ExplorerTransactionsForIdentityRequest {
+  const { pagination, filters, ranges, ...requestWithoutPagination } = request;
+  void pagination;
+  const filterRequest = getIdentityTransactionFilter(filter);
+
+  return {
+    ...requestWithoutPagination,
+    ...(filters || filterRequest.filters
+      ? { filters: { ...filters, ...filterRequest.filters } }
+      : {}),
+    ...(ranges || filterRequest.ranges
+      ? { ranges: { ...ranges, ...filterRequest.ranges } }
+      : {}),
+    pagination: { offset, size },
+  };
+}
+
+export function getNextIdentityTransactionsOffset(
+  page: TransactionsForIdentity,
+  pageParam: number,
+  pageSize: number,
+): number | undefined {
+  const returnedCount = page.transactions.length;
+  if (returnedCount === 0 || returnedCount < pageSize) return undefined;
+
+  const offset = page.hits.from ?? pageParam;
+  const nextOffset = offset + returnedCount;
+  const total = page.hits.total;
+
+  if (typeof total === "number" && nextOffset >= total) return undefined;
+  if (nextOffset >= 10_000) return undefined;
+  return nextOffset;
+}
 
 export function liveTickInfoQueryOptions() {
   const queryKey = explorerQueryKeys.live.tickInfo();
@@ -221,21 +284,42 @@ export function useTransactionsForTick(
 
 export function useTransactionsForIdentity(
   request: ExplorerTransactionsForIdentityRequest | null | undefined,
-  options?: QueryOverrides<TransactionsForIdentity, ReturnType<typeof explorerQueryKeys.query.transactionsForIdentity>>,
+  filter: IdentityTransactionFilter = "all",
+  pageSize = IDENTITY_TRANSACTION_PAGE_SIZE,
 ) {
   const normalizedIdentity = normalizeIdentity(request?.identity);
   const normalizedRequest = normalizedIdentity && request
     ? { ...request, identity: normalizedIdentity }
     : null;
-  const queryKey = explorerQueryKeys.query.transactionsForIdentity(normalizedRequest);
+  const queryKey = explorerQueryKeys.query.transactionsForIdentity(normalizedRequest, filter, pageSize);
 
-  return useQuery({
+  return useInfiniteQuery({
     queryKey,
-    queryFn: ({ signal }: { signal: AbortSignal }) => explorerData.getTransactionsForIdentity(normalizedRequest as ExplorerTransactionsForIdentityRequest, { signal }),
+    queryFn: ({ pageParam, signal }: { pageParam: number; signal: AbortSignal }) => {
+      if (!normalizedRequest) {
+        throw new ExplorerRpcError("Invalid Qubic identity.", {
+          kind: "validation",
+          endpoint: "/query/v1/getTransactionsForIdentity",
+        });
+      }
+
+      return explorerData.getTransactionsForIdentity(
+        createIdentityTransactionsPageRequest(normalizedRequest, filter, pageParam, pageSize),
+        { signal },
+      );
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, _allPages, lastPageParam) =>
+      getNextIdentityTransactionsOffset(lastPage, lastPageParam, pageSize),
     ...explorerQueryPolicies.search,
-    ...options,
-    enabled: Boolean(normalizedRequest) && options?.enabled !== false,
-  });
+    enabled: Boolean(normalizedRequest),
+  } satisfies UseInfiniteQueryOptions<
+    TransactionsForIdentity,
+    ExplorerRpcError,
+    TransactionsForIdentity,
+    typeof queryKey,
+    number
+  >);
 }
 
 export function useEventLogs(
