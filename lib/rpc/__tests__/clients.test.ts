@@ -121,3 +121,25 @@ test("rejects an invalid asset index before making an RPC request", async () => 
   ).rejects.toMatchObject({ field: "asset index" });
   expect(requests).toHaveLength(0);
 });
+
+test("propagates caller cancellation through paginated asset issuance queries", async () => {
+  const controller = new AbortController();
+  const clients = createExplorerRpcClients({
+    fetch: async (request) =>
+      new Promise<Response>((_, reject) => {
+        request.signal.addEventListener(
+          "abort",
+          () => reject(new DOMException("Aborted", "AbortError")),
+          { once: true },
+        );
+      }),
+  });
+
+  const promise = createExplorerRpcAdapter(clients).getAssetIssuanceEvents({}, { signal: controller.signal });
+  controller.abort();
+
+  await expect(promise).rejects.toMatchObject({
+    kind: "aborted",
+    endpoint: "/query/v1/getEventLogs",
+  });
+});
