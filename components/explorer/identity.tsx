@@ -9,6 +9,7 @@ import {
 } from "@/lib/rpc/queries";
 import { explorerData, type ExplorerTransactionsForIdentityRequest } from "@/lib/rpc/adapter";
 import { formatAtomicAmount, formatIdentity } from "@/lib/rpc/validation";
+import { IdentityAvatar } from "@/components/identity";
 
 import {
   ExplorerFrame,
@@ -211,7 +212,10 @@ export function IdentityPage({ identity }: { identity: string | null }) {
   return (
     <ExplorerFrame>
       <div className="mb-4 flex items-start gap-2 border-b border-[var(--glyph-line)] pb-4">
-        <code className="min-w-0 flex-1 break-all font-mono text-xs leading-5 text-[var(--glyph-ink)]">{identity}</code>
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <IdentityAvatar identity={identity} />
+          <code className="min-w-0 break-all pt-2 font-mono text-xs leading-5 text-[var(--glyph-ink)]">{identity}</code>
+        </div>
         <CopyButton label="Copy identity" value={identity} />
       </div>
 

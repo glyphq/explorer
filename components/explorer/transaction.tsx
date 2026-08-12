@@ -2,12 +2,12 @@
 
 import { useTransactionByHash } from "@/lib/rpc/queries";
 import { formatAtomicAmount } from "@/lib/rpc/validation";
+import { IdentityIdentifier } from "@/components/identity";
 
 import {
   ExplorerFrame,
   CopyButton,
   ExplorerLink,
-  IdentifierValue,
   InvalidLookup,
   KeyValueList,
   Panel,
@@ -54,8 +54,8 @@ export function TransactionPage({ hash }: { hash: string | null }) {
                   { label: "Amount", value: transaction.amount !== undefined && transaction.amount !== null ? `${formatAtomicAmount(transaction.amount)} raw units` : "Amount not reported" },
                   { label: "Tick", value: transaction.tickNumber !== undefined ? <ExplorerLink href={`/tick/${transaction.tickNumber}`}>{formatNumber(transaction.tickNumber)}</ExplorerLink> : "Not reported" },
                   { label: "Timestamp", value: formatTimestamp(transaction.timestamp) },
-                  { label: "Source", value: <IdentifierValue value={transaction.source} />, wide: true },
-                  { label: "Destination", value: <IdentifierValue value={transaction.destination} />, wide: true },
+                  { label: "Source", value: <IdentityIdentifier label="Source" value={transaction.source} />, wide: true },
+                  { label: "Destination", value: <IdentityIdentifier label="Destination" value={transaction.destination} />, wide: true },
                   { label: "Input type", value: formatNumber(transaction.inputType) },
                   { label: "Input size", value: formatNumber(transaction.inputSize) },
                   { label: "Money flew", value: transaction.moneyFlew === undefined ? "Not reported" : transaction.moneyFlew ? "Yes" : "No" },
