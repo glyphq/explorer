@@ -8,13 +8,11 @@ import type { ReactNode } from "react";
 import { CommandSearch } from "@/components/shell/command-search";
 import { GlyphBrand } from "@/components/shell/glyph-mark";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
-import { WalletButton } from "@/components/shell/wallet-button";
 
 export type GlyphNavigationProps = {
   brand?: ReactNode;
   links?: ReactNode;
   commandSearch?: ReactNode;
-  wallet?: ReactNode;
 };
 
 type NavigationRoute = {
@@ -77,7 +75,6 @@ export function GlyphNavigation({
   ),
   commandSearch = <CommandSearch />,
   links = <DefaultNavigationLinks />,
-  wallet = <WalletButton />,
 }: GlyphNavigationProps) {
   return (
     <header className="glyph-nav">
@@ -91,7 +88,6 @@ export function GlyphNavigation({
         <div className="glyph-nav__actions">
           {commandSearch}
           <ThemeToggle />
-          {wallet}
         </div>
       </div>
     </header>
