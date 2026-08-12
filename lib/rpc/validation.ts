@@ -22,7 +22,7 @@ export function isValidIdentity(value: unknown): value is Identity {
 
 export function normalizeIdentity(value: unknown): Identity | null {
   if (typeof value !== "string") return null;
-  const normalized = value.trim();
+  const normalized = value.trim().toUpperCase();
   return isValidIdentity(normalized) ? normalized : null;
 }
 

@@ -52,7 +52,7 @@ export type RecentLookup = DirectQueryMatch;
 
 const MAX_RECENT_LOOKUPS = 3;
 const LOWERCASE_HEX_HASH_PATTERN = /^[0-9a-f]{60}$/;
-const UPPERCASE_IDENTITY_PATTERN = /^[A-Z]{60}$/;
+const IDENTITY_PATTERN = /^[A-Za-z]{60}$/;
 
 const NAVIGATION_COMMANDS: NavigationCommand[] = [
   {
@@ -72,7 +72,7 @@ export function classifyCommandQuery(input: string): QueryMatch {
   const value = input.trim();
   if (!value) return { kind: "empty", value: "" };
 
-  const identity = UPPERCASE_IDENTITY_PATTERN.test(value) ? normalizeIdentity(value) : null;
+  const identity = IDENTITY_PATTERN.test(value) ? normalizeIdentity(value) : null;
   if (identity) {
     return {
       kind: "identity",

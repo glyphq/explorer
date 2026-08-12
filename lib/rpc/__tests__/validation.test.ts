@@ -8,6 +8,7 @@ import {
   isValidIdentity,
   isValidTick,
   isValidTransactionHash,
+  normalizeIdentity,
   normalizeTick,
   normalizeTransactionHash,
 } from "../validation";
@@ -19,6 +20,7 @@ describe("Qubic input validation and formatting", () => {
   test("validates the structural identity and transaction hash shapes", () => {
     expect(isValidIdentity(IDENTITY)).toBe(true);
     expect(isValidIdentity(IDENTITY.toLowerCase())).toBe(false);
+    expect(normalizeIdentity(IDENTITY.toLowerCase())?.toString()).toBe(IDENTITY);
     expect(isValidTransactionHash(TRANSACTION_HASH)).toBe(true);
     expect(isValidTransactionHash(TRANSACTION_HASH.toUpperCase())).toBe(false);
     expect(normalizeTransactionHash(TRANSACTION_HASH.toUpperCase())?.toString()).toBe(
