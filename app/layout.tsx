@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { GlyphShell } from "@/components/shell";
 import "./globals.css";
 
+import ExplorerProviders from "./providers";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -25,7 +27,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body>
-        <GlyphShell>{children}</GlyphShell>
+        <ExplorerProviders>
+          <GlyphShell>{children}</GlyphShell>
+        </ExplorerProviders>
       </body>
     </html>
   );
