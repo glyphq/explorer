@@ -18,7 +18,6 @@ import { useQuery } from "@tanstack/react-query";
 
 import { IdentityAvatar } from "@/components/identity";
 import { GlyphMark } from "@/components/shell/glyph-mark";
-import { GlyphButton } from "@/components/ui/button";
 import {
   getNextIdentityTransactionsOffset,
   IDENTITY_TRANSACTION_PAGE_SIZE,
@@ -258,11 +257,10 @@ function IdentityGlyphSendButton({ identity }: { identity: string }) {
   const transferDraft = createIdentityTransferDraft(identity);
   const [client] = useState<GlyphTransferPreparationClient>(() => createGlyphTransferPreparationClient());
   const state = useSyncExternalStore(client.subscribe, client.getState, client.getState);
-  const label = "Send with Glyph";
+  const label = "Send with Glyph Wallet";
   const statusId = "identity-glyph-send-status";
   const isPreparing = state.status === "preparing";
   const isRetry = state.status === "failed" || state.status === "ready";
-  const buttonLabel = isPreparing ? "Preparing Glyph…" : isRetry ? "Retry Glyph" : label;
   const statusMessage = state.status === "preparing"
     ? "Preparing a one-use Glyph Relay session. Glyph will not open automatically."
     : state.status === "failed"
@@ -279,22 +277,20 @@ function IdentityGlyphSendButton({ identity }: { identity: string }) {
 
   return (
     <>
-      <GlyphButton
+      <button
         aria-describedby={statusId}
-        aria-label={buttonLabel}
+        aria-label={label}
         aria-busy={isPreparing}
-        className="gap-2"
+        className={`${identityActionClass} gap-2 px-2 text-sm font-medium`}
         data-glyph-recipient={transferDraft.to}
         disabled={isPreparing}
         onClick={handleClick}
-        size="md"
-        title={buttonLabel}
+        title={isPreparing ? "Preparing Glyph Wallet" : isRetry ? `Retry ${label}` : label}
         type="button"
-        variant="primary"
       >
         <GlyphMark className="inline-flex size-4 shrink-0" />
-        <span>{buttonLabel}</span>
-      </GlyphButton>
+        <span>Send</span>
+      </button>
       <span aria-live="polite" className="sr-only" id={statusId}>{statusMessage}</span>
     </>
   );
@@ -646,19 +642,17 @@ export function IdentityPage({ identity }: { identity: string | null }) {
         </div>
         <section aria-labelledby="identity-balance" className="mt-4">
           <h2 className="sr-only" id="identity-balance">Identity balance</h2>
-          <p className="mt-1 font-mono text-xl font-semibold tracking-[0.01em] text-[var(--glyph-ink)]">
+          <p className="mt-1 font-mono text-2xl font-medium tracking-[0.01em] text-[var(--glyph-ink)]">
             {querySummaryValue(balance, (data) => formatAtomicAmount(data.balance))} <span className="text-base font-medium tracking-[0.02em] text-[var(--glyph-muted)]">QUBIC</span>
           </p>
           <p className="mt-1 text-sm text-[var(--glyph-muted)]">
             <span className="font-mono text-[var(--glyph-muted)]">≈ {queryUsdBalance(balance, stats)}</span>
           </p>
           <IdentityAssetChips assets={assets} />
-          <div className="mt-2 flex flex-col items-center gap-1.5">
+          <div className="mt-2 flex items-center justify-center gap-0">
             <IdentityGlyphSendButton identity={identity} />
-            <div className="flex items-center justify-center gap-0">
-              <IdentityCopyButton value={identity} />
-              <IdentityQrDialog identity={identity} />
-            </div>
+            <IdentityQrDialog identity={identity} />
+            <IdentityCopyButton value={identity} />
           </div>
         </section>
       </header>

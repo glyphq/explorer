@@ -2,15 +2,20 @@ import Image from "next/image";
 
 type GlyphMarkProps = {
   className?: string;
+  contrast?: "default" | "on-ink";
 };
 
-export function GlyphMark({ className }: GlyphMarkProps) {
+export function GlyphMark({ className, contrast = "default" }: GlyphMarkProps) {
   const classes = ["glyph-mark", className].filter(Boolean).join(" ");
+  const imageClasses = [
+    "glyph-mark__image",
+    contrast === "on-ink" ? "glyph-mark__image--on-ink" : null,
+  ].filter(Boolean).join(" ");
 
   return (
     <span className={classes} aria-hidden="true">
       <Image
-        className="glyph-mark__image"
+        className={imageClasses}
         src="/brand/glyph-mark.png"
         alt=""
         width={256}
