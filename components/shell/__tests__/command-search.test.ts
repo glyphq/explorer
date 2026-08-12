@@ -51,18 +51,22 @@ test("command lookup rejects near misses instead of guessing a route", () => {
   expect(classifyCommandQuery(" ").kind).toBe("empty");
 });
 
-test("quick routes stay backed by the overview, tokens, and contracts destinations", () => {
+test("quick routes stay backed by the overview, tokens, contracts, and rich-list destinations", () => {
   expect(getNavigationCommands(""))
     .toEqual([
       expect.objectContaining({ id: "overview", href: "/" }),
       expect.objectContaining({ id: "tokens", href: "/tokens" }),
       expect.objectContaining({ id: "contracts", href: "/contracts" }),
+      expect.objectContaining({ id: "rich-list", href: "/rich-list" }),
     ]);
   expect(getNavigationCommands("assets")).toEqual([
     expect.objectContaining({ id: "tokens", href: "/tokens" }),
   ]);
   expect(getNavigationCommands("contracts")).toEqual([
     expect.objectContaining({ id: "contracts", href: "/contracts" }),
+  ]);
+  expect(getNavigationCommands("balances")).toEqual([
+    expect.objectContaining({ id: "rich-list", href: "/rich-list" }),
   ]);
 });
 
