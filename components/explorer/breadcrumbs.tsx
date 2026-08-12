@@ -100,6 +100,10 @@ export function ExplorerBreadcrumbs() {
   const pathname = usePathname();
   const items = getBreadcrumbItems(pathname);
 
+  // Root and unmatched routes are already self-explanatory. Keep the shared
+  // breadcrumb for navigable detail pages without adding chrome to entry states.
+  if (items.length <= 1) return null;
+
   return (
     <nav aria-label="Breadcrumb" className="glyph-breadcrumbs">
       <ol>
