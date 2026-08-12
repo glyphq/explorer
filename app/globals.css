@@ -440,6 +440,10 @@ textarea:focus-visible {
   gap: 0.5rem;
 }
 
+.glyph-wallet-button__compact-label {
+  display: none;
+}
+
 .glyph-command-search svg {
   width: 1rem;
   height: 1rem;
@@ -505,8 +509,37 @@ textarea:focus-visible {
     white-space: nowrap;
   }
 
+  .glyph-wallet-button__full-label {
+    display: none;
+  }
+
+  .glyph-wallet-button__compact-label {
+    display: inline;
+  }
+
   .glyph-button--primary {
     padding-inline: 0.7rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .glyph-nav__inner {
+    gap: 0.5rem;
+    padding-inline: 0.75rem;
+  }
+
+  .glyph-nav__actions {
+    gap: 0.25rem;
+  }
+
+  .glyph-wallet-button {
+    width: 40px;
+    gap: 0;
+    padding-inline: 0;
+  }
+
+  .glyph-wallet-button__compact-label {
+    display: none;
   }
 }
 

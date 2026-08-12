@@ -17,6 +17,26 @@ import {
 import { formatContractInvocation, identifyContractInvocation } from "./contracts";
 import { formatNumber, formatTimestamp } from "./utils";
 
+function RawTransactionValue({ label, value }: { label: string; value: string | undefined }) {
+  if (!value) {
+    return <span className="text-[var(--glyph-tertiary)]">Not reported</span>;
+  }
+
+  return (
+    <div className="flex min-w-0 items-start gap-2">
+      <details className="min-w-0 flex-1">
+        <summary className="cursor-pointer text-sm font-semibold text-[var(--glyph-ink)] underline decoration-[var(--glyph-line-strong)] underline-offset-4">
+          View full {label.toLowerCase()} <span className="font-mono text-xs font-normal text-[var(--glyph-tertiary)]">({formatNumber(value.length)} chars)</span>
+        </summary>
+        <code className="mt-2 block max-h-40 max-w-full overflow-auto whitespace-pre-wrap break-all border border-[var(--glyph-line)] bg-[var(--glyph-canvas)] p-2 font-mono text-xs leading-5 text-[var(--glyph-ink)]">
+          {value}
+        </code>
+      </details>
+      <CopyButton label={`Copy ${label.toLowerCase()}`} value={value} />
+    </div>
+  );
+}
+
 export function TransactionPage({ hash }: { hash: string | null }) {
   const query = useTransactionByHash(hash);
 
@@ -71,8 +91,8 @@ export function TransactionPage({ hash }: { hash: string | null }) {
                 <p className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Payload fields</p>
                 <KeyValueList
                   items={[
-                    { label: "Input data", value: transaction.inputData ? <code className="break-all font-mono text-xs">{transaction.inputData}</code> : "Not reported", wide: true },
-                    { label: "Signature", value: transaction.signature ? <code className="break-all font-mono text-xs">{transaction.signature}</code> : "Not reported", wide: true },
+                    { label: "Input data", value: <RawTransactionValue label="Input data" value={transaction.inputData} />, wide: true },
+                    { label: "Signature", value: <RawTransactionValue label="Signature" value={transaction.signature} />, wide: true },
                   ]}
                 />
               </div>
