@@ -4,6 +4,7 @@ export {
   GLYPH_SIGN_IN_DISABLED_REASON,
 } from "./session";
 export {
+  createGlyphTransferPreparationClient,
   createIdentityTransferDraft,
   GLYPH_TRANSFER_UNAVAILABLE_REASON,
 } from "./transfer";
@@ -16,4 +17,9 @@ export type {
   GlyphSchnorrQCapability,
   GlyphSchnorrQVerifier,
 } from "./session";
-export type { GlyphTransferRecipientDraft } from "./transfer";
+export type {
+  GlyphTransferPreparationClient,
+  GlyphTransferPreparationOptions,
+  GlyphTransferPreparationState,
+  GlyphTransferRecipientDraft,
+} from "./transfer";

@@ -12,7 +12,7 @@ import {
   type SortingState,
   useTable,
 } from "@tanstack/react-table";
-import { useEffect, useRef, useState, type SyntheticEvent } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type SyntheticEvent } from "react";
 import type { QueryTransaction } from "@qubic.org/rpc";
 import { useQuery } from "@tanstack/react-query";
 
@@ -27,7 +27,12 @@ import {
 import { explorerData, type ExplorerTransactionsForIdentityRequest } from "@/lib/rpc/adapter";
 import { formatAtomicAmount, formatIdentifier, formatTransactionHash } from "@/lib/rpc/validation";
 import { useLatestStats } from "@/lib/stats";
-import { createIdentityTransferDraft, GLYPH_TRANSFER_UNAVAILABLE_REASON } from "@/lib/glyph";
+import {
+  createGlyphTransferPreparationClient,
+  createIdentityTransferDraft,
+  GLYPH_TRANSFER_UNAVAILABLE_REASON,
+  type GlyphTransferPreparationClient,
+} from "@/lib/glyph";
 
 import {
   ExplorerFrame,
@@ -249,23 +254,44 @@ function IdentityQrDialog({ identity }: { identity: string }) {
 
 function IdentityGlyphSendButton({ identity }: { identity: string }) {
   const transferDraft = createIdentityTransferDraft(identity);
-  const label = "Send with Glyph Wallet";
+  const [client] = useState<GlyphTransferPreparationClient>(() => createGlyphTransferPreparationClient());
+  const state = useSyncExternalStore(client.subscribe, client.getState, client.getState);
+  const label = "Send with Glyph";
   const statusId = "identity-glyph-send-status";
+  const isPreparing = state.status === "preparing";
+  const isRetry = state.status === "failed" || state.status === "ready";
+  const buttonLabel = isPreparing ? "Preparing Glyph…" : isRetry ? "Retry Glyph" : label;
+  const statusMessage = state.status === "preparing"
+    ? "Preparing a one-use Glyph Relay session. Glyph will not open automatically."
+    : state.status === "failed"
+      ? `Glyph preparation failed: ${state.error}. Try again.`
+      : state.status === "ready"
+        ? GLYPH_TRANSFER_UNAVAILABLE_REASON
+        : "Click to prepare a recipient-only Glyph transfer draft. No amount is preset and Glyph will not open automatically.";
+
+  const handleClick = () => {
+    if (isPreparing) return;
+    if (isRetry) client.reset();
+    void client.prepare().catch(() => undefined);
+  };
 
   return (
     <>
       <button
         aria-describedby={statusId}
-        aria-label={label}
-        className={identityActionClass}
+        aria-label={buttonLabel}
+        aria-busy={isPreparing}
+        className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 border-0 bg-transparent px-2 text-sm font-medium text-[var(--glyph-muted)] transition-colors hover:text-[var(--glyph-ink)] focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-[var(--glyph-focus)] disabled:cursor-not-allowed disabled:opacity-50"
         data-glyph-recipient={transferDraft.to}
-        disabled
-        title={`${label} unavailable`}
+        disabled={isPreparing}
+        onClick={handleClick}
+        title={buttonLabel}
         type="button"
       >
         <HugeiconsIcon aria-hidden="true" focusable="false" icon={Wallet01Icon} size={16} strokeWidth={1.5} />
+        <span>{buttonLabel}</span>
       </button>
-      <span className="sr-only" id={statusId}>{GLYPH_TRANSFER_UNAVAILABLE_REASON}</span>
+      <span aria-live="polite" className="sr-only" id={statusId}>{statusMessage}</span>
     </>
   );
 }
@@ -623,10 +649,10 @@ export function IdentityPage({ identity }: { identity: string | null }) {
             <span className="font-mono text-[var(--glyph-muted)]">≈ {queryUsdBalance(balance, stats)}</span>
           </p>
           <IdentityAssetChips assets={assets} />
-          <div className="mt-2 flex items-center justify-center gap-0">
+          <div className="mt-2 flex flex-wrap items-center justify-center gap-0">
+            <IdentityGlyphSendButton identity={identity} />
             <IdentityCopyButton value={identity} />
             <IdentityQrDialog identity={identity} />
-            <IdentityGlyphSendButton identity={identity} />
           </div>
         </section>
       </header>
