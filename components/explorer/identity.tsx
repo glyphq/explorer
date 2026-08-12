@@ -12,7 +12,7 @@ import {
   type SortingState,
   useTable,
 } from "@tanstack/react-table";
-import { useEffect, useRef, useState, useSyncExternalStore, type SyntheticEvent } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode, type SyntheticEvent } from "react";
 import type { QueryTransaction } from "@qubic.org/rpc";
 import { useQuery } from "@tanstack/react-query";
 
@@ -45,6 +45,7 @@ import {
   TableScroll,
 } from "./primitives";
 import { identifyContractInvocation, isSmartContractCall, transactionTypeLabel } from "./contracts";
+import { SkeletonLine } from "./skeletons";
 import { formatNumber, formatTimestamp } from "./utils";
 
 const assetQueryPolicy = { staleTime: 30_000, gcTime: 5 * 60_000 } as const;
@@ -76,8 +77,8 @@ function useIdentityAssets(identity: string | null) {
 function querySummaryValue<T>(
   query: { data: T | undefined; isPending: boolean; isError: boolean },
   format: (data: T) => string,
-): string {
-  if (query.isPending && query.data === undefined) return "Loading…";
+): ReactNode {
+  if (query.isPending && query.data === undefined) return <SkeletonLine className="inline-block w-20 align-middle" />;
   if (query.isError && query.data === undefined) return "Unavailable";
   if (query.data === undefined) return "Not reported";
   return format(query.data);
@@ -86,11 +87,11 @@ function querySummaryValue<T>(
 function queryUsdBalance(
   balance: ReturnType<typeof useQubicBalance>,
   stats: ReturnType<typeof useLatestStats>,
-): string {
-  if (balance.isPending && balance.data === undefined) return "Loading…";
+): ReactNode {
+  if (balance.isPending && balance.data === undefined) return <SkeletonLine className="inline-block w-16 align-middle" />;
   if (balance.isError && balance.data === undefined) return "Unavailable";
   if (balance.data === undefined) return "Not reported";
-  if (stats.isPending && stats.data === undefined) return "Price unavailable";
+  if (stats.isPending && stats.data === undefined) return <SkeletonLine className="inline-block w-16 align-middle" />;
   if (stats.isError && stats.data === undefined) return "Price unavailable";
 
   const price = stats.data?.price;
@@ -660,7 +661,7 @@ export function IdentityPage({ identity }: { identity: string | null }) {
             </div>
           </div>
         </div>
-        <section aria-labelledby="identity-balance" className="mt-4">
+        <section aria-busy={balance.isPending || stats.isPending || assets.owned.isPending} aria-labelledby="identity-balance" className="mt-4">
           <h2 className="sr-only" id="identity-balance">Identity balance</h2>
           <p className="mt-1 font-mono text-2xl font-medium tracking-[0.01em] text-[var(--glyph-ink)]">
             {querySummaryValue(balance, (data) => formatAtomicAmount(data.balance))} <span className="text-base font-medium tracking-[0.02em] text-[var(--glyph-muted)]">QUBIC</span>
