@@ -8,7 +8,7 @@ import {
   type SortingState,
   useTable,
 } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { QueryTransaction } from "@qubic.org/rpc";
 import { useQuery } from "@tanstack/react-query";
 
@@ -307,12 +307,41 @@ function isEmptyTransactionQueryData(data: unknown): boolean {
 function TransactionHistory({ request }: { request: ExplorerTransactionsForIdentityRequest }) {
   const [filter, setFilter] = useState<IdentityTransactionFilter>("all");
   const query = useTransactionsForIdentity(request, filter, IDENTITY_TRANSACTION_PAGE_SIZE);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const hasScrolledRef = useRef(false);
+  const { fetchNextPage, hasNextPage, isFetchingNextPage } = query;
   const transactions = useMemo(
     () => query.data?.pages.flatMap((page) => page.transactions) ?? [],
     [query.data],
   );
   const total = query.data?.pages[0]?.hits.total;
   const validForTick = query.data?.pages[0]?.validForTick;
+
+  useEffect(() => {
+    const markScrolled = () => {
+      hasScrolledRef.current = true;
+      window.removeEventListener("scroll", markScrolled);
+    };
+
+    window.addEventListener("scroll", markScrolled, { passive: true });
+    return () => window.removeEventListener("scroll", markScrolled);
+  }, []);
+
+  useEffect(() => {
+    const target = loadMoreRef.current;
+    if (!target || !hasNextPage || isFetchingNextPage || !("IntersectionObserver" in window)) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting && hasScrolledRef.current) {
+          void fetchNextPage();
+        }
+      },
+      { rootMargin: "320px 0px" },
+    );
+    observer.observe(target);
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   return (
     <section aria-labelledby="identity-transactions" className="border-t border-[var(--glyph-line)] pt-6">
@@ -363,7 +392,7 @@ function TransactionHistory({ request }: { request: ExplorerTransactionsForIdent
               ) : null}
             </div>
             <TransactionTable transactions={transactions} />
-            <div className="mt-5 flex flex-wrap items-center gap-3">
+            <div className="mt-5 flex flex-wrap items-center gap-3" ref={loadMoreRef}>
               {query.hasNextPage ? (
                 <button
                   className="min-h-11 border border-[var(--glyph-line-strong)] bg-[var(--glyph-ink)] px-4 text-sm font-semibold text-[var(--glyph-canvas)] disabled:cursor-wait disabled:opacity-60"
@@ -409,12 +438,11 @@ export function IdentityPage({ identity }: { identity: string | null }) {
         <div className="flex flex-col items-start gap-4">
           <IdentityAvatar identity={identity} label="Wallet identity avatar" radius={16} size={72} />
           <div className="min-w-0">
-            <p className="text-xs font-medium uppercase tracking-[0.12em] text-[var(--glyph-tertiary)]">Canonical identity</p>
-            <div className="mt-2 flex items-start gap-2">
+            <div className="flex items-start gap-2">
               <h1 className="min-w-0 break-all font-mono text-sm leading-6 text-[var(--glyph-ink)]">{identity}</h1>
               <CopyButton label="Copy identity" value={identity} />
             </div>
-            <p className="mt-2 text-sm text-[var(--glyph-muted)]">Wallet identity and archive activity.</p>
+            <p className="mt-2 text-sm text-[var(--glyph-muted)]">Identity activity on Qubic.</p>
           </div>
         </div>
       </header>
