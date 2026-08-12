@@ -20,6 +20,7 @@ import {
   QueryState,
   StatusMessage,
 } from "./primitives";
+import { DetailPageSkeleton } from "./skeletons";
 import { formatNumber } from "./utils";
 
 function isUnsupportedAssetApi(error: unknown): boolean {
@@ -114,6 +115,7 @@ export function TokenPage({ index }: { index: number | null }) {
             return !(data as AssetIssuance).data;
           }}
           label="asset issuance"
+          loading={<DetailPageSkeleton label="Loading asset issuance" rows={7} titleWidth="w-56" />}
           noResultMessage="No official asset issuance was returned for this universe index."
           query={query}
         >

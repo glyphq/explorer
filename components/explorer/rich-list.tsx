@@ -15,6 +15,7 @@ import {
 import { formatIdentity } from "@/lib/rpc/validation";
 
 import { ExplorerFrame, QueryState, TableHeaderLabel, TableScroll } from "./primitives";
+import { SkeletonTable } from "./skeletons";
 import { formatNumber } from "./utils";
 
 function formatBalance(value: bigint): string {
@@ -134,6 +135,7 @@ export function RichListPage() {
           return Array.isArray(pageData.entries) && pageData.entries.length === 0;
         }}
         label="rich list"
+        loading={<SkeletonTable columns={3} label="Loading rich list entries" minWidth="min-w-[700px]" rows={8} />}
         noResultMessage="The rich list was not returned."
         query={query}
       >

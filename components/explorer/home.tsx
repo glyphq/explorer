@@ -19,6 +19,7 @@ import {
   StatusMessage,
 } from "./primitives";
 import { OverviewHero } from "./overview-hero";
+import { OverviewStatsSkeleton } from "./skeletons";
 import { formatNumber } from "./utils";
 
 function formatBigInt(value: bigint | undefined): string {
@@ -173,11 +174,7 @@ function StatsSurface({ query }: { query: ReturnType<typeof useLatestStats> }) {
   const hasData = query.data !== undefined;
 
   if (query.isPending && !hasData) {
-    return (
-      <div className="p-4">
-        <StatusMessage status="loading" title="Loading network stats…" />
-      </div>
-    );
+    return <OverviewStatsSkeleton className="p-4" />;
   }
 
   if (query.isError && !hasData) {

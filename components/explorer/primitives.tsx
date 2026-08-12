@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Activity03Icon,
   AlertCircleIcon,
   Copy01Icon,
   CopyCheckIcon,
@@ -13,6 +12,7 @@ import Link from "next/link";
 import { useState, type ComponentProps, type ReactNode } from "react";
 import { GlyphButton } from "@/components/ui/button";
 
+import { QuerySkeleton } from "./skeletons";
 import { formatRefreshTimestamp, getRpcErrorLabel, isMissingLookupResult } from "./utils";
 
 export type ExplorerQuery<T> = {
@@ -158,6 +158,7 @@ export function QueryState({
   emptyMessage,
   noResultMessage = "No result was returned.",
   emptyWhen,
+  loading,
   children,
 }: {
   query: ExplorerQuery<unknown>;
@@ -165,12 +166,13 @@ export function QueryState({
   emptyMessage?: string;
   noResultMessage?: string;
   emptyWhen?: (data: unknown) => boolean;
+  loading?: ReactNode;
   children?: ReactNode;
 }) {
   const hasData = query.data !== undefined && query.data !== null;
 
   if (query.isPending && !hasData) {
-    return <StatusMessage status="loading" title={`Loading ${label}…`} />;
+    return loading ?? <QuerySkeleton label={label} />;
   }
 
   if (query.isError && !hasData) {
@@ -195,7 +197,7 @@ export function QueryState({
   }
 
   return (
-    <>
+    <div aria-busy={query.isFetching}>
       {query.isError ? (
         <div className="mb-5 flex gap-3 border border-[var(--glyph-line-strong)] bg-[var(--glyph-canvas)] px-4 py-3 text-sm text-[var(--glyph-muted)]" role="alert">
           <HugeiconsIcon aria-hidden="true" className="mt-0.5 shrink-0" focusable="false" icon={AlertCircleIcon} size={18} strokeWidth={1.5} />
@@ -209,7 +211,7 @@ export function QueryState({
         </div>
       ) : null}
       {children}
-    </>
+    </div>
   );
 }
 
@@ -219,14 +221,14 @@ export function StatusMessage({
   description,
   action,
 }: {
-  status: "loading" | "error" | "empty";
+  status: "error" | "empty";
   title: string;
   description?: string;
   action?: ReactNode;
 }) {
   const role = status === "error" ? "alert" : "status";
-  const label = status === "loading" ? "Loading" : status === "error" ? "Unavailable" : "No result";
-  const icon = status === "loading" ? Activity03Icon : status === "error" ? AlertCircleIcon : InformationCircleIcon;
+  const label = status === "error" ? "Unavailable" : "No result";
+  const icon = status === "error" ? AlertCircleIcon : InformationCircleIcon;
 
   return (
     <div className="border border-[var(--glyph-line)] bg-[var(--glyph-canvas)] px-4 py-5" role={role}>

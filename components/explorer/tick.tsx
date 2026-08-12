@@ -11,6 +11,7 @@ import {
   QueryRefreshMeta,
   QueryState,
 } from "./primitives";
+import { SkeletonKeyValueList } from "./skeletons";
 import { formatNumber, formatTimestamp } from "./utils";
 
 export function TickPage({ tick }: { tick: number | null }) {
@@ -42,6 +43,7 @@ export function TickPage({ tick }: { tick: number | null }) {
         <h2 className="mb-4 text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]" id="tick-metadata">Metadata</h2>
         <QueryState
           label="tick data"
+          loading={<SkeletonKeyValueList label="Loading tick metadata" rows={7} />}
           noResultMessage="No tick data."
           query={tickData}
         >

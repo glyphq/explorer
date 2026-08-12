@@ -14,6 +14,7 @@ import {
   QueryState,
 } from "./primitives";
 import { formatContractInvocation, identifyContractInvocation, isSmartContractCall, transactionTypeLabel } from "./contracts";
+import { TransactionPageSkeleton } from "./skeletons";
 import { formatNumber, formatTimestamp } from "./utils";
 
 function RawTransactionValue({ label, value }: { label: string; value: string | undefined }) {
@@ -77,6 +78,7 @@ export function TransactionPage({ hash }: { hash: string | null }) {
 
       <QueryState
         label="transaction"
+        loading={<TransactionPageSkeleton />}
         noResultMessage="No transaction was found for this hash."
         query={query}
       >

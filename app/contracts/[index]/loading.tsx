@@ -1,10 +1,10 @@
 import { ExplorerFrame } from "@/components/explorer/primitives";
-import { TickTransactionsPageSkeleton } from "@/components/explorer/skeletons";
+import { ContractDetailPageSkeleton } from "@/components/explorer/skeletons";
 
 export default function Loading() {
   return (
     <ExplorerFrame>
-      <TickTransactionsPageSkeleton />
+      <ContractDetailPageSkeleton />
     </ExplorerFrame>
   );
 }

@@ -20,6 +20,7 @@ import {
   TableHeaderLabel,
   TableScroll,
 } from "./primitives";
+import { SkeletonTable } from "./skeletons";
 import { formatNumber } from "./utils";
 
 function IssuerCell({ value }: { value: string | undefined }) {
@@ -124,6 +125,7 @@ export function TokensPage() {
         emptyMessage="No tokens match this filter."
         emptyWhen={() => query.isSuccess && filteredRows.length === 0}
         label="tokens"
+        loading={<SkeletonTable columns={4} label="Loading token rows" minWidth="min-w-[760px]" rows={8} />}
         query={query}
       >
         {filteredRows.length > 0 ? <TokenTable rows={filteredRows} /> : null}

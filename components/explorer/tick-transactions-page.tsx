@@ -14,6 +14,7 @@ import {
   TableHeaderLabel,
   TableScroll,
 } from "./primitives";
+import { SkeletonKeyValueList, SkeletonTable } from "./skeletons";
 import { formatNumber } from "./utils";
 import { hasReportedContractIndex, toTickTransactionRows, type TickTransactionRow } from "./tick-transactions";
 
@@ -108,6 +109,7 @@ export function TickTransactionsPage({ tick }: { tick: number | null }) {
 
       <QueryState
         label="archive tick record"
+        loading={<SkeletonKeyValueList label="Loading archive tick record" rows={5} />}
         noResultMessage="No archive record was found for this tick."
         query={archive}
       >
@@ -116,6 +118,7 @@ export function TickTransactionsPage({ tick }: { tick: number | null }) {
             emptyMessage="No transactions were returned for this tick."
             emptyWhen={(data) => Array.isArray(data) && data.length === 0}
             label="tick transactions"
+            loading={<SkeletonTable columns={6} label="Loading tick transaction rows" minWidth="min-w-[760px]" rows={7} />}
             noResultMessage="No transaction response was returned for this tick."
             query={transactions}
           >
