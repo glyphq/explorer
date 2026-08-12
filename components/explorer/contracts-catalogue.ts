@@ -112,6 +112,23 @@ function buildContractsCatalogue(): ContractCatalogueEntry[] {
 
 export const CONTRACTS_CATALOGUE: readonly ContractCatalogueEntry[] = buildContractsCatalogue();
 
+export function getContractByIndex(index: number | null): ContractCatalogueEntry | null {
+  if (
+    index === null ||
+    !Number.isInteger(index) ||
+    index < 0 ||
+    index > 0xffffffff
+  ) {
+    return null;
+  }
+
+  return CONTRACTS_CATALOGUE.find((contract) => contract.index === index) ?? null;
+}
+
+export function getContractHref(index: number): string {
+  return `/contracts/${index}`;
+}
+
 export function filterContracts(
   contracts: readonly ContractCatalogueEntry[],
   query: string,

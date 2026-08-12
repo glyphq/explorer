@@ -9,11 +9,12 @@ import { GlyphButton } from "@/components/ui/button";
 
 import {
   filterContracts,
+  getContractHref,
   getContractIdentityHref,
   getPublishedProcedureCount,
   type ContractCatalogueEntry,
 } from "./contracts-catalogue";
-import { CopyButton, ExplorerFrame } from "./primitives";
+import { ExplorerFrame } from "./primitives";
 
 export type ContractsPageProps = {
   contracts: readonly ContractCatalogueEntry[];
@@ -61,7 +62,6 @@ function IdentityCell({ identity }: { identity: string }) {
       >
         <span className="break-all">{identity}</span>
       </Link>
-      <CopyButton label="Copy canonical identity" value={identity} />
     </div>
   );
 }
@@ -85,9 +85,25 @@ function ContractsTable({ contracts }: { contracts: readonly ContractCatalogueEn
           {contracts.map((contract) => (
             <tr className="align-top text-sm text-[var(--glyph-muted)]" key={contract.index}>
               <th className="whitespace-nowrap px-3 py-3 font-semibold text-[var(--glyph-ink)] sm:first:pl-0" scope="row">
-                <span title={`Generated package export: ${contract.exportName}`}>{contract.name}</span>
+                <Link
+                  className="underline decoration-[var(--glyph-line-strong)] underline-offset-4 hover:decoration-[var(--glyph-ink)]"
+                  href={getContractHref(contract.index)}
+                  prefetch={false}
+                  title={`Open ${contract.name} contract details`}
+                >
+                  <span title={`Generated package export: ${contract.exportName}`}>{contract.name}</span>
+                </Link>
               </th>
-              <td className="whitespace-nowrap px-3 py-3 text-right font-mono text-xs text-[var(--glyph-ink)]">{contract.index}</td>
+              <td className="whitespace-nowrap px-3 py-3 text-right font-mono text-xs text-[var(--glyph-ink)]">
+                <Link
+                  className="underline decoration-[var(--glyph-line-strong)] underline-offset-4 hover:decoration-[var(--glyph-ink)]"
+                  href={getContractHref(contract.index)}
+                  prefetch={false}
+                  title={`Open ${contract.name} contract details`}
+                >
+                  {contract.index}
+                </Link>
+              </td>
               <td className="px-3 py-3"><IdentityCell identity={contract.identity} /></td>
               <td className="min-w-[14rem] px-3 py-3"><PublishedProcedures contract={contract} /></td>
             </tr>

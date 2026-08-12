@@ -5,6 +5,8 @@ import { describe, expect, test } from "bun:test";
 import {
   CONTRACTS_CATALOGUE,
   filterContracts,
+  getContractByIndex,
+  getContractHref,
   getContractIdentityHref,
   getPublishedProcedureCount,
 } from "../contracts-catalogue";
@@ -56,6 +58,21 @@ describe("generated contracts catalogue", () => {
     expect(filterContracts(CONTRACTS_CATALOGUE, String(qearn.index))).toContainEqual(qearn);
     expect(filterContracts(CONTRACTS_CATALOGUE, qearn.identity)).toEqual([qearn]);
     expect(filterContracts(CONTRACTS_CATALOGUE, "does-not-exist")).toEqual([]);
+  });
+
+  test("finds catalogue entries by validated contract index", () => {
+    const qearn = getQearn();
+
+    expect(getContractByIndex(qearn.index)).toBe(qearn);
+    expect(getContractByIndex(null)).toBeNull();
+    expect(getContractByIndex(-1)).toBeNull();
+    expect(getContractByIndex(1.5)).toBeNull();
+    expect(getContractByIndex(0x100000000)).toBeNull();
+    expect(getContractByIndex(0)).toBeNull();
+  });
+
+  test("builds detail links from catalogue indices", () => {
+    expect(getContractHref(getQearn().index)).toBe("/contracts/9");
   });
 
   test("URL-encodes canonical identities for internal identity links", () => {
