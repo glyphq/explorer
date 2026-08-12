@@ -80,18 +80,23 @@ function DefaultNavigationLinks() {
   );
 }
 
-function formatPrice(value: number | undefined): string {
+function formatPricePerBillion(value: number | undefined): string {
   if (value === undefined) return "—";
-  const decimal = value < 0.01 ? value.toFixed(8).replace(/0+$/, "").replace(/\.$/, "") : value.toFixed(2);
-  return `$${decimal}`;
+  const pricePerBillion = value * 1_000_000_000;
+  return `$${new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: pricePerBillion >= 100 ? 0 : 2,
+  }).format(pricePerBillion)} / bQUBIC`;
 }
 
 function HeaderPrice() {
   const stats = useLatestStats();
 
   return (
-    <span aria-label="Current Qubic price" className="hidden font-mono text-xs text-[var(--glyph-muted)] lg:inline-flex">
-      {formatPrice(stats.data?.price)}
+    <span
+      aria-label="Current Qubic price in United States dollars per billion Qubic"
+      className="hidden font-mono text-xs text-[var(--glyph-muted)] lg:inline-flex"
+    >
+      {formatPricePerBillion(stats.data?.price)}
     </span>
   );
 }
