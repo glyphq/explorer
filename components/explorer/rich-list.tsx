@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import { ArrowLeft01Icon, ArrowRight01Icon, Coins01Icon, IdentityCardIcon, RankingIcon } from "@hugeicons/core-free-icons";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -14,7 +14,7 @@ import {
 } from "@/lib/stats";
 import { formatIdentity } from "@/lib/rpc/validation";
 
-import { ExplorerFrame, QueryState, TableScroll } from "./primitives";
+import { ExplorerFrame, QueryState, TableHeaderLabel, TableScroll } from "./primitives";
 import { formatNumber } from "./utils";
 
 function formatBalance(value: bigint): string {
@@ -46,19 +46,19 @@ function RichListTable({ entries, pagination }: { entries: RichListEntry[]; pagi
         <caption className="sr-only">Reported Qubic identities and balances from the official Stats API</caption>
         <thead>
           <tr>
-            <th className="w-20 px-5 pb-3 text-right font-medium" scope="col">Rank</th>
-            <th className="px-5 pb-3 font-medium" scope="col">Identity</th>
-            <th className="px-5 pb-3 text-right font-medium" scope="col">Reported balance</th>
+            <th className="w-20 text-right font-medium" scope="col"><TableHeaderLabel icon={RankingIcon}>Rank</TableHeaderLabel></th>
+            <th className="font-medium" scope="col"><TableHeaderLabel icon={IdentityCardIcon}>Identity</TableHeaderLabel></th>
+            <th className="text-right font-medium" scope="col"><TableHeaderLabel icon={Coins01Icon}>Reported balance</TableHeaderLabel></th>
           </tr>
         </thead>
         <tbody>
           {entries.map((entry, index) => (
             <tr className="align-middle text-sm text-[var(--glyph-muted)]" key={`${entry.identity}:${entry.balance.toString()}`}>
-              <td className="px-5 py-4 text-right font-mono text-xs tabular-nums text-[var(--glyph-tertiary)]">
+              <td className="py-4 text-right font-mono text-xs tabular-nums text-[var(--glyph-tertiary)]">
                 {formatNumber(firstRank + index)}
               </td>
-              <td className="px-5 py-3"><IdentityCell identity={entry.identity} /></td>
-              <td className="px-5 py-4 text-right font-mono text-sm tabular-nums text-[var(--glyph-ink)]">
+              <td className="py-3"><IdentityCell identity={entry.identity} /></td>
+              <td className="py-4 text-right font-mono text-sm tabular-nums text-[var(--glyph-ink)]">
                 <data title="Balance reported by the official Qubic Stats API" value={entry.balance.toString()}>
                   {formatBalance(entry.balance)}
                 </data>
@@ -138,7 +138,7 @@ export function RichListPage() {
         query={query}
       >
         {query.data ? (
-          <section className="overflow-hidden border border-[var(--glyph-line)] bg-[var(--glyph-surface)]" aria-label="Rich list results">
+          <section className="overflow-hidden rounded-[var(--glyph-radius-sm)] border border-[var(--glyph-line)] bg-[var(--glyph-surface)]" aria-label="Rich list results">
             <RichListTable entries={query.data.entries} pagination={query.data.pagination} />
             <Pagination
               isFetching={query.isFetching}

@@ -123,6 +123,22 @@ export function TableScroll({ children }: { children: ReactNode }) {
   );
 }
 
+export function TableHeaderLabel({ icon, children }: { icon: ExplorerIcon; children: ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 align-middle leading-none">
+      <HugeiconsIcon
+        aria-hidden="true"
+        className="shrink-0 text-[var(--glyph-tertiary)]"
+        focusable="false"
+        icon={icon}
+        size={14}
+        strokeWidth={1.5}
+      />
+      <span>{children}</span>
+    </span>
+  );
+}
+
 export function QueryRefreshMeta({ query }: { query: Pick<ExplorerQuery<unknown>, "dataUpdatedAt" | "isFetching"> }) {
   const label = formatRefreshTimestamp(query.dataUpdatedAt);
   return (

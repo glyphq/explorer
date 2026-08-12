@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { GlyphNavigation, type GlyphNavigationProps } from "@/components/shell/navigation";
+import { ExplorerBreadcrumbs } from "@/components/explorer/breadcrumbs";
 
 export type GlyphShellProps = {
   children: ReactNode;
@@ -16,6 +17,7 @@ export function GlyphShell({ children, navigation }: GlyphShellProps) {
       </a>
       {navigation ?? <GlyphNavigation {...defaultNavigationProps} />}
       <div className="glyph-shell__content" id="glyph-main">
+        <ExplorerBreadcrumbs />
         {children}
       </div>
     </div>

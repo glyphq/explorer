@@ -1,5 +1,6 @@
 "use client";
 
+import { Clock01Icon, Coins01Icon, FunctionIcon, Tick01Icon, TransactionIcon, UserArrowLeftRightIcon, UserIcon } from "@hugeicons/core-free-icons";
 import {
   createColumnHelper,
   createSortedRowModel,
@@ -22,6 +23,7 @@ import {
 } from "@/lib/rpc/queries";
 import { explorerData, type ExplorerTransactionsForIdentityRequest } from "@/lib/rpc/adapter";
 import { formatAtomicAmount, formatIdentifier, formatTransactionHash } from "@/lib/rpc/validation";
+import { useLatestStats } from "@/lib/stats";
 
 import {
   CopyButton,
@@ -30,6 +32,7 @@ import {
   InvalidLookup,
   QueryRefreshMeta,
   QueryState,
+  TableHeaderLabel,
   TableScroll,
 } from "./primitives";
 import { identifyContractInvocation, isSmartContractCall } from "./contracts";
@@ -88,12 +91,37 @@ function querySummaryValue<T>(
   return format(query.data);
 }
 
+function queryUsdBalance(
+  balance: ReturnType<typeof useQubicBalance>,
+  stats: ReturnType<typeof useLatestStats>,
+): string {
+  if (balance.isPending && balance.data === undefined) return "Loading…";
+  if (balance.isError && balance.data === undefined) return "Unavailable";
+  if (balance.data === undefined) return "Not reported";
+  if (stats.isPending && stats.data === undefined) return "Price unavailable";
+  if (stats.isError && stats.data === undefined) return "Price unavailable";
+
+  const price = stats.data?.price;
+  const numericBalance = Number(balance.data.balance);
+  if (!Number.isFinite(price) || price === undefined || price <= 0 || !Number.isFinite(numericBalance)) {
+    return "Price unavailable";
+  }
+
+  return new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    maximumFractionDigits: 2,
+    style: "currency",
+  }).format(numericBalance * price);
+}
+
 function IdentitySummary({
   balance,
   assets,
+  stats,
 }: {
   balance: ReturnType<typeof useQubicBalance>;
   assets: ReturnType<typeof useIdentityAssets>;
+  stats: ReturnType<typeof useLatestStats>;
 }) {
   return (
     <section aria-labelledby="identity-summary" className="border-b border-[var(--glyph-line)] pb-7">
@@ -103,6 +131,11 @@ function IdentitySummary({
           detail="Current account balance"
           label="Balance"
           value={querySummaryValue(balance, (data) => formatAtomicAmount(data.balance))}
+        />
+        <SummaryChip
+          detail="Balance × live QUBIC price"
+          label="USD value"
+          value={queryUsdBalance(balance, stats)}
         />
         <SummaryChip
           detail="Assets issued by this identity"
@@ -179,10 +212,19 @@ const identityTableFeatures = tableFeatures({
   sortedRowModel: createSortedRowModel(),
 });
 const identityColumnHelper = createColumnHelper<typeof identityTableFeatures, QueryTransaction>();
+const identityColumnLabels: Record<string, string> = {
+  amount: "Amount",
+  destination: "Destination",
+  hash: "Transaction",
+  inputType: "Type",
+  source: "Source",
+  tickNumber: "Tick",
+  timestamp: "Time",
+};
 const identityColumns = identityColumnHelper.columns([
   identityColumnHelper.display({
     id: "hash",
-    header: "Transaction",
+    header: () => <TableHeaderLabel icon={TransactionIcon}>Transaction</TableHeaderLabel>,
     enableSorting: false,
     cell: ({ row }) => {
       const hash = row.original.hash;
@@ -196,17 +238,17 @@ const identityColumns = identityColumnHelper.columns([
     },
   }),
   identityColumnHelper.accessor("source", {
-    header: "Source",
+    header: () => <TableHeaderLabel icon={UserIcon}>Source</TableHeaderLabel>,
     enableSorting: false,
     cell: ({ row }) => <TransactionIdentityCell label="Source" value={row.original.source} />,
   }),
   identityColumnHelper.accessor("destination", {
-    header: "Destination",
+    header: () => <TableHeaderLabel icon={UserArrowLeftRightIcon}>Destination</TableHeaderLabel>,
     enableSorting: false,
     cell: ({ row }) => <TransactionIdentityCell label="Destination" value={row.original.destination} />,
   }),
   identityColumnHelper.accessor("inputType", {
-    header: "Type",
+    header: () => <TableHeaderLabel icon={FunctionIcon}>Type</TableHeaderLabel>,
     cell: ({ row }) => (
       <span className="whitespace-nowrap text-xs text-[var(--glyph-ink)]">
         {transactionTypeLabel(row.original)}
@@ -217,7 +259,7 @@ const identityColumns = identityColumnHelper.columns([
     ),
   }),
   identityColumnHelper.accessor("tickNumber", {
-    header: "Tick",
+    header: () => <TableHeaderLabel icon={Tick01Icon}>Tick</TableHeaderLabel>,
     cell: ({ row }) => {
       const tick = row.original.tickNumber;
       return tick !== undefined ? (
@@ -229,12 +271,12 @@ const identityColumns = identityColumnHelper.columns([
   }),
   identityColumnHelper.accessor((transaction) => timestampSortValue(transaction.timestamp) ?? undefined, {
     id: "timestamp",
-    header: "Time",
+    header: () => <TableHeaderLabel icon={Clock01Icon}>Time</TableHeaderLabel>,
     cell: ({ row }) => <span className="whitespace-nowrap text-xs text-[var(--glyph-muted)]">{formatTimestamp(row.original.timestamp)}</span>,
   }),
   identityColumnHelper.accessor((transaction) => amountSortValue(transaction.amount), {
     id: "amount",
-    header: "Amount",
+    header: () => <TableHeaderLabel icon={Coins01Icon}>Amount</TableHeaderLabel>,
     cell: ({ row }) => (
       <span className="whitespace-nowrap font-mono text-xs text-[var(--glyph-ink)]">
         {row.original.amount !== undefined && row.original.amount !== null
@@ -264,10 +306,10 @@ function TransactionTable({ transactions }: { transactions: QueryTransaction[] }
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
-                const label = String(header.column.columnDef.header ?? "Column");
+                const label = identityColumnLabels[header.column.id] ?? "Column";
                 const sorted = header.column.getIsSorted();
                 return (
-                  <th className="px-4 pb-3 font-medium first:sm:pl-0 last:sm:pr-0" key={header.id} scope="col" aria-sort={sorted === "asc" ? "ascending" : sorted === "desc" ? "descending" : "none"}>
+                  <th className="font-medium" key={header.id} scope="col" aria-sort={sorted === "asc" ? "ascending" : sorted === "desc" ? "descending" : "none"}>
                     {header.isPlaceholder ? null : header.column.getCanSort() ? (
                       <button
                         aria-label={`Sort by ${label}`}
@@ -291,7 +333,7 @@ function TransactionTable({ transactions }: { transactions: QueryTransaction[] }
           {table.getRowModel().rows.map((row) => (
             <tr className="align-top text-sm" key={row.id}>
               {row.getAllCells().map((cell) => (
-                <td className="px-4 py-3 first:sm:pl-0 last:sm:pr-0" key={cell.id}>
+                <td className="py-3" key={cell.id}>
                   <table.FlexRender cell={cell} />
                 </td>
               ))}
@@ -326,7 +368,7 @@ function TransactionHistory({ request }: { request: ExplorerTransactionsForIdent
           <span>Type</span>
           <select
             aria-label="Transaction type filter"
-            className="glyph-input min-h-10 px-3 font-medium text-[var(--glyph-ink)]"
+            className="glyph-input min-h-10 px-3 font-medium text-[var(--glyph-ink)] focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-[var(--glyph-focus)]"
             onChange={(event) => {
               setFilter(event.target.value as IdentityTransactionFilter);
               setPage(0);
@@ -402,6 +444,7 @@ function TransactionHistory({ request }: { request: ExplorerTransactionsForIdent
 
 export function IdentityPage({ identity }: { identity: string | null }) {
   const balance = useQubicBalance(identity);
+  const stats = useLatestStats();
   const assets = useIdentityAssets(identity);
   const historyRequest: ExplorerTransactionsForIdentityRequest | null = identity ? { identity } : null;
 
@@ -433,7 +476,7 @@ export function IdentityPage({ identity }: { identity: string | null }) {
       </header>
 
       <div className="space-y-8">
-        <IdentitySummary assets={assets} balance={balance} />
+        <IdentitySummary assets={assets} balance={balance} stats={stats} />
         <TransactionHistory request={historyRequest} />
       </div>
     </ExplorerFrame>

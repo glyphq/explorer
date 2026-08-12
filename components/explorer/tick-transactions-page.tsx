@@ -1,5 +1,6 @@
 "use client";
 
+import { Coins01Icon, CodeIcon, HashtagIcon, TransactionIcon, UserArrowLeftRightIcon, UserIcon } from "@hugeicons/core-free-icons";
 import { useTickData, useTransactionsForTick } from "@/lib/rpc/queries";
 import { formatAtomicAmount, formatIdentifier, formatTransactionHash } from "@/lib/rpc/validation";
 
@@ -10,6 +11,7 @@ import {
   InvalidLookup,
   QueryRefreshMeta,
   QueryState,
+  TableHeaderLabel,
   TableScroll,
 } from "./primitives";
 import { formatNumber } from "./utils";
@@ -34,18 +36,18 @@ function TransactionTable({ rows, tick }: { rows: TickTransactionRow[]; tick: nu
         <caption className="sr-only">Transactions included in tick {tick}</caption>
         <thead>
           <tr>
-            <th className="px-4 pb-3 font-medium sm:px-0" scope="col">Transaction</th>
-            <th className="px-4 pb-3 font-medium" scope="col">Source</th>
-            <th className="px-4 pb-3 font-medium" scope="col">Destination</th>
-            <th className="px-4 pb-3 text-right font-medium" scope="col">Amount</th>
-            <th className="px-4 pb-3 text-right font-medium" scope="col">Input type</th>
-            {showContractIndex ? <th className="px-4 pb-3 text-right font-medium" scope="col">Contract index</th> : null}
+            <th className="font-medium" scope="col"><TableHeaderLabel icon={TransactionIcon}>Transaction</TableHeaderLabel></th>
+            <th className="font-medium" scope="col"><TableHeaderLabel icon={UserIcon}>Source</TableHeaderLabel></th>
+            <th className="font-medium" scope="col"><TableHeaderLabel icon={UserArrowLeftRightIcon}>Destination</TableHeaderLabel></th>
+            <th className="text-right font-medium" scope="col"><TableHeaderLabel icon={Coins01Icon}>Amount</TableHeaderLabel></th>
+            <th className="text-right font-medium" scope="col"><TableHeaderLabel icon={CodeIcon}>Input type</TableHeaderLabel></th>
+            {showContractIndex ? <th className="text-right font-medium" scope="col"><TableHeaderLabel icon={HashtagIcon}>Contract index</TableHeaderLabel></th> : null}
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
             <tr key={row.key} className="align-top text-sm text-[var(--glyph-muted)]">
-              <td className="px-4 py-4 sm:px-0">
+              <td className="py-4">
                 {row.hash ? (
                   <ExplorerLink href={`/transaction/${row.hash}`}>
                     <span title={row.hash}>{formatTransactionHash(row.hash)}</span>
@@ -54,16 +56,16 @@ function TransactionTable({ rows, tick }: { rows: TickTransactionRow[]; tick: nu
                   <span className="text-[var(--glyph-tertiary)]">Hash not reported</span>
                 )}
               </td>
-              <td className="px-4 py-4"><IdentifierCell value={row.source} /></td>
-              <td className="px-4 py-4"><IdentifierCell value={row.destination} /></td>
-              <td className="whitespace-nowrap px-4 py-4 text-right font-mono text-xs text-[var(--glyph-ink)]">
+              <td className="py-4"><IdentifierCell value={row.source} /></td>
+              <td className="py-4"><IdentifierCell value={row.destination} /></td>
+              <td className="whitespace-nowrap py-4 text-right font-mono text-xs text-[var(--glyph-ink)]">
                 {row.amount !== undefined ? formatAtomicAmount(row.amount) : "Not reported"}
               </td>
-              <td className="px-4 py-4 text-right font-mono text-xs text-[var(--glyph-ink)]">
+              <td className="py-4 text-right font-mono text-xs text-[var(--glyph-ink)]">
                 {formatNumber(row.inputType)}
               </td>
               {showContractIndex ? (
-                <td className="px-4 py-4 text-right font-mono text-xs text-[var(--glyph-ink)]">
+                <td className="py-4 text-right font-mono text-xs text-[var(--glyph-ink)]">
                   {row.contractIndex ?? "Not reported"}
                 </td>
               ) : null}

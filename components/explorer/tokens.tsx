@@ -1,5 +1,6 @@
 "use client";
 
+import { Coins01Icon, HashtagIcon, IdentityCardIcon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { useMemo, useState } from "react";
 
 import { getAssetIssuanceHref, normalizeAssetIssuances, type AssetIssuanceRow } from "@/lib/assets";
@@ -16,6 +17,7 @@ import {
   ExplorerLink,
   QueryRefreshMeta,
   QueryState,
+  TableHeaderLabel,
   TableScroll,
 } from "./primitives";
 import { formatNumber } from "./utils";
@@ -57,23 +59,23 @@ function TokenTable({ rows }: { rows: readonly AssetIssuanceRow[] }) {
         <caption className="sr-only">Tokens reported by the official Qubic live API</caption>
         <thead>
           <tr>
-            <th className="px-4 pb-3 font-medium sm:px-0" scope="col">Token</th>
-            <th className="px-4 pb-3 text-right font-medium" scope="col">Index</th>
-            <th className="px-4 pb-3 font-medium" scope="col">Issuer</th>
-            <th className="px-4 pb-3 text-right font-medium" scope="col">Issued at</th>
+            <th className="font-medium" scope="col"><TableHeaderLabel icon={Coins01Icon}>Token</TableHeaderLabel></th>
+            <th className="text-right font-medium" scope="col"><TableHeaderLabel icon={HashtagIcon}>Index</TableHeaderLabel></th>
+            <th className="font-medium" scope="col"><TableHeaderLabel icon={IdentityCardIcon}>Issuer</TableHeaderLabel></th>
+            <th className="text-right font-medium" scope="col"><TableHeaderLabel icon={Tick01Icon}>Issued at</TableHeaderLabel></th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
             <tr className="align-top text-sm text-[var(--glyph-muted)]" key={row.key}>
-              <td className="px-4 py-3 font-semibold text-[var(--glyph-ink)] sm:px-0">
+              <td className="py-3 font-semibold text-[var(--glyph-ink)]">
                 <TokenNameCell row={row} />
               </td>
-              <td className="whitespace-nowrap px-4 py-3 text-right font-mono text-xs text-[var(--glyph-ink)]">
+              <td className="whitespace-nowrap py-3 text-right font-mono text-xs text-[var(--glyph-ink)]">
                 {row.universeIndex === undefined ? "—" : formatNumber(row.universeIndex)}
               </td>
-              <td className="px-4 py-3"><IssuerCell value={row.issuerIdentity} /></td>
-              <td className="whitespace-nowrap px-4 py-3 text-right font-mono text-xs"><TickCell value={row.tickNumber} /></td>
+              <td className="py-3"><IssuerCell value={row.issuerIdentity} /></td>
+              <td className="whitespace-nowrap py-3 text-right font-mono text-xs"><TickCell value={row.tickNumber} /></td>
             </tr>
           ))}
         </tbody>
@@ -105,7 +107,7 @@ export function TokensPage() {
         <div className="flex items-center gap-3">
           <label className="sr-only" htmlFor="token-search">Filter tokens</label>
           <input
-            className="glyph-input h-9 w-48 px-3 text-sm text-[var(--glyph-ink)] outline-none placeholder:text-[var(--glyph-tertiary)]"
+            className="glyph-input h-9 w-48 px-3 text-sm text-[var(--glyph-ink)] placeholder:text-[var(--glyph-tertiary)] focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-[var(--glyph-focus)]"
             id="token-search"
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Filter tokens"

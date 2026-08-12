@@ -1,3 +1,4 @@
+import { FileCodeIcon, FunctionIcon, CodeIcon } from "@hugeicons/core-free-icons";
 import Link from "next/link";
 
 import {
@@ -12,6 +13,7 @@ import {
   KeyValueList,
   Panel,
   StatusMessage,
+  TableHeaderLabel,
   TableScroll,
 } from "./primitives";
 
@@ -44,19 +46,19 @@ function PublishedInputTypes({ contract }: { contract: ContractCatalogueEntry })
         </caption>
         <thead>
           <tr>
-            <th className="px-3 py-3 font-medium sm:first:pl-0" scope="col">Procedure</th>
-            <th className="px-3 py-3 text-right font-medium" scope="col">Input type</th>
-            <th className="px-3 py-3 font-medium" scope="col">Generated export</th>
+            <th className="font-medium" scope="col"><TableHeaderLabel icon={FunctionIcon}>Procedure</TableHeaderLabel></th>
+            <th className="text-right font-medium" scope="col"><TableHeaderLabel icon={CodeIcon}>Input type</TableHeaderLabel></th>
+            <th className="font-medium" scope="col"><TableHeaderLabel icon={FileCodeIcon}>Generated export</TableHeaderLabel></th>
           </tr>
         </thead>
         <tbody>
           {contract.inputTypes.map((input) => (
             <tr className="align-top text-sm" key={input.exportName}>
-              <th className="px-3 py-3 font-medium text-[var(--glyph-ink)] sm:first:pl-0" scope="row">
+              <th className="py-3 font-medium text-[var(--glyph-ink)]" scope="row">
                 {input.name}
               </th>
-              <td className="px-3 py-3 text-right font-mono text-xs text-[var(--glyph-ink)]">{input.inputType}</td>
-              <td className="px-3 py-3">
+              <td className="py-3 text-right font-mono text-xs text-[var(--glyph-ink)]">{input.inputType}</td>
+              <td className="py-3">
                 <code className="break-all font-mono text-xs text-[var(--glyph-muted)]">{input.exportName}</code>
               </td>
             </tr>

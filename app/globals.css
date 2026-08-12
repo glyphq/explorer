@@ -16,6 +16,7 @@
   --glyph-table-header: #e9e9e9;
   --glyph-table-stripe: #f0f0f0;
   --glyph-table-hover: #e5e5e5;
+  --glyph-mark-filter: none;
   --glyph-header: 72px;
   --glyph-content: 1440px;
   --glyph-gutter: clamp(1.25rem, 3vw, 3rem);
@@ -40,6 +41,7 @@
   --glyph-table-header: #121212;
   --glyph-table-stripe: #0e0e0e;
   --glyph-table-hover: #181818;
+  --glyph-mark-filter: invert(1);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -59,6 +61,7 @@
     --glyph-table-header: #121212;
     --glyph-table-stripe: #0e0e0e;
     --glyph-table-hover: #181818;
+    --glyph-mark-filter: invert(1);
   }
 }
 
@@ -237,6 +240,7 @@ textarea:focus-visible {
   display: block;
   width: 100%;
   height: 100%;
+  filter: var(--glyph-mark-filter);
   object-fit: contain;
 }
 
@@ -574,26 +578,67 @@ textarea:focus-visible {
   margin: 0 auto;
 }
 
+.glyph-breadcrumbs {
+  width: 100%;
+  padding: 0.65rem var(--glyph-gutter) 0;
+  color: var(--glyph-tertiary);
+  font-size: 0.68rem;
+}
+
+.glyph-breadcrumbs ol,
+.glyph-breadcrumbs li {
+  display: flex;
+  align-items: center;
+}
+
+.glyph-breadcrumbs ol {
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.glyph-breadcrumbs li {
+  min-width: 0;
+  gap: 0.45rem;
+}
+
+.glyph-breadcrumbs a,
+.glyph-breadcrumbs span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+}
+
+.glyph-breadcrumbs a {
+  color: var(--glyph-muted);
+}
+
+.glyph-breadcrumbs a:hover {
+  color: var(--glyph-ink);
+}
+
+.glyph-breadcrumbs [aria-current="page"] {
+  max-width: min(24rem, 55vw);
+  overflow: hidden;
+  color: var(--glyph-tertiary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.glyph-breadcrumbs__separator {
+  color: var(--glyph-line-strong);
+}
+
 .glyph-table-scroll {
   position: relative;
   overflow-x: auto;
   border: 1px solid var(--glyph-line-strong);
+  border-radius: var(--glyph-radius-sm);
   background: var(--glyph-table-surface);
   box-shadow: 0 2px 0 var(--glyph-shadow), inset 0 0 0 1px var(--glyph-table-surface);
   scrollbar-color: var(--glyph-line-strong) var(--glyph-table-surface);
-  transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease;
-}
-
-.glyph-table-scroll:hover {
-  border-color: var(--glyph-ink);
-  box-shadow: 0 3px 0 var(--glyph-shadow), inset 0 0 0 1px var(--glyph-table-surface);
-}
-
-.glyph-table-scroll:focus-within {
-  border-color: var(--glyph-ink);
-  box-shadow: 0 0 0 2px var(--glyph-canvas), 0 0 0 4px var(--glyph-focus), 0 2px 0 var(--glyph-shadow);
 }
 
 .glyph-table-scroll__hint {
@@ -602,6 +647,10 @@ textarea:focus-visible {
 
 .glyph-table {
   background: var(--glyph-table-surface);
+}
+
+.glyph-table :is(th, td) {
+  padding-inline: 0.875rem;
 }
 
 .glyph-table thead {
@@ -613,6 +662,8 @@ textarea:focus-visible {
 }
 
 .glyph-table thead th {
+  padding-block: 0.75rem;
+  vertical-align: middle;
   color: var(--glyph-tertiary);
   font-size: 0.68rem;
   font-weight: 500;
@@ -633,14 +684,14 @@ textarea:focus-visible {
   border-block-end: 0;
 }
 
-.glyph-table tbody tr:hover,
-.glyph-table tbody tr:focus-within {
+.glyph-table tbody tr:hover {
   background: var(--glyph-table-hover);
 }
 
 .glyph-input,
 .glyph-input-shell {
   border: 1px solid var(--glyph-line-strong);
+  border-radius: var(--glyph-radius-sm);
   background: var(--glyph-surface);
   box-shadow: 0 2px 0 var(--glyph-shadow), inset 0 0 0 1px var(--glyph-surface);
   transition:
@@ -658,7 +709,15 @@ textarea:focus-visible {
 .glyph-input:focus,
 .glyph-input-shell:focus-within {
   border-color: var(--glyph-ink);
-  box-shadow: 0 0 0 2px var(--glyph-canvas), 0 0 0 4px var(--glyph-focus), 0 2px 0 var(--glyph-shadow);
+  box-shadow: 0 2px 0 var(--glyph-shadow), inset 0 0 0 1px var(--glyph-surface);
+}
+
+.glyph-command-search:focus-visible {
+  outline: none;
+  outline-offset: 0;
+  border-color: var(--glyph-ink);
+  background: var(--glyph-surface-strong);
+  box-shadow: 0 2px 0 var(--glyph-shadow), inset 0 0 0 1px var(--glyph-ink);
 }
 
 .glyph-input:active {

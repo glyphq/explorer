@@ -1,6 +1,6 @@
 "use client";
 
-import { Cancel01Icon, Search01Icon } from "@hugeicons/core-free-icons";
+import { Cancel01Icon, ContractsIcon, FunctionIcon, HashtagIcon, IdentityCardIcon, Search01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useDeferredValue, useMemo, useState } from "react";
@@ -14,7 +14,7 @@ import {
   getPublishedProcedureCount,
   type ContractCatalogueEntry,
 } from "./contracts-catalogue";
-import { ExplorerFrame, TableScroll } from "./primitives";
+import { ExplorerFrame, TableHeaderLabel, TableScroll } from "./primitives";
 
 export type ContractsPageProps = {
   contracts: readonly ContractCatalogueEntry[];
@@ -75,16 +75,16 @@ function ContractsTable({ contracts }: { contracts: readonly ContractCatalogueEn
         </caption>
         <thead>
           <tr>
-            <th className="px-3 py-3 font-medium sm:first:pl-0" scope="col">Contract</th>
-            <th className="px-3 py-3 text-right font-medium" scope="col">Index</th>
-            <th className="px-3 py-3 font-medium" scope="col">Canonical identity</th>
-            <th className="px-3 py-3 font-medium" scope="col">Published procedures</th>
+            <th className="font-medium" scope="col"><TableHeaderLabel icon={ContractsIcon}>Contract</TableHeaderLabel></th>
+            <th className="text-right font-medium" scope="col"><TableHeaderLabel icon={HashtagIcon}>Index</TableHeaderLabel></th>
+            <th className="font-medium" scope="col"><TableHeaderLabel icon={IdentityCardIcon}>Canonical identity</TableHeaderLabel></th>
+            <th className="font-medium" scope="col"><TableHeaderLabel icon={FunctionIcon}>Published procedures</TableHeaderLabel></th>
           </tr>
         </thead>
         <tbody>
           {contracts.map((contract) => (
             <tr className="align-top text-sm text-[var(--glyph-muted)]" key={contract.index}>
-              <th className="whitespace-nowrap px-3 py-3 font-semibold text-[var(--glyph-ink)] sm:first:pl-0" scope="row">
+              <th className="whitespace-nowrap py-3 font-semibold text-[var(--glyph-ink)]" scope="row">
                 <Link
                   className="underline decoration-[var(--glyph-line-strong)] underline-offset-4 hover:decoration-[var(--glyph-ink)]"
                   href={getContractHref(contract.index)}
@@ -94,7 +94,7 @@ function ContractsTable({ contracts }: { contracts: readonly ContractCatalogueEn
                   <span title={`Generated package export: ${contract.exportName}`}>{contract.name}</span>
                 </Link>
               </th>
-              <td className="whitespace-nowrap px-3 py-3 text-right font-mono text-xs text-[var(--glyph-ink)]">
+              <td className="whitespace-nowrap py-3 text-right font-mono text-xs text-[var(--glyph-ink)]">
                 <Link
                   className="underline decoration-[var(--glyph-line-strong)] underline-offset-4 hover:decoration-[var(--glyph-ink)]"
                   href={getContractHref(contract.index)}
@@ -104,8 +104,8 @@ function ContractsTable({ contracts }: { contracts: readonly ContractCatalogueEn
                   {contract.index}
                 </Link>
               </td>
-              <td className="px-3 py-3"><IdentityCell identity={contract.identity} /></td>
-              <td className="min-w-[14rem] px-3 py-3"><PublishedProcedures contract={contract} /></td>
+              <td className="py-3"><IdentityCell identity={contract.identity} /></td>
+              <td className="min-w-[14rem] py-3"><PublishedProcedures contract={contract} /></td>
             </tr>
           ))}
         </tbody>
@@ -141,7 +141,7 @@ export function ContractsPage({ contracts }: ContractsPageProps) {
             <HugeiconsIcon aria-hidden="true" className="shrink-0 text-[var(--glyph-tertiary)]" focusable="false" icon={Search01Icon} size={17} strokeWidth={1.5} />
             <label className="sr-only" htmlFor="contracts-search">Search contracts by name, index, or identity</label>
             <input
-              className="min-w-0 flex-1 bg-transparent text-sm text-[var(--glyph-ink)] outline-none placeholder:text-[var(--glyph-tertiary)]"
+              className="min-w-0 flex-1 bg-transparent text-sm text-[var(--glyph-ink)] placeholder:text-[var(--glyph-tertiary)] focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-[var(--glyph-focus)]"
               id="contracts-search"
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search name, index, or identity"
