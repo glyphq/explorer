@@ -14,7 +14,7 @@ import {
 } from "@/lib/stats";
 import { formatIdentity } from "@/lib/rpc/validation";
 
-import { ExplorerFrame, QueryState } from "./primitives";
+import { ExplorerFrame, QueryState, TableScroll } from "./primitives";
 import { formatNumber } from "./utils";
 
 function formatBalance(value: bigint): string {
@@ -41,17 +41,17 @@ function RichListTable({ entries, pagination }: { entries: RichListEntry[]; pagi
   const firstRank = (pagination.currentPage - 1) * pagination.pageSize + 1;
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-[700px] w-full border-collapse text-left" aria-label="Qubic rich list">
+    <TableScroll>
+      <table className="glyph-table min-w-[700px] w-full border-collapse text-left" aria-label="Qubic rich list">
         <caption className="sr-only">Reported Qubic identities and balances from the official Stats API</caption>
         <thead>
-          <tr className="border-b border-[var(--glyph-line)] text-[0.68rem] uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">
+          <tr>
             <th className="w-20 px-5 pb-3 text-right font-medium" scope="col">Rank</th>
             <th className="px-5 pb-3 font-medium" scope="col">Identity</th>
             <th className="px-5 pb-3 text-right font-medium" scope="col">Reported balance</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[var(--glyph-line)]">
+        <tbody>
           {entries.map((entry, index) => (
             <tr className="align-middle text-sm text-[var(--glyph-muted)]" key={`${entry.identity}:${entry.balance.toString()}`}>
               <td className="px-5 py-4 text-right font-mono text-xs tabular-nums text-[var(--glyph-tertiary)]">
@@ -67,7 +67,7 @@ function RichListTable({ entries, pagination }: { entries: RichListEntry[]; pagi
           ))}
         </tbody>
       </table>
-    </div>
+    </TableScroll>
   );
 }
 

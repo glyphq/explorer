@@ -10,6 +10,7 @@ import {
   InvalidLookup,
   QueryRefreshMeta,
   QueryState,
+  TableScroll,
 } from "./primitives";
 import { formatNumber } from "./utils";
 import { hasReportedContractIndex, toTickTransactionRows, type TickTransactionRow } from "./tick-transactions";
@@ -28,11 +29,11 @@ function TransactionTable({ rows, tick }: { rows: TickTransactionRow[]; tick: nu
   const showContractIndex = hasReportedContractIndex(rows);
 
   return (
-    <div className="-mx-4 overflow-x-auto sm:mx-0">
-      <table className="min-w-[760px] w-full border-collapse text-left" aria-label={`Transactions in tick ${tick}`}>
+    <TableScroll>
+      <table className="glyph-table min-w-[760px] w-full border-collapse text-left" aria-label={`Transactions in tick ${tick}`}>
         <caption className="sr-only">Transactions included in tick {tick}</caption>
         <thead>
-          <tr className="border-b border-[var(--glyph-line)] text-[0.68rem] uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">
+          <tr>
             <th className="px-4 pb-3 font-medium sm:px-0" scope="col">Transaction</th>
             <th className="px-4 pb-3 font-medium" scope="col">Source</th>
             <th className="px-4 pb-3 font-medium" scope="col">Destination</th>
@@ -41,7 +42,7 @@ function TransactionTable({ rows, tick }: { rows: TickTransactionRow[]; tick: nu
             {showContractIndex ? <th className="px-4 pb-3 text-right font-medium" scope="col">Contract index</th> : null}
           </tr>
         </thead>
-        <tbody className="divide-y divide-[var(--glyph-line)]">
+        <tbody>
           {rows.map((row) => (
             <tr key={row.key} className="align-top text-sm text-[var(--glyph-muted)]">
               <td className="px-4 py-4 sm:px-0">
@@ -70,7 +71,7 @@ function TransactionTable({ rows, tick }: { rows: TickTransactionRow[]; tick: nu
           ))}
         </tbody>
       </table>
-    </div>
+    </TableScroll>
   );
 }
 

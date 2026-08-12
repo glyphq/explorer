@@ -12,6 +12,10 @@
   --glyph-line-strong: #bababa;
   --glyph-focus: #060606;
   --glyph-shadow: rgb(0 0 0 / 12%);
+  --glyph-table-surface: #f4f4f4;
+  --glyph-table-header: #e9e9e9;
+  --glyph-table-stripe: #f0f0f0;
+  --glyph-table-hover: #e5e5e5;
   --glyph-header: 72px;
   --glyph-content: 1440px;
   --glyph-gutter: clamp(1.25rem, 3vw, 3rem);
@@ -32,6 +36,10 @@
   --glyph-line-strong: #343434;
   --glyph-focus: #ffffff;
   --glyph-shadow: rgb(0 0 0 / 42%);
+  --glyph-table-surface: #0a0a0a;
+  --glyph-table-header: #121212;
+  --glyph-table-stripe: #0e0e0e;
+  --glyph-table-hover: #181818;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -47,6 +55,10 @@
     --glyph-line-strong: #343434;
     --glyph-focus: #ffffff;
     --glyph-shadow: rgb(0 0 0 / 42%);
+    --glyph-table-surface: #0a0a0a;
+    --glyph-table-header: #121212;
+    --glyph-table-stripe: #0e0e0e;
+    --glyph-table-hover: #181818;
   }
 }
 
@@ -560,6 +572,111 @@ textarea:focus-visible {
   width: min(100%, var(--glyph-content));
   min-height: calc(100svh - var(--glyph-header));
   margin: 0 auto;
+}
+
+.glyph-table-scroll {
+  position: relative;
+  overflow-x: auto;
+  border: 1px solid var(--glyph-line-strong);
+  background: var(--glyph-table-surface);
+  box-shadow: 0 2px 0 var(--glyph-shadow), inset 0 0 0 1px var(--glyph-table-surface);
+  scrollbar-color: var(--glyph-line-strong) var(--glyph-table-surface);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.glyph-table-scroll:hover {
+  border-color: var(--glyph-ink);
+  box-shadow: 0 3px 0 var(--glyph-shadow), inset 0 0 0 1px var(--glyph-table-surface);
+}
+
+.glyph-table-scroll:focus-within {
+  border-color: var(--glyph-ink);
+  box-shadow: 0 0 0 2px var(--glyph-canvas), 0 0 0 4px var(--glyph-focus), 0 2px 0 var(--glyph-shadow);
+}
+
+.glyph-table-scroll__hint {
+  display: none;
+}
+
+.glyph-table {
+  background: var(--glyph-table-surface);
+}
+
+.glyph-table thead {
+  background: var(--glyph-table-header);
+}
+
+.glyph-table thead tr {
+  border-block-end: 1px solid var(--glyph-line-strong);
+}
+
+.glyph-table thead th {
+  color: var(--glyph-tertiary);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.glyph-table tbody tr {
+  border-block-end: 1px solid var(--glyph-line);
+  transition: background-color 140ms ease;
+}
+
+.glyph-table tbody tr:nth-child(even) {
+  background: var(--glyph-table-stripe);
+}
+
+.glyph-table tbody tr:last-child {
+  border-block-end: 0;
+}
+
+.glyph-table tbody tr:hover,
+.glyph-table tbody tr:focus-within {
+  background: var(--glyph-table-hover);
+}
+
+.glyph-input,
+.glyph-input-shell {
+  border: 1px solid var(--glyph-line-strong);
+  background: var(--glyph-surface);
+  box-shadow: 0 2px 0 var(--glyph-shadow), inset 0 0 0 1px var(--glyph-surface);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms var(--glyph-ease);
+}
+
+.glyph-input:hover,
+.glyph-input-shell:hover {
+  border-color: var(--glyph-ink);
+  box-shadow: 0 3px 0 var(--glyph-shadow), inset 0 0 0 1px var(--glyph-surface);
+}
+
+.glyph-input:focus,
+.glyph-input-shell:focus-within {
+  border-color: var(--glyph-ink);
+  box-shadow: 0 0 0 2px var(--glyph-canvas), 0 0 0 4px var(--glyph-focus), 0 2px 0 var(--glyph-shadow);
+}
+
+.glyph-input:active {
+  box-shadow: 0 1px 0 var(--glyph-shadow), inset 0 0 0 1px var(--glyph-surface);
+  transform: translateY(1px);
+}
+
+@media (max-width: 639px) {
+  .glyph-table-scroll__hint {
+    display: block;
+    margin: 0;
+    border-block-start: 1px solid var(--glyph-line);
+    padding: 0.55rem 0.75rem;
+    color: var(--glyph-tertiary);
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    text-align: right;
+  }
 }
 
 @media (max-width: 780px) {

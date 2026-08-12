@@ -114,6 +114,15 @@ export function Panel({
   );
 }
 
+export function TableScroll({ children }: { children: ReactNode }) {
+  return (
+    <div className="glyph-table-scroll">
+      {children}
+      <p className="glyph-table-scroll__hint">Swipe horizontally to view more</p>
+    </div>
+  );
+}
+
 export function QueryRefreshMeta({ query }: { query: Pick<ExplorerQuery<unknown>, "dataUpdatedAt" | "isFetching"> }) {
   const label = formatRefreshTimestamp(query.dataUpdatedAt);
   return (

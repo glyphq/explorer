@@ -30,6 +30,7 @@ import {
   InvalidLookup,
   QueryRefreshMeta,
   QueryState,
+  TableScroll,
 } from "./primitives";
 import { identifyContractInvocation, isSmartContractCall } from "./contracts";
 import { formatNumber, formatTimestamp } from "./utils";
@@ -256,12 +257,12 @@ function TransactionTable({ transactions }: { transactions: QueryTransaction[] }
   });
 
   return (
-    <div className="-mx-4 overflow-x-auto sm:mx-0">
-      <table className="min-w-[980px] w-full border-collapse text-left" aria-label="Identity transaction history">
+    <TableScroll>
+      <table className="glyph-table min-w-[980px] w-full border-collapse text-left" aria-label="Identity transaction history">
         <caption className="sr-only">Identity transaction history</caption>
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
-            <tr className="border-b border-[var(--glyph-line)] text-[0.68rem] uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]" key={headerGroup.id}>
+            <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 const label = String(header.column.columnDef.header ?? "Column");
                 const sorted = header.column.getIsSorted();
@@ -286,7 +287,7 @@ function TransactionTable({ transactions }: { transactions: QueryTransaction[] }
             </tr>
           ))}
         </thead>
-        <tbody className="divide-y divide-[var(--glyph-line)]">
+        <tbody>
           {table.getRowModel().rows.map((row) => (
             <tr className="align-top text-sm" key={row.id}>
               {row.getAllCells().map((cell) => (
@@ -298,7 +299,7 @@ function TransactionTable({ transactions }: { transactions: QueryTransaction[] }
           ))}
         </tbody>
       </table>
-    </div>
+    </TableScroll>
   );
 }
 
@@ -325,7 +326,7 @@ function TransactionHistory({ request }: { request: ExplorerTransactionsForIdent
           <span>Type</span>
           <select
             aria-label="Transaction type filter"
-            className="min-h-10 border border-[var(--glyph-line-strong)] bg-[var(--glyph-surface)] px-3 font-medium text-[var(--glyph-ink)]"
+            className="glyph-input min-h-10 px-3 font-medium text-[var(--glyph-ink)]"
             onChange={(event) => {
               setFilter(event.target.value as IdentityTransactionFilter);
               setPage(0);

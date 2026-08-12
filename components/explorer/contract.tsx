@@ -12,6 +12,7 @@ import {
   KeyValueList,
   Panel,
   StatusMessage,
+  TableScroll,
 } from "./primitives";
 
 function IdentityValue({ identity }: { identity: string }) {
@@ -36,19 +37,19 @@ function PublishedInputTypes({ contract }: { contract: ContractCatalogueEntry })
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-[620px] w-full border-collapse text-left" aria-label={`Published procedures for ${contract.name}`}>
+    <TableScroll>
+      <table className="glyph-table min-w-[620px] w-full border-collapse text-left" aria-label={`Published procedures for ${contract.name}`}>
         <caption className="sr-only">
           Published procedures, input types, and generated exports for {contract.name}.
         </caption>
         <thead>
-          <tr className="border-b border-[var(--glyph-line)] text-[0.68rem] uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">
+          <tr>
             <th className="px-3 py-3 font-medium sm:first:pl-0" scope="col">Procedure</th>
             <th className="px-3 py-3 text-right font-medium" scope="col">Input type</th>
             <th className="px-3 py-3 font-medium" scope="col">Generated export</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[var(--glyph-line)]">
+        <tbody>
           {contract.inputTypes.map((input) => (
             <tr className="align-top text-sm" key={input.exportName}>
               <th className="px-3 py-3 font-medium text-[var(--glyph-ink)] sm:first:pl-0" scope="row">
@@ -62,7 +63,7 @@ function PublishedInputTypes({ contract }: { contract: ContractCatalogueEntry })
           ))}
         </tbody>
       </table>
-    </div>
+    </TableScroll>
   );
 }
 

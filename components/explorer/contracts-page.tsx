@@ -14,7 +14,7 @@ import {
   getPublishedProcedureCount,
   type ContractCatalogueEntry,
 } from "./contracts-catalogue";
-import { ExplorerFrame } from "./primitives";
+import { ExplorerFrame, TableScroll } from "./primitives";
 
 export type ContractsPageProps = {
   contracts: readonly ContractCatalogueEntry[];
@@ -68,20 +68,20 @@ function IdentityCell({ identity }: { identity: string }) {
 
 function ContractsTable({ contracts }: { contracts: readonly ContractCatalogueEntry[] }) {
   return (
-    <div className="overflow-x-auto border-y border-[var(--glyph-line)]">
-      <table className="min-w-[800px] w-full border-collapse text-left" aria-label="Generated Qubic smart contracts">
+    <TableScroll>
+      <table className="glyph-table min-w-[800px] w-full border-collapse text-left" aria-label="Generated Qubic smart contracts">
         <caption className="sr-only">
           Contract names, indices, canonical identities, and published procedure counts from the official generated contracts package.
         </caption>
         <thead>
-          <tr className="border-b border-[var(--glyph-line)] text-[0.68rem] uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">
+          <tr>
             <th className="px-3 py-3 font-medium sm:first:pl-0" scope="col">Contract</th>
             <th className="px-3 py-3 text-right font-medium" scope="col">Index</th>
             <th className="px-3 py-3 font-medium" scope="col">Canonical identity</th>
             <th className="px-3 py-3 font-medium" scope="col">Published procedures</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[var(--glyph-line)]">
+        <tbody>
           {contracts.map((contract) => (
             <tr className="align-top text-sm text-[var(--glyph-muted)]" key={contract.index}>
               <th className="whitespace-nowrap px-3 py-3 font-semibold text-[var(--glyph-ink)] sm:first:pl-0" scope="row">
@@ -110,7 +110,7 @@ function ContractsTable({ contracts }: { contracts: readonly ContractCatalogueEn
           ))}
         </tbody>
       </table>
-    </div>
+    </TableScroll>
   );
 }
 
@@ -137,7 +137,7 @@ export function ContractsPage({ contracts }: ContractsPageProps) {
           <p aria-live="polite" className="font-mono text-xs text-[var(--glyph-tertiary)]">
             {filteredContracts.length} {query.trim() ? "matching " : ""}contract{filteredContracts.length === 1 ? "" : "s"}
           </p>
-          <div className="flex min-h-9 w-full items-center gap-2 border border-[var(--glyph-line-strong)] bg-[var(--glyph-canvas)] px-2.5 sm:w-64">
+          <div className="glyph-input-shell flex min-h-9 w-full items-center gap-2 px-2.5 sm:w-64">
             <HugeiconsIcon aria-hidden="true" className="shrink-0 text-[var(--glyph-tertiary)]" focusable="false" icon={Search01Icon} size={17} strokeWidth={1.5} />
             <label className="sr-only" htmlFor="contracts-search">Search contracts by name, index, or identity</label>
             <input

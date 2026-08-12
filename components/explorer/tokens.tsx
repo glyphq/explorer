@@ -16,6 +16,7 @@ import {
   ExplorerLink,
   QueryRefreshMeta,
   QueryState,
+  TableScroll,
 } from "./primitives";
 import { formatNumber } from "./utils";
 
@@ -51,18 +52,18 @@ function TokenNameCell({ row }: { row: AssetIssuanceRow }) {
 
 function TokenTable({ rows }: { rows: readonly AssetIssuanceRow[] }) {
   return (
-    <div className="-mx-4 overflow-x-auto sm:mx-0">
-      <table className="min-w-[760px] w-full border-collapse text-left" aria-label="Qubic tokens">
+    <TableScroll>
+      <table className="glyph-table min-w-[760px] w-full border-collapse text-left" aria-label="Qubic tokens">
         <caption className="sr-only">Tokens reported by the official Qubic live API</caption>
         <thead>
-          <tr className="border-b border-[var(--glyph-line)] text-[0.68rem] uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">
+          <tr>
             <th className="px-4 pb-3 font-medium sm:px-0" scope="col">Token</th>
             <th className="px-4 pb-3 text-right font-medium" scope="col">Index</th>
             <th className="px-4 pb-3 font-medium" scope="col">Issuer</th>
             <th className="px-4 pb-3 text-right font-medium" scope="col">Issued at</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[var(--glyph-line)]">
+        <tbody>
           {rows.map((row) => (
             <tr className="align-top text-sm text-[var(--glyph-muted)]" key={row.key}>
               <td className="px-4 py-3 font-semibold text-[var(--glyph-ink)] sm:px-0">
@@ -77,7 +78,7 @@ function TokenTable({ rows }: { rows: readonly AssetIssuanceRow[] }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </TableScroll>
   );
 }
 
@@ -104,7 +105,7 @@ export function TokensPage() {
         <div className="flex items-center gap-3">
           <label className="sr-only" htmlFor="token-search">Filter tokens</label>
           <input
-            className="h-9 w-48 border border-[var(--glyph-line)] bg-transparent px-3 text-sm text-[var(--glyph-ink)] outline-none placeholder:text-[var(--glyph-tertiary)] focus:border-[var(--glyph-ink)]"
+            className="glyph-input h-9 w-48 px-3 text-sm text-[var(--glyph-ink)] outline-none placeholder:text-[var(--glyph-tertiary)]"
             id="token-search"
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Filter tokens"
