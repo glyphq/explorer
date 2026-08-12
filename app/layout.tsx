@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono, Space_Grotesk } from "next/font/google";
 import { GlyphShell } from "@/components/shell";
 import "./globals.css";
 
@@ -18,8 +18,8 @@ const themeBootstrapScript = `
 })();
 `;
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
 });
 
@@ -40,7 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable}`}
+      className={`${spaceGrotesk.variable} ${geistMono.variable}`}
       data-theme="system"
       suppressHydrationWarning
     >

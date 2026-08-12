@@ -2,9 +2,14 @@
 
 import {
   AlertCircleIcon,
+  Calendar03Icon,
+  Coins01Icon,
+  Dollar01Icon,
+  FireIcon,
   RefreshIcon,
+  UserGroupIcon,
 } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
 
 import { useLatestStats, type LatestStats } from "@/lib/stats";
 
@@ -83,13 +88,22 @@ function Metric({
   label,
   value,
   detail,
+  icon,
 }: {
   label: string;
   value: React.ReactNode;
   detail?: string;
+  icon: HugeiconsIconProps["icon"];
 }) {
   return (
-    <div className="min-w-0 px-4 py-4 sm:px-5">
+    <div className="relative min-w-0 overflow-hidden px-4 py-4 sm:px-5">
+      <HugeiconsIcon
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-5 -right-4 size-24 text-[var(--glyph-ink)] opacity-[0.055]"
+        focusable="false"
+        icon={icon}
+        strokeWidth={1.15}
+      />
       <dt className="truncate text-xs text-[var(--glyph-tertiary)]">{label}</dt>
       <dd className="mt-1 truncate font-mono text-sm font-medium text-[var(--glyph-ink)]">{value}</dd>
       {detail ? <p className="mt-1 truncate text-[0.68rem] text-[var(--glyph-tertiary)]">{detail}</p> : null}
@@ -155,11 +169,11 @@ function StatsContent({
       </div>
 
       <dl className="grid grid-cols-2 divide-x divide-y divide-[var(--glyph-line)] sm:grid-cols-3">
-        <Metric label="Epoch" value={formatNumber(stats.epoch)} />
-        <Metric label="Active addresses" value={formatNumber(stats.activeAddresses)} />
-        <Metric detail="QUS" label="Circulating supply" value={formatCompactBigInt(stats.circulatingSupply)} />
-        <Metric detail="USD" label="Market cap" value={`$${formatCompactBigInt(stats.marketCap)}`} />
-        <Metric detail="QUS" label="Burned" value={formatCompactBigInt(stats.burnedQus)} />
+        <Metric icon={Calendar03Icon} label="Epoch" value={formatNumber(stats.epoch)} />
+        <Metric icon={UserGroupIcon} label="Active addresses" value={formatNumber(stats.activeAddresses)} />
+        <Metric icon={Coins01Icon} detail="QUS" label="Circulating supply" value={formatCompactBigInt(stats.circulatingSupply)} />
+        <Metric icon={Dollar01Icon} detail="USD" label="Market cap" value={`$${formatCompactBigInt(stats.marketCap)}`} />
+        <Metric icon={FireIcon} detail="QUS" label="Burned" value={formatCompactBigInt(stats.burnedQus)} />
       </dl>
     </>
   );

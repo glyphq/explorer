@@ -53,7 +53,7 @@
 @theme inline {
   --color-background: var(--glyph-canvas);
   --color-foreground: var(--glyph-ink);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-space-grotesk);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -75,7 +75,7 @@ body {
   overflow-x: hidden;
   background: var(--glyph-canvas);
   color: var(--glyph-ink);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
   font-synthesis: none;
   line-height: 1.55;
   text-rendering: optimizeLegibility;
