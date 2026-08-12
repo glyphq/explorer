@@ -1,4 +1,5 @@
 export { CommandSearch } from "@/components/shell/command-search";
+export { GlyphFooter } from "@/components/shell/glyph-footer";
 export { GlyphBrand, GlyphMark } from "@/components/shell/glyph-mark";
 export { GlyphNavigation } from "@/components/shell/navigation";
 export type { GlyphNavigationProps } from "@/components/shell/navigation";
