@@ -38,11 +38,6 @@ function formatCompactBigInt(value: bigint | undefined): string {
   return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(amount)}${unit.suffix}`;
 }
 
-function formatPrice(value: number | undefined): string {
-  if (value === undefined) return "—";
-  return `$${value < 0.01 ? value.toFixed(8).replace(/0+$/, "").replace(/\.$/, "") : value.toFixed(2)}`;
-}
-
 function formatQuality(value: number): string {
   return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value)}%`;
 }
@@ -122,17 +117,11 @@ function StatsContent({
     <>
       <div className="border-b border-[var(--glyph-line)] p-5 md:p-7 lg:border-b-0 lg:border-r">
         <div className="flex items-start justify-between gap-5">
-          <dl className="grid min-w-0 flex-1 grid-cols-2 gap-x-6">
+          <dl className="min-w-0 flex-1">
             <div className="min-w-0">
               <dt className="text-xs text-[var(--glyph-tertiary)]">Current tick</dt>
               <dd className="mt-2 truncate font-mono text-4xl font-semibold tracking-[-0.08em] text-[var(--glyph-ink)] md:text-6xl">
                 {formatNumber(stats.currentTick)}
-              </dd>
-            </div>
-            <div className="min-w-0 text-right">
-              <dt className="text-xs text-[var(--glyph-tertiary)]">Price</dt>
-              <dd className="mt-2 truncate font-mono text-xl font-medium tracking-[-0.04em] text-[var(--glyph-ink)] md:text-2xl">
-                {formatPrice(stats.price)}
               </dd>
             </div>
           </dl>

@@ -56,7 +56,7 @@ function TransactionTable({ rows, tick }: { rows: TickTransactionRow[]; tick: nu
               <td className="px-4 py-4"><IdentifierCell value={row.source} /></td>
               <td className="px-4 py-4"><IdentifierCell value={row.destination} /></td>
               <td className="whitespace-nowrap px-4 py-4 text-right font-mono text-xs text-[var(--glyph-ink)]">
-                {row.amount !== undefined ? `${formatAtomicAmount(row.amount)} raw units` : "Not reported"}
+                {row.amount !== undefined ? formatAtomicAmount(row.amount) : "Not reported"}
               </td>
               <td className="px-4 py-4 text-right font-mono text-xs text-[var(--glyph-ink)]">
                 {formatNumber(row.inputType)}

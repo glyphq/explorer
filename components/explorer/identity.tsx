@@ -31,6 +31,7 @@ import {
   QueryRefreshMeta,
   QueryState,
 } from "./primitives";
+import { identifyContractInvocation, isSmartContractCall } from "./contracts";
 import { formatNumber, formatTimestamp } from "./utils";
 
 const assetQueryPolicy = { staleTime: 30_000, gcTime: 5 * 60_000 } as const;
@@ -100,7 +101,7 @@ function IdentitySummary({
         <SummaryChip
           detail="Current account balance"
           label="Balance"
-          value={querySummaryValue(balance, (data) => `${formatAtomicAmount(data.balance)} raw units`)}
+          value={querySummaryValue(balance, (data) => formatAtomicAmount(data.balance))}
         />
         <SummaryChip
           detail="Assets issued by this identity"
@@ -160,9 +161,15 @@ function amountSortValue(value: string | undefined): bigint | undefined {
   }
 }
 
-function transactionTypeLabel(inputType: number | undefined): string {
-  if (inputType === 0) return "Normal transaction";
-  if (typeof inputType === "number" && inputType > 0) return "Smart-contract call";
+function transactionTypeLabel(transaction: QueryTransaction): string {
+  if (transaction.inputType === 0) return "Normal transaction";
+  if (isSmartContractCall(transaction.inputType)) {
+    const invocation = identifyContractInvocation(transaction);
+    if (invocation.status === "recognized") {
+      return `${invocation.contractName} · ${invocation.procedureName}`;
+    }
+    return "Smart-contract call";
+  }
   return "Input type not reported";
 }
 
@@ -201,7 +208,7 @@ const identityColumns = identityColumnHelper.columns([
     header: "Type",
     cell: ({ row }) => (
       <span className="whitespace-nowrap text-xs text-[var(--glyph-ink)]">
-        {transactionTypeLabel(row.original.inputType)}
+        {transactionTypeLabel(row.original)}
         {row.original.inputType !== undefined ? (
           <span className="ml-1 font-mono text-[var(--glyph-tertiary)]">({formatNumber(row.original.inputType)})</span>
         ) : null}
@@ -230,7 +237,7 @@ const identityColumns = identityColumnHelper.columns([
     cell: ({ row }) => (
       <span className="whitespace-nowrap font-mono text-xs text-[var(--glyph-ink)]">
         {row.original.amount !== undefined && row.original.amount !== null
-          ? `${formatAtomicAmount(row.original.amount)} raw units`
+          ? formatAtomicAmount(row.original.amount)
           : "Not reported"}
       </span>
     ),

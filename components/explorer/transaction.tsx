@@ -80,7 +80,7 @@ export function TransactionPage({ hash }: { hash: string | null }) {
             <KeyValueList
               items={[
                 { label: "Archive record", value: "Available" },
-                { label: "Amount", value: transaction.amount !== undefined && transaction.amount !== null ? `${formatAtomicAmount(transaction.amount)} raw units` : "Amount not reported" },
+                { label: "Amount", value: transaction.amount !== undefined && transaction.amount !== null ? formatAtomicAmount(transaction.amount) : "Amount not reported" },
                 { label: "Tick", value: transaction.tickNumber !== undefined ? <ExplorerLink href={`/tick/${transaction.tickNumber}`}>{formatNumber(transaction.tickNumber)}</ExplorerLink> : "Not reported" },
                 { label: "Timestamp", value: formatTimestamp(transaction.timestamp) },
                 { label: "Source", value: <IdentityIdentifier label="Source" value={transaction.source} />, wide: true },

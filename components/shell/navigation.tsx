@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import { CommandSearch } from "@/components/shell/command-search";
 import { GlyphBrand } from "@/components/shell/glyph-mark";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
+import { useLatestStats } from "@/lib/stats";
 
 export type GlyphNavigationProps = {
   brand?: ReactNode;
@@ -79,10 +80,26 @@ function DefaultNavigationLinks() {
   );
 }
 
+function formatPrice(value: number | undefined): string {
+  if (value === undefined) return "—";
+  const decimal = value < 0.01 ? value.toFixed(8).replace(/0+$/, "").replace(/\.$/, "") : value.toFixed(2);
+  return `$${decimal}`;
+}
+
+function HeaderPrice() {
+  const stats = useLatestStats();
+
+  return (
+    <span aria-label="Current Qubic price" className="hidden font-mono text-xs text-[var(--glyph-muted)] lg:inline-flex">
+      {formatPrice(stats.data?.price)}
+    </span>
+  );
+}
+
 export function GlyphNavigation({
   brand = (
     <Link className="glyph-nav__brand-link" href="/" aria-label="Glyph home">
-      <GlyphBrand />
+      <GlyphBrand suffix="explorer" />
     </Link>
   ),
   commandSearch = <CommandSearch />,
@@ -98,6 +115,7 @@ export function GlyphNavigation({
           </nav>
         ) : null}
         <div className="glyph-nav__actions">
+          <HeaderPrice />
           {commandSearch}
           <ThemeToggle />
         </div>
