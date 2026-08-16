@@ -407,7 +407,7 @@ export function getIdentityTransactionTypeDisplay(transaction: QueryTransaction)
     if (invocation.status === "recognized") {
       const details = formatContractInvocation(invocation);
       return {
-        label: invocation.procedureName,
+        label: `${invocation.procedureName} (${formatNumber(invocation.inputType)})`,
         detail: [details.description, details.metadata].filter((value): value is string => Boolean(value)).join("\n"),
       };
     }

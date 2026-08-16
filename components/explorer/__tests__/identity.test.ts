@@ -76,7 +76,7 @@ describe("identity transaction type display", () => {
     };
 
     expect(getIdentityTransactionTypeDisplay(transaction)).toEqual({
-      label: "Unlock",
+      label: "Unlock (2)",
       detail: "Qearn\nContract index 9 · input type 2 · 12 reported bytes · 12 payload bytes",
     });
   });
