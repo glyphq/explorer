@@ -61,10 +61,6 @@ export function TransactionPage({ hash }: { hash: string | null }) {
   const contractInvocationDisplay = contractInvocation
     ? formatContractInvocation(contractInvocation)
     : null;
-  const decodedArguments = contractInvocation?.status === "recognized" && contractInvocation.argumentDecoding.status === "decoded"
-    ? contractInvocation.argumentDecoding.arguments
-    : null;
-
   return (
     <ExplorerFrame>
       <header className="mb-5 border-b border-[var(--glyph-line)] pb-4">
@@ -140,22 +136,6 @@ export function TransactionPage({ hash }: { hash: string | null }) {
                     <div className="mt-4">
                       <RawTransactionValue label="Raw input" value={transaction.inputData} />
                     </div>
-
-                    {decodedArguments ? (
-                      <div className="mt-5">
-                        <h3 className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Decoded arguments</h3>
-                        {decodedArguments.length > 0 ? (
-                          <KeyValueList
-                            items={decodedArguments.map((argument) => ({
-                              label: argument.name,
-                              value: <code className="font-mono text-xs">{argument.value}</code>,
-                            }))}
-                          />
-                        ) : (
-                          <p className="mt-1 text-sm text-[var(--glyph-muted)]">This procedure has no input arguments.</p>
-                        )}
-                      </div>
-                    ) : null}
                   </>
                 ) : (
                   <>
