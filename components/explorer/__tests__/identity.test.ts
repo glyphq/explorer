@@ -1,5 +1,8 @@
 import { describe, expect, test } from "bun:test";
+import { contractIndexToIdentity } from "@qubic.org/crypto";
+import type { QueryTransaction } from "@qubic.org/rpc";
 
+import { getIdentityTransactionTypeDisplay } from "../identity";
 import {
   createIdentityTransactionsPageRequest,
   getIdentityTransactionFilter,
@@ -60,5 +63,21 @@ describe("identity transaction query helpers", () => {
 
   test("stops at the archive pagination cap when the response omits a total", () => {
     expect(getNextIdentityTransactionsOffset(page({ from: 9_996, size: 4, count: 4 }), 9_996, 4)).toBeUndefined();
+  });
+});
+
+describe("identity transaction type display", () => {
+  test("shows a recognized procedure while retaining contract details for hover", () => {
+    const transaction: QueryTransaction = {
+      destination: contractIndexToIdentity(9),
+      inputData: btoa(String.fromCharCode(...new Uint8Array(12))),
+      inputSize: 12,
+      inputType: 2,
+    };
+
+    expect(getIdentityTransactionTypeDisplay(transaction)).toEqual({
+      label: "Unlock",
+      detail: "Qearn\nContract index 9 · input type 2 · 12 reported bytes · 12 payload bytes",
+    });
   });
 });
