@@ -44,7 +44,7 @@ import {
   TableHeaderLabel,
   TableScroll,
 } from "./primitives";
-import { identifyContractInvocation, isSmartContractCall, transactionTypeLabel } from "./contracts";
+import { formatContractInvocation, identifyContractInvocation, isSmartContractCall, transactionTypeLabel } from "./contracts";
 import { SkeletonLine } from "./skeletons";
 import { formatNumber, formatTimestamp } from "./utils";
 
@@ -401,15 +401,22 @@ function amountSortValue(value: string | undefined): bigint | undefined {
   }
 }
 
-function identityTransactionTypeLabel(transaction: QueryTransaction): string {
+export function getIdentityTransactionTypeDisplay(transaction: QueryTransaction): { label: string; detail?: string } {
   if (isSmartContractCall(transaction.inputType)) {
     const invocation = identifyContractInvocation(transaction);
     if (invocation.status === "recognized") {
-      return `${invocation.contractName} · ${invocation.procedureName}`;
+      const details = formatContractInvocation(invocation);
+      return {
+        label: invocation.procedureName,
+        detail: [details.description, details.metadata].filter((value): value is string => Boolean(value)).join("\n"),
+      };
     }
-    return "Smart-contract call";
+    return {
+      label: "Smart-contract call",
+      detail: transaction.inputType === undefined ? undefined : `Input type ${formatNumber(transaction.inputType)}`,
+    };
   }
-  return transactionTypeLabel(transaction.inputType);
+  return { label: transactionTypeLabel(transaction.inputType) };
 }
 
 const identityTableFeatures = tableFeatures({
@@ -454,14 +461,18 @@ const identityColumns = identityColumnHelper.columns([
   }),
   identityColumnHelper.accessor("inputType", {
     header: () => <TableHeaderLabel icon={FunctionIcon}>Type</TableHeaderLabel>,
-    cell: ({ row }) => (
-      <span className="whitespace-nowrap text-xs text-[var(--glyph-ink)]">
-        {identityTransactionTypeLabel(row.original)}
-        {row.original.inputType !== undefined ? (
-          <span className="ml-1 font-mono text-[var(--glyph-tertiary)]">({formatNumber(row.original.inputType)})</span>
-        ) : null}
-      </span>
-    ),
+    cell: ({ row }) => {
+      const type = getIdentityTransactionTypeDisplay(row.original);
+      return (
+        <span
+          aria-label={type.detail ? `${type.label}. ${type.detail}` : undefined}
+          className="whitespace-nowrap text-xs text-[var(--glyph-ink)]"
+          title={type.detail}
+        >
+          {type.label}
+        </span>
+      );
+    },
   }),
   identityColumnHelper.accessor("tickNumber", {
     header: () => <TableHeaderLabel icon={Tick01Icon}>Tick</TableHeaderLabel>,
