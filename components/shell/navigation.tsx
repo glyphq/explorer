@@ -84,7 +84,8 @@ function formatPricePerBillion(value: number | undefined): string {
   if (value === undefined) return "—";
   const pricePerBillion = value * 1_000_000_000;
   return `$${new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: pricePerBillion >= 100 ? 0 : 2,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(pricePerBillion)} / bQUBIC`;
 }
 
