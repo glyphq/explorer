@@ -8,10 +8,10 @@ const Dither = dynamic(() => import("@/components/Dither"), {
 
 export function ReactBitsDither() {
   return (
-    <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+    <div aria-hidden="true" className="absolute inset-0 pointer-events-none opacity-25">
       <Dither
         colorNum={10}
-        disableAnimation
+        disableAnimation={false}
         enableMouseInteraction={false}
         mouseRadius={1}
         pixelSize={2}

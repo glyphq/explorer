@@ -24,7 +24,7 @@ import {
   type MouseEvent,
 } from "react";
 
-import { GlyphButton } from "@/components/ui/button";
+import { GlyphButton, type GlyphButtonVariant } from "@/components/ui/button";
 import { IdentityAvatar } from "@/components/identity";
 import {
   classifyCommandQuery,
@@ -40,6 +40,7 @@ type CommandSearchProps = {
   onClick?: () => void;
   shortcut?: string;
   label?: string;
+  variant?: GlyphButtonVariant;
 };
 
 export type NavigationCommand = {
@@ -379,6 +380,7 @@ export function CommandSearch({
   label = "Search",
   onClick,
   shortcut = "⌘/Ctrl K",
+  variant = "secondary",
 }: CommandSearchProps) {
   const [open, setOpen] = useState(false);
   const [recentLookups, setRecentLookups] = useState<RecentLookup[]>([]);
@@ -451,12 +453,12 @@ export function CommandSearch({
       <GlyphButton
         aria-keyshortcuts="Meta+K Control+K"
         aria-label={`${label}. Press Command K or Control K to open navigation and lookup.`}
-        className="glyph-command-search"
+        className={`glyph-command-search glyph-command-search--${variant}`}
         data-glyph-slot="command-search"
         icon={Search01Icon}
         onClick={handleTriggerClick}
         size="sm"
-        variant="secondary"
+        variant={variant}
       >
         <span className="glyph-command-search__label">
           <span>{label}</span>

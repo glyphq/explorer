@@ -20,19 +20,19 @@ test.describe("public explorer navigation", () => {
 
     const hero = page.locator("section[aria-labelledby='overview-heading']");
     await expect(hero.getByRole("heading", { name: "Explore Qubic" })).toBeVisible();
-    await expect(hero.getByRole("button", { name: /Open lookup/ })).toBeVisible();
+    const lookup = hero.getByRole("button", { name: /Look up the network/ });
+    await expect(lookup).toBeVisible();
     await expect(hero.locator("canvas")).toHaveCount(1);
 
     const geometry = await page.evaluate(() => {
       const heroElement = document.querySelector<HTMLElement>(".glyph-home-hero");
-      const mainElement = document.querySelector("main");
-      if (!heroElement || !mainElement) return null;
+      if (!heroElement) return null;
       return {
         height: heroElement.getBoundingClientRect().height,
         top: heroElement.getBoundingClientRect().top,
         documentWidth: document.body.getBoundingClientRect().width,
+        radius: getComputedStyle(heroElement).borderBottomLeftRadius,
         width: heroElement.getBoundingClientRect().width,
-        mainTop: mainElement.getBoundingClientRect().top,
       };
     });
 
@@ -40,7 +40,8 @@ test.describe("public explorer navigation", () => {
     expect(geometry?.width).toBe(geometry?.documentWidth);
     const viewport = page.viewportSize();
     expect(geometry?.height).toBeGreaterThanOrEqual((viewport?.height ?? 0) * 0.6);
-    expect(geometry?.top).toBe(geometry?.mainTop);
+    expect(geometry?.top).toBe(0);
+    expect(geometry?.radius).not.toBe("0px");
   });
 
   test("renders safe feedback for invalid typed routes", async ({ page }) => {

@@ -1,13 +1,13 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
 
-type ButtonVariant = "primary" | "secondary" | "quiet";
+export type GlyphButtonVariant = "primary" | "secondary" | "quiet";
 type ButtonSize = "sm" | "md";
 
 export type GlyphButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   children: ReactNode;
   icon?: HugeiconsIconProps["icon"];
-  variant?: ButtonVariant;
+  variant?: GlyphButtonVariant;
   size?: ButtonSize;
 };
 

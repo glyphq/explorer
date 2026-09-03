@@ -172,8 +172,7 @@ input:focus-visible {
   z-index: 40;
   top: 0;
   min-height: var(--glyph-header);
-  background: rgb(0 0 0 / 78%);
-  backdrop-filter: blur(18px) saturate(1.2);
+  background: transparent;
   transition:
     top 260ms var(--glyph-ease),
     min-height 260ms var(--glyph-ease),
@@ -513,12 +512,13 @@ input:focus-visible {
 .glyph-button--primary {
   border-color: var(--glyph-accent);
   background: var(--glyph-accent);
-  color: #fff;
+  color: var(--glyph-canvas);
 }
 
 .glyph-button--primary:hover {
   border-color: var(--glyph-accent-strong);
   background: var(--glyph-accent-strong);
+  color: var(--glyph-canvas);
 }
 
 .glyph-button--secondary {
@@ -562,10 +562,32 @@ input:focus-visible {
   color: var(--glyph-ink);
 }
 
+.glyph-command-search--primary {
+  border-color: var(--glyph-accent);
+  background: var(--glyph-accent);
+  color: var(--glyph-canvas);
+}
+
+.glyph-command-search--primary:hover {
+  border-color: var(--glyph-accent-strong);
+  background: var(--glyph-accent-strong);
+  color: var(--glyph-canvas);
+}
+
+.glyph-command-search--primary kbd {
+  background: rgb(0 0 0 / 16%);
+  color: rgb(0 0 0 / 72%);
+}
+
 .glyph-overview-command .glyph-command-search {
-  min-width: min(100%, 28rem);
+  min-width: 0;
   min-height: 50px;
-  padding-inline: 1rem;
+  padding-inline: 1.1rem;
+}
+
+.glyph-home-hero {
+  margin-top: calc(-1 * var(--glyph-header));
+  padding-top: var(--glyph-header);
 }
 
 .glyph-nav[data-scrolled="true"] .glyph-command-search {
