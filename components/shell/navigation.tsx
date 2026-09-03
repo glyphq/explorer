@@ -4,7 +4,7 @@ import { Coins01Icon, Home01Icon, RankingIcon } from "@hugeicons/core-free-icons
 import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { CommandSearch } from "@/components/shell/command-search";
 import { GlyphBrand } from "@/components/shell/glyph-mark";
 import { useLatestStats } from "@/lib/stats";
@@ -104,8 +104,17 @@ export function GlyphNavigation({
   commandSearch = <CommandSearch />,
   links = <DefaultNavigationLinks />,
 }: GlyphNavigationProps) {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const updateScrolled = () => setScrolled(window.scrollY > 20);
+    updateScrolled();
+    window.addEventListener("scroll", updateScrolled, { passive: true });
+    return () => window.removeEventListener("scroll", updateScrolled);
+  }, []);
+
   return (
-    <header className="glyph-nav">
+    <header className="glyph-nav" data-scrolled={scrolled ? "true" : undefined}>
       <div className="glyph-nav__inner">
         <div className="glyph-nav__brand">{brand}</div>
         {links ? (

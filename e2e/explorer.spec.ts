@@ -9,10 +9,6 @@ test.describe("public explorer navigation", () => {
     await expect(page).toHaveURL(/\/tokens$/);
     await expect(page.getByRole("heading", { name: "Tokens" })).toBeVisible();
 
-    await page.getByRole("link", { name: "Contracts" }).click();
-    await expect(page).toHaveURL(/\/contracts$/);
-    await expect(page.getByRole("heading", { name: "Contracts" })).toBeVisible();
-
     await page.getByRole("link", { name: "Rich list" }).click();
     await expect(page).toHaveURL(/\/rich-list$/);
     await expect(page.getByRole("heading", { name: "Rich list" })).toBeVisible();

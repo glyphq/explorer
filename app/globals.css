@@ -107,12 +107,12 @@ a {
   text-decoration: none;
 }
 
-a:not(.glyph-button):not(.glyph-nav__brand-link) {
+a:not(.glyph-button):not(.glyph-nav__brand-link):not(.glyph-nav__route) {
   color: var(--glyph-accent);
   transition: color 160ms var(--glyph-ease), opacity 160ms var(--glyph-ease);
 }
 
-a:not(.glyph-button):not(.glyph-nav__brand-link):hover {
+a:not(.glyph-button):not(.glyph-nav__brand-link):not(.glyph-nav__route):hover {
   color: var(--glyph-accent-strong);
 }
 
@@ -173,6 +173,7 @@ input:focus-visible {
   min-height: var(--glyph-header);
   background: rgb(0 0 0 / 78%);
   backdrop-filter: blur(18px) saturate(1.2);
+  transition: min-height 260ms var(--glyph-ease), background-color 260ms var(--glyph-ease);
 }
 
 .glyph-nav__inner {
@@ -184,6 +185,26 @@ input:focus-visible {
   min-height: var(--glyph-header);
   margin: 0 auto;
   padding-inline: var(--glyph-gutter);
+  transition: min-height 260ms var(--glyph-ease), width 260ms var(--glyph-ease), padding 260ms var(--glyph-ease), border-radius 260ms var(--glyph-ease), background-color 260ms var(--glyph-ease), box-shadow 260ms var(--glyph-ease);
+}
+
+.glyph-nav[data-scrolled="true"] {
+  min-height: 64px;
+  background: transparent;
+  pointer-events: none;
+}
+
+.glyph-nav[data-scrolled="true"] .glyph-nav__inner {
+  width: min(calc(100% - 2rem), 72rem);
+  min-height: 52px;
+  margin-top: 0.5rem;
+  padding-inline: 1rem;
+  border: 1px solid rgb(255 255 255 / 7%);
+  border-radius: 999px;
+  background: rgb(9 9 9 / 88%);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 45%);
+  backdrop-filter: blur(20px) saturate(1.2);
+  pointer-events: auto;
 }
 
 .glyph-nav__brand,
@@ -289,21 +310,22 @@ input:focus-visible {
   display: inline-flex;
   min-height: 44px;
   gap: 0.5rem;
-  border-bottom: 1px solid transparent;
+  border-radius: 999px;
   color: var(--glyph-muted);
   text-decoration: none;
   transition:
-    border-color 160ms ease,
-    color 160ms ease;
+    color 160ms ease,
+    background-color 160ms ease;
 }
 
 .glyph-nav__route:hover,
 .glyph-nav__route[data-current="true"] {
   color: var(--glyph-ink);
+  background: rgb(255 255 255 / 6%);
 }
 
 .glyph-nav__route[data-current="true"] {
-  border-bottom-color: var(--glyph-ink);
+  color: var(--glyph-ink);
 }
 
 .glyph-nav__route-icon {
@@ -681,22 +703,13 @@ input:focus-visible {
   font-weight: 550;
 }
 
-.glyph-table tbody td:has(a) {
-  color: var(--glyph-ink);
-}
-
 .glyph-table tbody a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.25rem;
-  border-radius: 0.5rem;
   color: var(--glyph-accent);
-  font-weight: 600;
-  transition: background-color 160ms var(--glyph-ease), color 160ms var(--glyph-ease);
+  font-weight: inherit;
+  transition: color 160ms var(--glyph-ease);
 }
 
 .glyph-table tbody a:hover {
-  background: var(--glyph-accent-surface);
   color: var(--glyph-accent-strong);
 }
 
