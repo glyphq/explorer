@@ -120,14 +120,15 @@ function StatsContent({
 }) {
   return (
     <>
-      <div className="border-b border-[var(--glyph-line)] p-5 md:p-7 lg:border-b-0 lg:border-r">
+      <div className="p-5 md:p-7">
         <div className="flex items-start justify-between gap-5">
           <dl className="min-w-0 flex-1">
             <div className="min-w-0">
-              <dt className="text-xs text-[var(--glyph-tertiary)]">Current tick</dt>
+              <dt className="text-xs text-[var(--glyph-tertiary)]">Latest network tick</dt>
               <dd className="mt-2 truncate font-mono text-4xl font-semibold tracking-[-0.08em] text-[var(--glyph-ink)] md:text-6xl">
                 {formatNumber(stats.currentTick)}
               </dd>
+              <p className="mt-2 text-xs text-[var(--glyph-muted)]">The latest unit of confirmed network activity.</p>
             </div>
           </dl>
           <IconButton
@@ -142,12 +143,13 @@ function StatsContent({
 
         <div className="mt-8" aria-label="Epoch tick quality">
           <div className="mb-2 flex items-baseline justify-between gap-4">
-            <span className="text-xs text-[var(--glyph-tertiary)]">Tick quality</span>
+            <span className="text-xs text-[var(--glyph-tertiary)]">Network health</span>
             <span className="font-mono text-base font-semibold leading-tight tracking-[-0.03em] text-[var(--glyph-ink)] sm:text-lg">
               {formatQuality(stats.epochTickQuality)}
             </span>
           </div>
           <TickQualityStrip quality={stats.epochTickQuality} />
+          <p className="mt-2 text-xs text-[var(--glyph-muted)]">How reliably the network is producing ticks this epoch.</p>
           <div className="mt-2 flex flex-wrap justify-between gap-x-4 gap-y-1 font-mono text-[0.68rem] text-[var(--glyph-muted)]">
             <span>{formatNumber(stats.ticksInCurrentEpoch)} epoch ticks</span>
             <span>{formatNumber(stats.emptyTicksInCurrentEpoch)} empty</span>
@@ -158,16 +160,16 @@ function StatsContent({
           className="mt-7 block font-mono text-[0.68rem] text-[var(--glyph-tertiary)]"
           dateTime={new Date(stats.timestamp * 1_000).toISOString()}
         >
-          Updated {formatStatsTimestamp(stats.timestamp)}
+          Last updated {formatStatsTimestamp(stats.timestamp)}
         </time>
       </div>
 
-      <dl className="grid grid-cols-2 divide-x divide-y divide-[var(--glyph-line)] sm:grid-cols-3">
-        <Metric icon={Calendar03Icon} label="Epoch" value={formatNumber(stats.epoch)} />
-        <Metric icon={UserGroupIcon} label="Active addresses" value={formatNumber(stats.activeAddresses)} />
+      <dl className="grid grid-cols-2 sm:grid-cols-3">
+        <Metric icon={Calendar03Icon} label="Current epoch" value={formatNumber(stats.epoch)} />
+        <Metric icon={UserGroupIcon} label="Active accounts" value={formatNumber(stats.activeAddresses)} />
         <Metric icon={Coins01Icon} detail="QUS" label="Circulating supply" value={formatCompactBigInt(stats.circulatingSupply)} />
         <Metric icon={Dollar01Icon} detail="USD" label="Market cap" value={`$${formatCompactBigInt(stats.marketCap)}`} />
-        <Metric icon={FireIcon} detail="QUS" label="Burned" value={formatCompactBigInt(stats.burnedQus)} />
+        <Metric icon={FireIcon} detail="QUS" label="Tokens burned" value={formatCompactBigInt(stats.burnedQus)} />
       </dl>
     </>
   );
@@ -204,7 +206,7 @@ function StatsSurface({ query }: { query: ReturnType<typeof useLatestStats> }) {
   return (
     <>
       {query.isError ? (
-        <div className="flex items-center gap-3 border-b border-[var(--glyph-line)] bg-[var(--glyph-canvas)] px-4 py-3 text-xs text-[var(--glyph-muted)]" role="alert">
+          <div className="flex items-center gap-3 bg-[var(--glyph-canvas)] px-4 py-3 text-xs text-[var(--glyph-muted)]" role="alert">
           <HugeiconsIcon aria-hidden="true" className="shrink-0" focusable="false" icon={AlertCircleIcon} size={18} strokeWidth={1.5} />
           <span className="min-w-0 flex-1">Showing the last successful stats response.</span>
           <IconButton icon={RefreshIcon} label="Retry network stats" onClick={() => void query.refetch()} size="sm" />
@@ -217,7 +219,7 @@ function StatsSurface({ query }: { query: ReturnType<typeof useLatestStats> }) {
   );
 }
 
-function LatestActivity() {
+function LatestActivity({ className = "" }: { className?: string }) {
   const processedTick = useLastProcessedTick();
   const tick = processedTick.data?.tickNumber;
   const transactions = useTransactionsForTick(tick);
@@ -226,25 +228,25 @@ function LatestActivity() {
   if (!processedTick.data) return null;
 
   return (
-    <section aria-labelledby="latest-activity-heading" className="mt-6 overflow-hidden rounded-[var(--glyph-radius-md)] bg-[var(--glyph-surface)] shadow-[0_12px_32px_var(--glyph-shadow)]">
+    <section aria-labelledby="latest-activity-heading" className={`overflow-hidden rounded-[var(--glyph-radius-md)] bg-[var(--glyph-surface)] shadow-[0_12px_32px_var(--glyph-shadow)] ${className}`}>
       <div className="flex flex-wrap items-center justify-between gap-3 px-5 pb-2 pt-5 sm:px-6">
         <div>
-          <h2 className="text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]" id="latest-activity-heading">Latest archived activity</h2>
-          <p className="mt-1 text-sm text-[var(--glyph-muted)]">Transactions reported for the latest indexed tick.</p>
+          <h2 className="text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]" id="latest-activity-heading">Latest activity</h2>
+          <p className="mt-1 text-sm text-[var(--glyph-muted)]">Recent transactions in the newest indexed tick.</p>
         </div>
-        <ExplorerLink href={`/tick/${tick}/transactions`}>View tick {formatNumber(tick)}</ExplorerLink>
+        <ExplorerLink href={`/tick/${tick}/transactions`}>View all</ExplorerLink>
       </div>
       {transactions.isPending ? <p className="px-5 py-4 text-sm text-[var(--glyph-muted)]">Loading transactions…</p> : null}
       {transactions.data?.length ? (
-        <ul className="mt-2 space-y-px bg-[var(--glyph-canvas)] p-2">
+        <ul className="mt-2 px-5 pb-5 sm:px-6">
           {transactions.data.slice(0, 5).map((transaction, index) => (
-            <li className="flex items-center justify-between gap-4 rounded-[calc(var(--glyph-radius-sm)-2px)] bg-[var(--glyph-surface)] px-4 py-3 text-sm" key={`${transaction.hash ?? "transaction"}-${index}`}>
+            <li className="flex items-center justify-between gap-4 py-3 text-sm" key={`${transaction.hash ?? "transaction"}-${index}`}>
               {transaction.hash ? <ExplorerLink href={`/transaction/${transaction.hash}`}><code className="font-mono text-xs">{formatTransactionHash(transaction.hash)}</code></ExplorerLink> : <span className="text-[var(--glyph-tertiary)]">Transaction hash not reported</span>}
-              <span className="shrink-0 font-mono text-xs text-[var(--glyph-tertiary)]">{transaction.inputType === 0 ? "Transfer" : `Input ${formatNumber(transaction.inputType)}`}</span>
+              <span className="shrink-0 font-mono text-xs text-[var(--glyph-tertiary)]">{transaction.inputType === 0 ? "Transfer" : "App activity"}</span>
             </li>
           ))}
         </ul>
-      ) : transactions.isSuccess ? <p className="px-5 py-4 text-sm text-[var(--glyph-muted)]">No transactions were reported for this tick.</p> : null}
+      ) : transactions.isSuccess ? <p className="px-5 py-4 text-sm text-[var(--glyph-muted)]">No recent transactions were reported for this tick.</p> : null}
     </section>
   );
 }
@@ -255,10 +257,12 @@ export function ExplorerHome() {
   return (
     <ExplorerFrame>
       <OverviewHero />
-      <section aria-label="Network stats" className="w-full overflow-hidden rounded-[var(--glyph-radius-md)] bg-[var(--glyph-surface)] shadow-[0_12px_32px_var(--glyph-shadow)]">
-        <StatsSurface query={stats} />
-      </section>
-      <LatestActivity />
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)]">
+        <section aria-label="Network snapshot" className="w-full overflow-hidden rounded-[var(--glyph-radius-md)] bg-[var(--glyph-surface)] shadow-[0_12px_32px_var(--glyph-shadow)]">
+          <StatsSurface query={stats} />
+        </section>
+        <LatestActivity />
+      </div>
     </ExplorerFrame>
   );
 }

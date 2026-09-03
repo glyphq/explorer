@@ -4,8 +4,8 @@ import { ExplorerHome } from "@/components/explorer/home";
 import { explorerPageMetadata } from "@/lib/metadata";
 
 export const metadata: Metadata = explorerPageMetadata(
-  "Network overview",
-  "Current public Qubic network health, tick quality, supply, market data, and direct explorer lookup.",
+  "Explore Qubic",
+  "Explore current Qubic network activity, find public accounts and transactions, and check ticks, tokens, and market data.",
   "/",
 );
 

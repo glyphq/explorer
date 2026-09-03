@@ -83,17 +83,17 @@ export type MatchCopy = {
 export function getMatchCopy(kind: DirectQueryMatch["kind"]): MatchCopy {
   if (kind === "identity") {
     return {
-      detail: "60 uppercase letters",
-      label: "Identity",
-      context: "Assets and transaction history",
+      detail: "60-character account ID",
+      label: "Account",
+      context: "Balance, assets, and activity",
     };
   }
 
   if (kind === "transaction") {
     return {
-      detail: "60 lowercase hex",
+      detail: "60-character transaction ID",
       label: "Transaction",
-      context: "Tick and contract metadata",
+      context: "When and where it was recorded",
     };
   }
 
@@ -101,14 +101,14 @@ export function getMatchCopy(kind: DirectQueryMatch["kind"]): MatchCopy {
     return {
       detail: "Numeric universe index",
       label: "Token",
-      context: "Asset issuance details",
+      context: "Token details and issuer",
     };
   }
 
   return {
-    detail: "Numeric tick",
-    label: "Tick",
-    context: "Transactions for this tick",
+    detail: "Network tick number",
+    label: "Network tick",
+    context: "Activity recorded at this point",
   };
 }
 
