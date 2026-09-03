@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
-import { Space_Grotesk } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
 import { GlyphShell } from "@/components/shell";
 import { explorerMetadataBase } from "@/lib/metadata";
 import "./globals.css";
 
 import ExplorerProviders from "./providers";
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
@@ -32,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={spaceGrotesk.variable}
+      className={geistMono.variable}
       data-theme="dark"
     >
       <body>
