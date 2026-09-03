@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk } from "next/font/google";
 import { GlyphShell } from "@/components/shell";
+import { explorerMetadataBase } from "@/lib/metadata";
 import "./globals.css";
 
 import ExplorerProviders from "./providers";
@@ -24,11 +25,20 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
+  metadataBase: explorerMetadataBase(),
   title: {
     default: "Glyph Explorer",
     template: "%s | Glyph Explorer",
   },
-  description: "A legible view of Glyph network activity.",
+  applicationName: "Glyph Explorer",
+  description: "A legible view of public Qubic network activity.",
+  openGraph: {
+    siteName: "Glyph Explorer",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

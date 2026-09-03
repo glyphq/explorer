@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "test": "bun test",
+    "test": "bun test --path-ignore-patterns=e2e/**",
     "test:e2e": "bun run build && playwright test",
     "start": "next start",
     "lint": "eslint"
