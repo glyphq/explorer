@@ -67,7 +67,7 @@ export function SkeletonTable({
           <thead>
             <tr>
               {Array.from({ length: columns }, (_, index) => (
-                <th className={index === columns - 1 ? "text-right" : undefined} key={`heading-${index}`} scope="col">
+                <th key={`heading-${index}`} scope="col">
                   <SkeletonLine className={`my-0.5 ${columnWidths[index % columnWidths.length]}`} />
                 </th>
               ))}
@@ -77,7 +77,7 @@ export function SkeletonTable({
             {Array.from({ length: rows }, (_, rowIndex) => (
               <tr key={`row-${rowIndex}`}>
                 {Array.from({ length: columns }, (_, columnIndex) => (
-                  <td className={columnIndex === columns - 1 ? "py-3 text-right" : "py-3"} key={`cell-${rowIndex}-${columnIndex}`}>
+                  <td className="py-3" key={`cell-${rowIndex}-${columnIndex}`}>
                     <SkeletonLine className={`${columnWidths[(columnIndex + rowIndex) % columnWidths.length]} ${columnIndex === 0 ? "max-w-[12rem]" : ""}`} />
                   </td>
                 ))}

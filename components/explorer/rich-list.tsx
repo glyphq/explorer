@@ -25,10 +25,10 @@ function formatBalance(value: bigint): string {
 function IdentityCell({ identity }: Pick<RichListEntry, "identity">) {
   return (
     <Link
-      className="inline-flex min-w-0 items-center gap-3 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--glyph-focus)]"
+      className="inline-flex min-w-0 items-center gap-2 rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--glyph-focus)]"
       href={`/identity/${encodeURIComponent(identity)}`}
     >
-      <IdentityAvatar identity={identity} label={`Identicon for ${identity}`} radius={6} size={30} />
+      <IdentityAvatar identity={identity} label={`Identicon for ${identity}`} radius={4} size={20} />
       <span className="min-w-0">
         <span className="block truncate font-mono text-xs font-semibold text-[var(--glyph-ink)]" title={identity}>
           {formatIdentity(identity)}
@@ -47,19 +47,19 @@ function RichListTable({ entries, pagination }: { entries: RichListEntry[]; pagi
         <caption className="sr-only">Reported Qubic identities and balances from the official Stats API</caption>
         <thead>
           <tr>
-            <th className="w-20 text-right font-medium" scope="col"><TableHeaderLabel icon={RankingIcon}>Rank</TableHeaderLabel></th>
+            <th className="w-20 font-medium" scope="col"><TableHeaderLabel icon={RankingIcon}>Rank</TableHeaderLabel></th>
             <th className="font-medium" scope="col"><TableHeaderLabel icon={IdentityCardIcon}>Identity</TableHeaderLabel></th>
-            <th className="text-right font-medium" scope="col"><TableHeaderLabel icon={Coins01Icon}>Reported balance</TableHeaderLabel></th>
+            <th className="font-medium" scope="col"><TableHeaderLabel icon={Coins01Icon}>Reported balance</TableHeaderLabel></th>
           </tr>
         </thead>
         <tbody>
           {entries.map((entry, index) => (
-            <tr className="align-middle text-sm text-[var(--glyph-muted)]" key={`${entry.identity}:${entry.balance.toString()}`}>
-              <td className="py-4 text-right font-mono text-xs tabular-nums text-[var(--glyph-tertiary)]">
+            <tr className="align-top text-sm" key={`${entry.identity}:${entry.balance.toString()}`}>
+              <td className="py-3 text-right font-mono text-xs tabular-nums text-[var(--glyph-tertiary)]">
                 {formatNumber(firstRank + index)}
               </td>
               <td className="py-3"><IdentityCell identity={entry.identity} /></td>
-              <td className="py-4 text-right font-mono text-sm tabular-nums text-[var(--glyph-ink)]">
+              <td className="py-3 text-right font-mono text-xs tabular-nums text-[var(--glyph-ink)]">
                 <data title="Balance reported by the official Qubic Stats API" value={entry.balance.toString()}>
                   {formatBalance(entry.balance)}
                 </data>
@@ -87,7 +87,7 @@ function Pagination({
   const currentPage = Math.min(Math.max(1, page), totalPages);
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[var(--glyph-line)] px-5 py-4">
+    <nav aria-label="Rich-list pages" className="mt-5 flex flex-wrap items-center justify-center gap-3">
       <p className="font-mono text-xs text-[var(--glyph-tertiary)]">
         Page {formatNumber(currentPage)} of {formatNumber(totalPages)} · {formatNumber(pagination.totalRecords)} reported identities
       </p>
@@ -113,7 +113,7 @@ function Pagination({
           Next
         </GlyphButton>
       </div>
-    </div>
+    </nav>
   );
 }
 
@@ -140,7 +140,7 @@ export function RichListPage() {
         query={query}
       >
         {query.data ? (
-          <section className="overflow-hidden rounded-[var(--glyph-radius-sm)] border border-[var(--glyph-line)] bg-[var(--glyph-surface)]" aria-label="Rich list results">
+          <>
             <RichListTable entries={query.data.entries} pagination={query.data.pagination} />
             <Pagination
               isFetching={query.isFetching}
@@ -148,7 +148,7 @@ export function RichListPage() {
               page={page}
               pagination={query.data.pagination}
             />
-          </section>
+          </>
         ) : null}
       </QueryState>
     </ExplorerFrame>

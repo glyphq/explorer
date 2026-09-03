@@ -3,6 +3,7 @@
 import { Coins01Icon, HashtagIcon, IdentityCardIcon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { useMemo, useState } from "react";
 
+import { IdentityAvatar } from "@/components/identity";
 import { getAssetIssuanceHref, normalizeAssetIssuances, type AssetIssuanceRow } from "@/lib/assets";
 import { useAssetIssuances } from "@/lib/rpc/queries";
 import {
@@ -28,9 +29,10 @@ function IssuerCell({ value }: { value: string | undefined }) {
   if (!value) return <span className="text-[var(--glyph-tertiary)]">—</span>;
 
   return identity ? (
-    <ExplorerLink href={`/identity/${identity}`}>
-      <span title={identity}>{formatIdentifier(identity)}</span>
-    </ExplorerLink>
+    <span className="flex min-w-0 items-center gap-2" title={identity}>
+      <IdentityAvatar identity={identity} label="Issuer identicon" radius={4} size={20} />
+      <ExplorerLink href={`/identity/${identity}`}>{formatIdentifier(identity)}</ExplorerLink>
+    </span>
   ) : (
     <code className="font-mono text-xs text-[var(--glyph-muted)]" title={value}>
       {formatIdentifier(value)}
@@ -61,14 +63,14 @@ function TokenTable({ rows }: { rows: readonly AssetIssuanceRow[] }) {
         <thead>
           <tr>
             <th className="font-medium" scope="col"><TableHeaderLabel icon={Coins01Icon}>Token</TableHeaderLabel></th>
-            <th className="text-right font-medium" scope="col"><TableHeaderLabel icon={HashtagIcon}>Index</TableHeaderLabel></th>
+            <th className="font-medium" scope="col"><TableHeaderLabel icon={HashtagIcon}>Index</TableHeaderLabel></th>
             <th className="font-medium" scope="col"><TableHeaderLabel icon={IdentityCardIcon}>Issuer</TableHeaderLabel></th>
-            <th className="text-right font-medium" scope="col"><TableHeaderLabel icon={Tick01Icon}>Issued at</TableHeaderLabel></th>
+            <th className="font-medium" scope="col"><TableHeaderLabel icon={Tick01Icon}>Issued at</TableHeaderLabel></th>
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr className="align-top text-sm text-[var(--glyph-muted)]" key={row.key}>
+            <tr className="align-top text-sm" key={row.key}>
               <td className="py-3 font-semibold text-[var(--glyph-ink)]">
                 <TokenNameCell row={row} />
               </td>
