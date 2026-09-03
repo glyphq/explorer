@@ -81,4 +81,4 @@ Run `bun run build` before deployment, configure `NEXT_PUBLIC_SITE_URL` with the
 
 ## License
 
-No license file is currently included. Add one before distributing this project as an open-source package.
+This project is licensed under the [MIT License](LICENSE).
