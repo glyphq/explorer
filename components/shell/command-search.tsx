@@ -358,7 +358,7 @@ function CommandPalette({
 }
 
 export function CommandSearch({
-  label = "Lookup",
+  label = "Search",
   onClick,
   shortcut = "⌘/Ctrl K",
 }: CommandSearchProps) {
