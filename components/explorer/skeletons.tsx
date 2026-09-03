@@ -116,37 +116,19 @@ export function SkeletonKeyValueList({
 export function OverviewStatsSkeleton({ className = "" }: { className?: string }) {
   return (
     <SkeletonRegion className={className} label="Loading network stats">
-      <div className="grid min-h-[20rem] lg:grid-cols-[minmax(20rem,0.9fr)_minmax(0,1.7fr)]">
-        <div className="border-b border-[var(--glyph-line)] p-5 md:p-7 lg:border-b-0 lg:border-r">
-          <div className="flex items-start justify-between gap-5">
-            <div className="min-w-0 flex-1">
-              <SkeletonLine className="w-20" />
-              <Skeleton className="mt-3 h-14 w-44 rounded-sm md:h-16" />
-            </div>
-            <Skeleton className="size-11 rounded-md" />
-          </div>
-          <div className="mt-8">
-            <div className="flex items-baseline justify-between gap-4">
-              <SkeletonLine className="w-20" />
-              <SkeletonLine className="w-14" />
-            </div>
-            <Skeleton className="mt-3 h-3 w-full rounded-sm" />
-            <div className="mt-3 flex justify-between gap-4">
-              <SkeletonLine className="w-24" />
-              <SkeletonLine className="w-16" />
-            </div>
-          </div>
-          <SkeletonLine className="mt-7 w-44" />
+      <div className="glyph-network-grid">
+        <div className="glyph-data-card glyph-network-tile glyph-network-tile--lead">
+          <SkeletonLine className="w-24" />
+          <Skeleton className="mt-5 h-14 w-48 rounded-sm sm:h-16" />
+          <SkeletonLine className="mt-5 w-36" />
         </div>
-        <div className="grid grid-cols-2 divide-x divide-y divide-[var(--glyph-line)] sm:grid-cols-3">
-          {Array.from({ length: 5 }, (_, index) => (
-            <div className="relative min-w-0 overflow-hidden px-4 py-4 sm:px-5" key={`metric-${index}`}>
-              <SkeletonLine className="w-24" />
-              <Skeleton className="mt-2 h-6 w-24 rounded-sm" />
-              {index > 1 ? <SkeletonLine className="mt-2 w-12" /> : null}
-            </div>
-          ))}
-        </div>
+        {Array.from({ length: 4 }, (_, index) => (
+          <div className="glyph-data-card glyph-network-tile" key={`metric-${index}`}>
+            <SkeletonLine className="w-24" />
+            <Skeleton className="mt-4 h-7 w-28 rounded-sm" />
+            <SkeletonLine className="mt-3 w-32" />
+          </div>
+        ))}
       </div>
     </SkeletonRegion>
   );

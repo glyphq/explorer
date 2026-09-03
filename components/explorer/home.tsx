@@ -8,7 +8,6 @@ import {
   ChartLineData01Icon,
   Coins01Icon,
   CoinsDollarIcon,
-  FireIcon,
   RefreshIcon,
   UserGroupIcon,
 } from "@hugeicons/core-free-icons";
@@ -107,7 +106,7 @@ function MarketMetric({
   value: string;
 }) {
   return (
-    <div className={`glyph-market-metric${className ? ` ${className}` : ""}`}>
+    <div className={`glyph-data-card glyph-market-metric${className ? ` ${className}` : ""}`}>
       <HugeiconsIcon
         aria-hidden="true"
         className="glyph-market-metric__mask"
@@ -187,7 +186,7 @@ function NetworkPulse({
 
       {!showHeading ? <p className="text-[0.68rem] font-medium uppercase tracking-[0.15em] text-[var(--glyph-tertiary)]">Network</p> : null}
       <dl className={showHeading ? "glyph-network-grid mt-8" : "glyph-network-grid mt-4"}>
-        <div className="glyph-network-tile glyph-network-tile--lead">
+        <div className="glyph-data-card glyph-network-tile glyph-network-tile--lead">
           <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={ActivitySparkIcon} size={72} strokeWidth={1.2} />
           <dt>Live network tick</dt>
           <dd>
@@ -197,34 +196,28 @@ function NetworkPulse({
           </dd>
           <p>Reported {formatStatsTimestamp(stats.timestamp)}</p>
         </div>
-        <div className="glyph-network-tile">
+        <div className="glyph-data-card glyph-network-tile">
           <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={Calendar03Icon} size={44} strokeWidth={1.2} />
           <dt>Epoch</dt>
           <dd>{formatNumber(stats.epoch)}</dd>
           <p>{formatNumber(stats.ticksInCurrentEpoch)} ticks so far</p>
         </div>
-        <div className="glyph-network-tile">
+        <div className="glyph-data-card glyph-network-tile">
           <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={ActivitySparkIcon} size={44} strokeWidth={1.2} />
           <dt>Network health</dt>
           <dd>{new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(stats.epochTickQuality)}%</dd>
           <p>Productive ticks this epoch</p>
         </div>
-        <div className="glyph-network-tile">
+        <div className="glyph-data-card glyph-network-tile">
           <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={UserGroupIcon} size={44} strokeWidth={1.2} />
           <dt>Active accounts</dt>
           <dd>{formatNumber(stats.activeAddresses)}</dd>
           <p>Reported in the live snapshot</p>
         </div>
-        <div className="glyph-network-tile glyph-network-tile--wide">
-          <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={Coins01Icon} size={60} strokeWidth={1.2} />
+        <div className="glyph-data-card glyph-network-tile">
+          <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={Coins01Icon} size={44} strokeWidth={1.2} />
           <dt>Circulating supply</dt>
           <dd>{formatCompact(stats.circulatingSupply)} <span className="glyph-network-tile__unit">QUS</span></dd>
-          <p>Reported live supply</p>
-        </div>
-        <div className="glyph-network-tile">
-          <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={FireIcon} size={44} strokeWidth={1.2} />
-          <dt>Burned</dt>
-          <dd>{formatCompact(stats.burnedQus)} <span className="glyph-network-tile__unit">QUS</span></dd>
           <p>{formatBigIntPercent(stats.burnedQus, stats.circulatingSupply + stats.burnedQus)} of reported supply</p>
         </div>
       </dl>
@@ -284,90 +277,103 @@ function MarketSection({ showHeading = true }: { showHeading?: boolean }) {
       {market.isPending && !snapshot ? <p className="mt-8 text-sm text-[var(--glyph-muted)]">Loading market context…</p> : null}
       {market.isError && !snapshot ? <p className="mt-8 text-sm text-[var(--glyph-muted)]">Market context is unavailable right now.</p> : null}
       {snapshot ? (
-        <>
-          <div className="mt-8">
-            <p className="text-xs font-medium uppercase tracking-[0.1em] text-[var(--glyph-tertiary)]">Qubic price</p>
-            <p className="mt-2 font-mono text-4xl font-semibold tracking-[-0.08em] text-[var(--glyph-ink)] sm:text-6xl">{formatUsd(snapshot.priceUsd)}</p>
-            <p className="mt-3 text-sm leading-6 text-[var(--glyph-muted)]">Per QUBIC. Market data last updated {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(snapshot.lastUpdated))}.</p>
+        <dl className="glyph-market-bento mt-8">
+          <div className="glyph-data-card glyph-market-spot">
+            <dt className="text-xs font-medium uppercase tracking-[0.1em] text-[var(--glyph-tertiary)]">Qubic price</dt>
+            <dd className="mt-3 font-mono text-4xl font-semibold tracking-[-0.08em] text-[var(--glyph-ink)] sm:text-6xl">{formatUsd(snapshot.priceUsd)}</dd>
+            <p className="mt-3 text-sm leading-6 text-[var(--glyph-muted)]">Per QUBIC. Updated {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(snapshot.lastUpdated))}.</p>
           </div>
 
-          <dl className="glyph-market-grid mt-10">
-            <MarketMetric className="glyph-market-metric--lead" detail="Current network valuation" icon={ChartEvaluationIcon} label="Market cap" value={formatUsd(snapshot.marketCapUsd)} />
+          <MarketMetric className="glyph-market-metric--wide" detail="Current network valuation" icon={ChartEvaluationIcon} label="Market cap" value={formatUsd(snapshot.marketCapUsd)} />
             <MarketMetric detail="Change over the latest day" icon={ChartIncreaseIcon} label="24-hour movement" value={formatPercent(snapshot.priceChange24h)} />
             <MarketMetric detail="Direction across seven days" icon={ChartLineData01Icon} label="7-day movement" value={formatPercent(snapshot.priceChange7d)} />
             <MarketMetric className="glyph-market-metric--wide" detail="Reported market turnover" icon={CoinsDollarIcon} label="24-hour volume" value={formatUsd(snapshot.volume24hUsd)} />
-          </dl>
 
           {snapshot.history.length > 1 ? (
-            <figure aria-labelledby="market-chart-title" className="mt-10">
-              <figcaption className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
-                <span className="text-sm font-medium text-[var(--glyph-ink)]" id="market-chart-title">30-day price history</span>
-                <span className="font-mono text-xs text-[var(--glyph-tertiary)]">Hover to inspect each daily close</span>
-              </figcaption>
-              <div className="h-72 w-full sm:h-80">
-                <AreaChart
-                  animate={false}
-                  config={MARKET_CHART_CONFIG}
-                  data={snapshot.history}
-                  margins={{ bottom: 28, left: 78, right: 16, top: 18 }}
-                >
-                  <Grid />
-                  <Area dataKey="priceUsd" strokeVariant="solid" variant="hatched" />
-                  <XAxis dataKey="timestamp" maxTicks={6} tickFormatter={formatMarketChartDate} />
-                  <YAxis tickFormatter={formatUsd} />
-                  <Tooltip labelKey="timestamp" valueFormatter={(value) => formatUsd(value)} />
-                </AreaChart>
-              </div>
-            </figure>
+            <div className="glyph-market-chart glyph-market-chart--price">
+              <dt className="sr-only">30-day price history</dt>
+              <dd>
+                <figure aria-labelledby="market-chart-title">
+                  <figcaption className="flex flex-wrap items-baseline justify-between gap-3">
+                    <span className="text-sm font-medium text-[var(--glyph-ink)]" id="market-chart-title">30-day price history</span>
+                    <span className="font-mono text-xs text-[var(--glyph-tertiary)]">Daily closes</span>
+                  </figcaption>
+                  <div className="mt-5 h-64 w-full sm:h-72">
+                    <AreaChart
+                      animate={false}
+                      config={MARKET_CHART_CONFIG}
+                      data={snapshot.history}
+                      margins={{ bottom: 28, left: 78, right: 16, top: 18 }}
+                    >
+                      <Grid />
+                      <Area dataKey="priceUsd" strokeVariant="solid" variant="hatched" />
+                      <XAxis dataKey="timestamp" maxTicks={6} tickFormatter={formatMarketChartDate} />
+                      <YAxis tickFormatter={formatUsd} />
+                      <Tooltip labelKey="timestamp" valueFormatter={(value) => formatUsd(value)} />
+                    </AreaChart>
+                  </div>
+                </figure>
+              </dd>
+            </div>
           ) : null}
 
           {snapshot.marketCapHistory.length > 1 ? (
-            <figure aria-labelledby="market-cap-chart-title" className="mt-14">
-              <figcaption className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
-                <span className="text-sm font-medium text-[var(--glyph-ink)]" id="market-cap-chart-title">30-day market capitalization</span>
-                <span className="font-mono text-xs text-[var(--glyph-tertiary)]">Daily reported value</span>
-              </figcaption>
-              <div className="h-64 w-full sm:h-72">
-                <AreaChart
-                  animate={false}
-                  config={MARKET_CAP_CHART_CONFIG}
-                  data={snapshot.marketCapHistory}
-                  margins={{ bottom: 28, left: 78, right: 16, top: 18 }}
-                >
-                  <Grid />
-                  <Area dataKey="value" strokeVariant="solid" variant="hatched" />
-                  <XAxis dataKey="timestamp" maxTicks={6} tickFormatter={formatMarketChartDate} />
-                  <YAxis tickFormatter={formatCompactUsd} />
-                  <Tooltip labelKey="timestamp" valueFormatter={(value) => formatCompactUsd(value)} />
-                </AreaChart>
-              </div>
-            </figure>
+            <div className="glyph-market-chart">
+              <dt className="sr-only">30-day market capitalization</dt>
+              <dd>
+                <figure aria-labelledby="market-cap-chart-title">
+                  <figcaption className="flex flex-wrap items-baseline justify-between gap-3">
+                    <span className="text-sm font-medium text-[var(--glyph-ink)]" id="market-cap-chart-title">Market capitalization</span>
+                    <span className="font-mono text-xs text-[var(--glyph-tertiary)]">30 days</span>
+                  </figcaption>
+                  <div className="mt-5 h-56 w-full sm:h-64">
+                    <AreaChart
+                      animate={false}
+                      config={MARKET_CAP_CHART_CONFIG}
+                      data={snapshot.marketCapHistory}
+                      margins={{ bottom: 28, left: 78, right: 16, top: 18 }}
+                    >
+                      <Grid />
+                      <Area dataKey="value" strokeVariant="solid" variant="hatched" />
+                      <XAxis dataKey="timestamp" maxTicks={4} tickFormatter={formatMarketChartDate} />
+                      <YAxis tickFormatter={formatCompactUsd} />
+                      <Tooltip labelKey="timestamp" valueFormatter={(value) => formatCompactUsd(value)} />
+                    </AreaChart>
+                  </div>
+                </figure>
+              </dd>
+            </div>
           ) : null}
 
           {snapshot.volumeHistory.length > 1 ? (
-            <figure aria-labelledby="market-volume-chart-title" className="mt-14">
-              <figcaption className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
-                <span className="text-sm font-medium text-[var(--glyph-ink)]" id="market-volume-chart-title">30-day trading volume</span>
-                <span className="font-mono text-xs text-[var(--glyph-tertiary)]">Daily reported turnover</span>
-              </figcaption>
-              <div className="h-64 w-full sm:h-72">
-                <AreaChart
-                  animate={false}
-                  config={MARKET_VOLUME_CHART_CONFIG}
-                  data={snapshot.volumeHistory}
-                  margins={{ bottom: 28, left: 78, right: 16, top: 18 }}
-                >
-                  <Grid />
-                  <Area dataKey="value" strokeVariant="solid" variant="hatched" />
-                  <XAxis dataKey="timestamp" maxTicks={6} tickFormatter={formatMarketChartDate} />
-                  <YAxis tickFormatter={formatCompactUsd} />
-                  <Tooltip labelKey="timestamp" valueFormatter={(value) => formatCompactUsd(value)} />
-                </AreaChart>
-              </div>
-            </figure>
+            <div className="glyph-market-chart">
+              <dt className="sr-only">30-day trading volume</dt>
+              <dd>
+                <figure aria-labelledby="market-volume-chart-title">
+                  <figcaption className="flex flex-wrap items-baseline justify-between gap-3">
+                    <span className="text-sm font-medium text-[var(--glyph-ink)]" id="market-volume-chart-title">Trading volume</span>
+                    <span className="font-mono text-xs text-[var(--glyph-tertiary)]">30 days</span>
+                  </figcaption>
+                  <div className="mt-5 h-56 w-full sm:h-64">
+                    <AreaChart
+                      animate={false}
+                      config={MARKET_VOLUME_CHART_CONFIG}
+                      data={snapshot.volumeHistory}
+                      margins={{ bottom: 28, left: 78, right: 16, top: 18 }}
+                    >
+                      <Grid />
+                      <Area dataKey="value" strokeVariant="solid" variant="hatched" />
+                      <XAxis dataKey="timestamp" maxTicks={4} tickFormatter={formatMarketChartDate} />
+                      <YAxis tickFormatter={formatCompactUsd} />
+                      <Tooltip labelKey="timestamp" valueFormatter={(value) => formatCompactUsd(value)} />
+                    </AreaChart>
+                  </div>
+                </figure>
+              </dd>
+            </div>
           ) : null}
 
-        </>
+        </dl>
       ) : null}
     </section>
   );
