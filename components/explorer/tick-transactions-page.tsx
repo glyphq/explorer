@@ -29,10 +29,12 @@ function IdentifierCell({ value }: { value: string | undefined }) {
   }
 
   return (
-    <span className="flex min-w-0 items-center gap-2" title={identity}>
-      <IdentityAvatar identity={identity} label="Transaction identity identicon" radius={4} size={20} />
-      <code className="font-mono text-xs text-[var(--glyph-ink)]">{formatIdentifier(identity)}</code>
-    </span>
+    <ExplorerLink href={`/identity/${identity}`}>
+      <span className="flex min-w-0 items-center gap-2" title={identity}>
+        <IdentityAvatar identity={identity} label="Transaction identity identicon" radius={4} size={20} />
+        <code className="font-mono text-xs text-[var(--glyph-ink)]">{formatIdentifier(identity)}</code>
+      </span>
+    </ExplorerLink>
   );
 }
 

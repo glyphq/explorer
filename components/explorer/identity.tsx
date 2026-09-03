@@ -27,7 +27,7 @@ import {
   useTransactionsForIdentityPage,
 } from "@/lib/rpc/queries";
 import { explorerData, type ExplorerTransactionsForIdentityRequest } from "@/lib/rpc/adapter";
-import { formatAtomicAmount, formatIdentifier, formatTransactionHash } from "@/lib/rpc/validation";
+import { formatAtomicAmount, formatIdentifier, formatTransactionHash, normalizeIdentity } from "@/lib/rpc/validation";
 import { useLatestStats } from "@/lib/stats";
 import {
   createGlyphTransferClient,
@@ -41,6 +41,7 @@ import {
   InvalidLookup,
   QueryRefreshMeta,
   QueryState,
+  SectionHeader,
   TableHeaderLabel,
   TableScroll,
 } from "./primitives";
@@ -371,13 +372,16 @@ function IdentityAssetChips({ assets }: { assets: ReturnType<typeof useIdentityA
 
 function TransactionIdentityCell({ value, label }: { value: string | undefined; label: string }) {
   if (!value) return <span className="text-[var(--glyph-tertiary)]">Not reported</span>;
+  const identity = normalizeIdentity(value);
 
-  return (
+  const content = (
     <span className="flex min-w-0 items-center gap-2" title={value}>
       <IdentityAvatar identity={value} label={`${label} identicon`} radius={4} size={20} />
       <code className="font-mono text-xs text-[var(--glyph-ink)]">{formatIdentifier(value)}</code>
     </span>
   );
+
+  return identity ? <ExplorerLink href={`/identity/${identity}`}>{content}</ExplorerLink> : content;
 }
 
 function timestampSortValue(value: string | undefined): number | null {
@@ -402,7 +406,7 @@ function amountSortValue(value: string | undefined): bigint | undefined {
 }
 
 export function getIdentityTransactionTypeDisplay(transaction: QueryTransaction): { label: string; detail?: string } {
-  return { label: transaction.inputType === 0 ? "Transfer" : "Smart-contract call" };
+  return { label: transaction.inputType === 0 ? "Transfer" : "Application input" };
 }
 
 const identityTableFeatures = tableFeatures({
@@ -558,28 +562,34 @@ function TransactionHistory({ request }: { request: ExplorerTransactionsForIdent
     : false;
 
   return (
-    <section aria-labelledby="identity-transactions" className="border-t border-[var(--glyph-line)] pt-6">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h2 className="text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]" id="identity-transactions">Transactions</h2>
-        </div>
-        <label className="flex items-center gap-2 text-xs text-[var(--glyph-muted)]">
-          <span>Type</span>
-          <select
-            aria-label="Transaction type filter"
-            className="glyph-input min-h-10 px-3 font-medium text-[var(--glyph-ink)] focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-[var(--glyph-focus)]"
-            onChange={(event) => {
-              setFilter(event.target.value as IdentityTransactionFilter);
-              setPage(0);
-            }}
-            value={filter}
-          >
-            <option value="all">All transactions</option>
-            <option value="normal">Transfer (input type 0)</option>
-            <option value="smart-contract">Smart-contract call (input type &gt; 0)</option>
-          </select>
-        </label>
-      </div>
+    <section aria-labelledby="identity-transactions">
+      <SectionHeader
+        id="identity-transactions"
+        title="Transactions"
+        description="Browse reported activity involving this identity."
+        actions={(
+          <div aria-label="Transaction type" className="glyph-filter-group" role="group">
+            {([
+              ["all", "All"],
+              ["normal", "Transfers"],
+              ["smart-contract", "Application inputs"],
+            ] as const).map(([value, label]) => (
+              <button
+                aria-pressed={filter === value}
+                className="glyph-filter-option"
+                key={value}
+                onClick={() => {
+                  setFilter(value as IdentityTransactionFilter);
+                  setPage(0);
+                }}
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+      />
 
       <QueryState
         emptyMessage="No transactions match this filter."

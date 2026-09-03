@@ -663,6 +663,37 @@ input:focus-visible {
   font-size: 0.8125rem;
 }
 
+.glyph-filter-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  border-radius: 999px;
+  padding: 0.2rem;
+  background: var(--glyph-surface);
+}
+
+.glyph-filter-option {
+  min-height: 36px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.45rem 0.75rem;
+  background: transparent;
+  color: var(--glyph-tertiary);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 550;
+  transition: background-color 160ms var(--glyph-ease), color 160ms var(--glyph-ease);
+}
+
+.glyph-filter-option:hover {
+  color: var(--glyph-ink);
+}
+
+.glyph-filter-option[aria-pressed="true"] {
+  background: var(--glyph-surface-strong);
+  color: var(--glyph-ink);
+}
+
 .glyph-detail-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -1101,6 +1132,26 @@ input:focus-visible {
     min-height: 44px;
     min-width: 0;
     flex: 1;
+  }
+
+  .glyph-page-header__actions > *,
+  .glyph-section-header__actions,
+  .glyph-section-header__actions > * {
+    width: 100%;
+  }
+
+  .glyph-section-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .glyph-filter-group {
+    overflow-x: auto;
+  }
+
+  .glyph-filter-option {
+    flex: 1;
+    white-space: nowrap;
   }
 
   .glyph-table :is(th, td):first-child {

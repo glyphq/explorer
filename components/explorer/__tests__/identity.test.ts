@@ -66,7 +66,7 @@ describe("identity transaction query helpers", () => {
 });
 
 describe("identity transaction type display", () => {
-  test("does not decode smart-contract calls", () => {
-    expect(getIdentityTransactionTypeDisplay({ inputType: 2 } as QueryTransaction)).toEqual({ label: "Smart-contract call" });
+  test("labels application input without decoding it", () => {
+    expect(getIdentityTransactionTypeDisplay({ inputType: 2 } as QueryTransaction)).toEqual({ label: "Application input" });
   });
 });

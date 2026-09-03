@@ -8,6 +8,7 @@ import {
   ExplorerLink,
   IdentifierValue,
   InvalidLookup,
+  KeyValueList,
   PageHeader,
   QueryRefreshMeta,
   QueryState,
@@ -51,41 +52,22 @@ export function TickPage({ tick }: { tick: number | null }) {
           query={tickData}
         >
           {tickData.data ? (
-            <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2 lg:grid-cols-4">
-              <div>
-                <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Tick</dt>
-                <dd className="mt-1 font-mono text-sm text-[var(--glyph-ink)]">{formatNumber(tickData.data.tickNumber ?? tick)}</dd>
-              </div>
-              <div>
-                <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Epoch</dt>
-                <dd className="mt-1 font-mono text-sm text-[var(--glyph-ink)]">{formatNumber(tickData.data.epoch)}</dd>
-              </div>
-              <div>
-                <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Computor</dt>
-                <dd className="mt-1 font-mono text-sm text-[var(--glyph-ink)]">{formatNumber(tickData.data.computorIndex)}</dd>
-              </div>
-              <div>
-                <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Timestamp</dt>
-                <dd className="mt-1 text-sm text-[var(--glyph-ink)]">{formatTimestamp(tickData.data.timestamp)}</dd>
-              </div>
-              <div>
-                <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Transaction hashes</dt>
-                <dd className="mt-1 font-mono text-sm text-[var(--glyph-ink)]">{formatNumber(tickData.data.transactionHashes?.length)}</dd>
-              </div>
-              <div>
-                <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Contract fees</dt>
-                <dd className="mt-1 font-mono text-sm text-[var(--glyph-ink)]">
-                  {tickData.data.contractFees?.length ? formatNumber(tickData.data.contractFees.length) : "None reported"}
-                </dd>
-              </div>
-              <div className="sm:col-span-2 lg:col-span-4">
-                <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Signature</dt>
-                <dd className="mt-1 flex items-start gap-2 text-sm text-[var(--glyph-ink)]">
+            <KeyValueList
+              items={[
+                { label: "Tick", value: <span className="font-mono">{formatNumber(tickData.data.tickNumber ?? tick)}</span> },
+                { label: "Epoch", value: <span className="font-mono">{formatNumber(tickData.data.epoch)}</span> },
+                { label: "Computor", value: <span className="font-mono">{formatNumber(tickData.data.computorIndex)}</span> },
+                { label: "Timestamp", value: formatTimestamp(tickData.data.timestamp) },
+                { label: "Transactions", value: <span className="font-mono">{formatNumber(tickData.data.transactionHashes?.length)}</span> },
+                { label: "Contract fees", value: tickData.data.contractFees?.length ? formatNumber(tickData.data.contractFees.length) : "None reported" },
+                { label: "Signature", wide: true, value: (
+                  <span className="flex items-start gap-2 text-sm text-[var(--glyph-ink)]">
                   <span className="min-w-0 flex-1"><IdentifierValue value={tickData.data.signature} /></span>
                   {tickData.data.signature ? <CopyButton label="Copy signature" value={tickData.data.signature} /> : null}
-                </dd>
-              </div>
-            </dl>
+                  </span>
+                ) },
+              ]}
+            />
           ) : null}
         </QueryState>
         <QueryRefreshMeta query={tickData} />

@@ -69,7 +69,7 @@ function Detail({ issuance }: { issuance: AssetIssuance }) {
           { label: "Decimal places", value: data?.numberOfDecimalPlaces === undefined ? "Not reported" : formatNumber(data.numberOfDecimalPlaces) },
           { label: "Unit measurement", value: <code className="break-all font-mono text-xs">{formatReportedUnit(data?.unitOfMeasurement)}</code> },
           { label: "Universe index", value: issuance.universeIndex === undefined ? "Not reported" : formatNumber(issuance.universeIndex) },
-          { label: "Issuance tick", value: issuance.tick === undefined ? "Not reported" : formatTick(issuance.tick) },
+          { label: "Issuance tick", value: issuance.tick === undefined ? "Not reported" : <ExplorerLink href={`/tick/${issuance.tick}`}>{formatTick(issuance.tick)}</ExplorerLink> },
         ]}
       />
     </>

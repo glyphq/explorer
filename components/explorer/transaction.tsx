@@ -73,16 +73,15 @@ export function TransactionPage({ hash }: { hash: string | null }) {
           <>
             <KeyValueList
               items={[
-                { label: "Archive record", value: "Available" },
                 { label: "Amount", value: transaction.amount !== undefined && transaction.amount !== null ? formatAtomicAmount(transaction.amount) : "Amount not reported" },
                 { label: "Tick", value: transaction.tickNumber !== undefined ? <ExplorerLink href={`/tick/${transaction.tickNumber}`}>{formatNumber(transaction.tickNumber)}</ExplorerLink> : "Not reported" },
                 { label: "Timestamp", value: formatTimestamp(transaction.timestamp) },
                 { label: "Source", value: <IdentityIdentifier label="Source" value={transaction.source} />, wide: true },
                 { label: "Destination", value: <IdentityIdentifier label="Destination" value={transaction.destination} />, wide: true },
-                { label: "Type", value: transaction.inputType === 0 ? "Transfer" : "Smart-contract call" },
+                { label: "Activity", value: transaction.inputType === 0 ? "Transfer" : "Application input" },
                 { label: "Input type", value: formatNumber(transaction.inputType) },
                 { label: "Input size", value: formatNumber(transaction.inputSize) },
-                { label: "Money flew", value: transaction.moneyFlew === undefined ? "Not reported" : transaction.moneyFlew ? "Yes" : "No" },
+                { label: "Value transferred", value: transaction.moneyFlew === undefined ? "Not reported" : transaction.moneyFlew ? "Yes" : "No" },
               ]}
             />
 
