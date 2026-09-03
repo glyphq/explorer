@@ -18,7 +18,6 @@ import {
 
 function getDirectMatches(query: string): DirectQueryMatch[] {
   const match = classifyCommandQuery(query);
-  if (match.kind === "ambiguous") return [...match.matches];
   if (match.kind === "empty" || match.kind === "invalid") return [];
   return [match];
 }
@@ -27,7 +26,6 @@ function getStatusLabel(query: string): string | null {
   const match = classifyCommandQuery(query);
   if (match.kind === "empty") return null;
   if (match.kind === "invalid") return "No route";
-  if (match.kind === "ambiguous") return "Choose a route";
   return getMatchCopy(match.kind).label;
 }
 
@@ -38,9 +36,6 @@ function getAccessibleStatus(query: string): string {
   }
   if (match.kind === "invalid") {
     return "No supported route. Try an identity, hash, tick, or token index.";
-  }
-  if (match.kind === "ambiguous") {
-    return "This identifier can be an identity or transaction. Use a typed route to choose one.";
   }
   return `${getMatchCopy(match.kind).label} ${formatMatchValue(match)} route ready. Press Enter to open.`;
 }

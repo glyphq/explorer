@@ -18,7 +18,6 @@ export type DirectQueryMatch =
 export type QueryMatch =
   | { kind: "empty"; value: "" }
   | DirectQueryMatch
-  | { kind: "ambiguous"; value: string; matches: readonly DirectQueryMatch[] }
   | { kind: "invalid"; value: string };
 
 export function classifyCommandQuery(input: string): QueryMatch {
@@ -41,30 +40,26 @@ export function classifyCommandQuery(input: string): QueryMatch {
     };
   }
 
-  const identity = normalizeIdentity(value);
-  const transactionHash = value === value.toLowerCase()
-    ? normalizeTransactionHash(value)
-    : null;
-  const matches: DirectQueryMatch[] = [];
-
-  if (identity) {
-    matches.push({
-      kind: "identity",
-      value: identity,
-      href: `/identity/${encodeURIComponent(identity)}`,
-    });
-  }
-  if (transactionHash) {
-    matches.push({
-      kind: "transaction",
-      value: transactionHash,
-      href: `/transaction/${encodeURIComponent(transactionHash)}`,
-    });
+  if (value === value.toUpperCase()) {
+    const identity = normalizeIdentity(value);
+    if (identity) {
+      return {
+        kind: "identity",
+        value: identity,
+        href: `/identity/${encodeURIComponent(identity)}`,
+      };
+    }
   }
 
-  if (matches.length === 1) return matches[0];
-  if (matches.length > 1) {
-    return { kind: "ambiguous", value, matches };
+  if (value === value.toLowerCase()) {
+    const transactionHash = normalizeTransactionHash(value);
+    if (transactionHash) {
+      return {
+        kind: "transaction",
+        value: transactionHash,
+        href: `/transaction/${encodeURIComponent(transactionHash)}`,
+      };
+    }
   }
 
   const tick = normalizeTick(value);

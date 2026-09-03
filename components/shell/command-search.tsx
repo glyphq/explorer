@@ -165,7 +165,6 @@ function CommandIcon({ type }: { type: NavigationCommand["id"] | DirectQueryMatc
 }
 
 function DirectRouteItem({ match, onSelect }: { match: DirectQueryMatch; onSelect: () => void }) {
-  const copy = getMatchCopy(match.kind);
   const displayValue = formatMatchValue(match);
 
   return (
@@ -181,10 +180,7 @@ function DirectRouteItem({ match, onSelect }: { match: DirectQueryMatch; onSelec
         size={32}
       />
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-medium" title={String(match.value)}>
-          {copy.label} <span className="font-mono">{displayValue}</span>
-        </span>
-        <span className="mt-0.5 block truncate text-[11px] text-[var(--glyph-tertiary)]">{copy.context}</span>
+        <code className="block truncate font-mono text-xs text-[var(--glyph-ink)]" title={String(match.value)}>{displayValue}</code>
       </span>
       <kbd aria-hidden="true" className="hidden shrink-0 rounded-md border border-[var(--glyph-line)] px-1.5 py-1 font-mono text-[10px] text-[var(--glyph-tertiary)] sm:inline-block">
         ↵
@@ -252,11 +248,7 @@ function CommandPalette({
   const [query, setQuery] = useState("");
   const match = classifyCommandQuery(query);
   const navigationCommands = getNavigationCommands(query);
-  const directMatches = match.kind === "ambiguous"
-    ? match.matches
-    : match.kind !== "empty" && match.kind !== "invalid"
-      ? [match]
-      : [];
+  const directMatches = match.kind !== "empty" && match.kind !== "invalid" ? [match] : [];
   const hasDirectMatch = directMatches.length > 0;
   const hasQuery = Boolean(query.trim());
 
@@ -313,7 +305,7 @@ function CommandPalette({
         {hasDirectMatch
           ? directMatches.length === 1
             ? `${getMatchCopy(directMatches[0].kind).label} route ready. Press Enter to open.`
-            : "Choose whether this identifier is an identity or transaction."
+            : "Choose a lookup route."
           : hasQuery
             ? "No matching route."
             : "Navigation and recent lookups."}
@@ -353,7 +345,7 @@ function CommandPalette({
         ) : null}
 
         {hasDirectMatch ? (
-          <Command.Group heading={directMatches.length > 1 ? "Choose a typed route" : "Typed lookup"} className={groupClassName}>
+          <Command.Group heading="Typed lookup" className={groupClassName}>
             {directMatches.map((directMatch) => (
               <DirectRouteItem
                 key={`${directMatch.kind}:${directMatch.value}`}

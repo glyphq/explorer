@@ -13,7 +13,8 @@ const transaction = "a".repeat(60);
 
 test("command lookup classifies supported routes without contracts", () => {
   expect(classifyCommandQuery(identity)).toEqual(expect.objectContaining({ kind: "identity" }));
-  expect(classifyCommandQuery(transaction)).toEqual(expect.objectContaining({ kind: "ambiguous" }));
+  expect(classifyCommandQuery(transaction)).toEqual(expect.objectContaining({ kind: "transaction" }));
+  expect(classifyCommandQuery("A".repeat(59) + "a")).toEqual({ kind: "invalid", value: "A".repeat(59) + "a" });
   expect(classifyCommandQuery("token:9")).toEqual(expect.objectContaining({ kind: "token", href: "/tokens/9" }));
   expect(classifyCommandQuery("tick:9")).toEqual(expect.objectContaining({ kind: "tick", href: "/tick/9" }));
   expect(classifyCommandQuery("contract:9")).toEqual({ kind: "invalid", value: "contract:9" });
