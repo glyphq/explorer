@@ -601,9 +601,27 @@ input:focus-visible {
   transition: border-color 180ms var(--glyph-ease), background-color 180ms var(--glyph-ease);
 }
 
+.glyph-intelligence-stack {
+  display: grid;
+  gap: clamp(3.5rem, 8vw, 6rem);
+}
+
+.glyph-market-metric,
+.glyph-network-tile {
+  border-color: var(--glyph-line);
+  border-radius: var(--glyph-radius-md);
+  background: var(--glyph-surface);
+}
+
 .glyph-market-metric:hover {
   border-color: var(--glyph-line-strong);
   background: var(--glyph-surface-strong);
+}
+
+.glyph-market-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
 }
 
 .glyph-market-metric__mask {
@@ -612,6 +630,29 @@ input:focus-visible {
   right: 0.85rem;
   color: var(--glyph-accent);
   opacity: 0.16;
+  width: 3.25rem;
+  height: 3.25rem;
+}
+
+.glyph-market-metric--lead {
+  grid-column: span 2;
+  min-height: 14rem;
+}
+
+.glyph-market-metric--lead dd {
+  margin-top: 2.2rem;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  letter-spacing: -0.075em;
+}
+
+.glyph-market-metric--lead .glyph-market-metric__mask {
+  width: 5.5rem;
+  height: 5.5rem;
+}
+
+.glyph-market-metric--wide .glyph-market-metric__mask {
+  width: 4.5rem;
+  height: 4.5rem;
 }
 
 .glyph-network-grid {
@@ -660,6 +701,8 @@ input:focus-visible {
   right: 0.85rem;
   color: var(--glyph-accent);
   opacity: 0.14;
+  width: 2.75rem;
+  height: 2.75rem;
 }
 
 .glyph-network-tile p {
@@ -685,6 +728,11 @@ input:focus-visible {
   letter-spacing: -0.1em;
 }
 
+.glyph-network-tile--lead .glyph-network-tile__mask {
+  width: 6rem;
+  height: 6rem;
+}
+
 .glyph-network-tile--lead dd a,
 .glyph-network-tile--archive dd a {
   color: inherit;
@@ -695,7 +743,26 @@ input:focus-visible {
   font-size: clamp(2rem, 4vw, 3rem);
 }
 
+.glyph-network-tile--archive .glyph-network-tile__mask,
+.glyph-network-tile--wide .glyph-network-tile__mask {
+  width: 4.5rem;
+  height: 4.5rem;
+}
+
 @media (min-width: 700px) {
+  .glyph-market-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .glyph-market-metric--lead {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  .glyph-market-metric--wide {
+    grid-column: span 2;
+  }
+
   .glyph-network-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }

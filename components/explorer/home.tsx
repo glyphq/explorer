@@ -4,12 +4,8 @@ import {
   ActivitySparkIcon,
   Calendar03Icon,
   ChartEvaluationIcon,
-  ChartHighLowIcon,
   ChartIncreaseIcon,
   ChartLineData01Icon,
-  ChartMaximumIcon,
-  ChartMinimumIcon,
-  CircleIcon,
   Coins01Icon,
   CoinsDollarIcon,
   Database01Icon,
@@ -86,18 +82,20 @@ const MARKET_CHART_CONFIG = {
 type MarketMetricIcon = HugeiconsIconProps["icon"];
 
 function MarketMetric({
+  className,
   detail,
   icon,
   label,
   value,
 }: {
+  className?: string;
   detail: string;
   icon: MarketMetricIcon;
   label: string;
   value: string;
 }) {
   return (
-    <div className="glyph-market-metric">
+    <div className={`glyph-market-metric${className ? ` ${className}` : ""}`}>
       <HugeiconsIcon
         aria-hidden="true"
         className="glyph-market-metric__mask"
@@ -145,31 +143,42 @@ function SectionHeading({
   );
 }
 
-function NetworkPulse({ query, stats }: { query: ReturnType<typeof useLatestStats>; stats: LatestStats }) {
+function NetworkPulse({
+  query,
+  showHeading = true,
+  stats,
+}: {
+  query: ReturnType<typeof useLatestStats>;
+  showHeading?: boolean;
+  stats: LatestStats;
+}) {
   const indexedTick = useLastProcessedTick();
   const archiveTick = indexedTick.data?.tickNumber;
   const archiveLag = archiveTick === undefined ? null : Math.max(0, stats.currentTick - archiveTick);
 
   return (
-    <section aria-labelledby="network-pulse-heading">
-      <SectionHeading
-        action={(
-          <IconButton
-            aria-busy={query.isFetching}
-            disabled={query.isFetching}
-            icon={RefreshIcon}
-            label="Refresh network data"
-            onClick={() => void query.refetch()}
-            size="sm"
-            variant="quiet"
-          />
-        )}
-        eyebrow="Network"
-        id="network-pulse-heading"
-        title="The network, right now"
-      />
+    <section aria-label={showHeading ? undefined : "Network data"} aria-labelledby={showHeading ? "network-pulse-heading" : undefined}>
+      {showHeading ? (
+        <SectionHeading
+          action={(
+            <IconButton
+              aria-busy={query.isFetching}
+              disabled={query.isFetching}
+              icon={RefreshIcon}
+              label="Refresh network data"
+              onClick={() => void query.refetch()}
+              size="sm"
+              variant="quiet"
+            />
+          )}
+          eyebrow="Network"
+          id="network-pulse-heading"
+          title="The network, right now"
+        />
+      ) : null}
 
-      <dl className="glyph-network-grid mt-8">
+      {!showHeading ? <p className="text-[0.68rem] font-medium uppercase tracking-[0.15em] text-[var(--glyph-tertiary)]">Network</p> : null}
+      <dl className={showHeading ? "glyph-network-grid mt-8" : "glyph-network-grid mt-4"}>
         <div className="glyph-network-tile glyph-network-tile--lead">
           <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={ActivitySparkIcon} size={72} strokeWidth={1.2} />
           <dt>Live network tick</dt>
@@ -204,12 +213,6 @@ function NetworkPulse({ query, stats }: { query: ReturnType<typeof useLatestStat
           <dd>{formatNumber(stats.activeAddresses)}</dd>
           <p>Reported in the live snapshot</p>
         </div>
-        <div className="glyph-network-tile">
-          <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={CircleIcon} size={44} strokeWidth={1.2} />
-          <dt>Empty ticks</dt>
-          <dd>{formatNumber(stats.emptyTicksInCurrentEpoch)}</dd>
-          <p>So far this epoch</p>
-        </div>
         <div className="glyph-network-tile glyph-network-tile--wide">
           <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={Coins01Icon} size={60} strokeWidth={1.2} />
           <dt>Circulating supply</dt>
@@ -227,7 +230,7 @@ function NetworkPulse({ query, stats }: { query: ReturnType<typeof useLatestStat
   );
 }
 
-function NetworkSection() {
+function NetworkSection({ showHeading = true }: { showHeading?: boolean }) {
   const stats = useLatestStats();
 
   if (stats.isPending && !stats.data) {
@@ -236,12 +239,8 @@ function NetworkSection() {
 
   if (!stats.data) {
     return (
-      <section aria-labelledby="network-pulse-heading">
-        <SectionHeading
-          eyebrow="Network"
-          id="network-pulse-heading"
-          title="The network, right now"
-        />
+      <section aria-label={showHeading ? undefined : "Network data"} aria-labelledby={showHeading ? "network-pulse-heading" : undefined}>
+          {showHeading ? <SectionHeading eyebrow="Network" id="network-pulse-heading" title="The network, right now" /> : null}
         <div className="mt-8">
           <StatusMessage
             action={<IconButton icon={RefreshIcon} label="Retry network data" onClick={() => void stats.refetch()} variant="quiet" />}
@@ -253,35 +252,32 @@ function NetworkSection() {
     );
   }
 
-  return <NetworkPulse query={stats} stats={stats.data} />;
+  return <NetworkPulse query={stats} showHeading={showHeading} stats={stats.data} />;
 }
 
-function MarketSection() {
+function MarketSection({ showHeading = true }: { showHeading?: boolean }) {
   const market = useQubicMarket();
   const snapshot = market.data;
-  const range = snapshot?.history.length
-    ? {
-      high: Math.max(...snapshot.history.map((point) => point.priceUsd)),
-      low: Math.min(...snapshot.history.map((point) => point.priceUsd)),
-      start: snapshot.history[0].priceUsd,
-    }
-    : null;
-  const periodChange = snapshot && range && range.start > 0
-    ? ((snapshot.priceUsd - range.start) / range.start) * 100
-    : null;
 
   return (
-    <section aria-labelledby="market-heading">
-      <SectionHeading
-        action={(
-          <a className="font-mono text-xs text-[var(--glyph-tertiary)] hover:text-[var(--glyph-ink)]" href="https://www.coingecko.com/en/coins/qubic" rel="noreferrer" target="_blank">
-            Market data by CoinGecko
-          </a>
-        )}
-        eyebrow="Market"
-        id="market-heading"
-        title="The market signal"
-      />
+    <section aria-label={showHeading ? undefined : "Market data"} aria-labelledby={showHeading ? "market-heading" : undefined}>
+      {showHeading ? (
+        <SectionHeading
+          action={(
+            <a className="font-mono text-xs text-[var(--glyph-tertiary)] hover:text-[var(--glyph-ink)]" href="https://www.coingecko.com/en/coins/qubic" rel="noreferrer" target="_blank">
+              Market data by CoinGecko
+            </a>
+          )}
+          eyebrow="Market"
+          id="market-heading"
+          title="The market signal"
+        />
+      ) : (
+        <div className="flex items-center justify-between gap-4">
+          <p className="text-[0.68rem] font-medium uppercase tracking-[0.15em] text-[var(--glyph-tertiary)]">Market</p>
+          <a className="font-mono text-xs text-[var(--glyph-tertiary)] hover:text-[var(--glyph-ink)]" href="https://www.coingecko.com/en/coins/qubic" rel="noreferrer" target="_blank">CoinGecko</a>
+        </div>
+      )}
 
       {market.isPending && !snapshot ? <p className="mt-8 text-sm text-[var(--glyph-muted)]">Loading market context…</p> : null}
       {market.isError && !snapshot ? <p className="mt-8 text-sm text-[var(--glyph-muted)]">Market context is unavailable right now.</p> : null}
@@ -293,14 +289,11 @@ function MarketSection() {
             <p className="mt-3 text-sm leading-6 text-[var(--glyph-muted)]">Per QUBIC. Market data last updated {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(snapshot.lastUpdated))}.</p>
           </div>
 
-          <dl className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <MarketMetric detail="Current network valuation" icon={ChartEvaluationIcon} label="Market cap" value={formatUsd(snapshot.marketCapUsd)} />
+          <dl className="glyph-market-grid mt-10">
+            <MarketMetric className="glyph-market-metric--lead" detail="Current network valuation" icon={ChartEvaluationIcon} label="Market cap" value={formatUsd(snapshot.marketCapUsd)} />
             <MarketMetric detail="Change over the latest day" icon={ChartIncreaseIcon} label="24-hour movement" value={formatPercent(snapshot.priceChange24h)} />
             <MarketMetric detail="Direction across seven days" icon={ChartLineData01Icon} label="7-day movement" value={formatPercent(snapshot.priceChange7d)} />
-            <MarketMetric detail="Reported market turnover" icon={CoinsDollarIcon} label="24-hour volume" value={formatUsd(snapshot.volume24hUsd)} />
-            <MarketMetric detail="Lowest daily close in range" icon={ChartMinimumIcon} label="30-day low" value={range ? formatUsd(range.low) : "—"} />
-            <MarketMetric detail="Highest daily close in range" icon={ChartMaximumIcon} label="30-day high" value={range ? formatUsd(range.high) : "—"} />
-            <MarketMetric detail="Change from the first close" icon={ChartHighLowIcon} label="30-day movement" value={formatPercent(periodChange)} />
+            <MarketMetric className="glyph-market-metric--wide" detail="Reported market turnover" icon={CoinsDollarIcon} label="24-hour volume" value={formatUsd(snapshot.volume24hUsd)} />
           </dl>
 
           {snapshot.history.length > 1 ? (
@@ -328,6 +321,22 @@ function MarketSection() {
 
         </>
       ) : null}
+    </section>
+  );
+}
+
+function IntelligenceSection() {
+  return (
+    <section aria-labelledby="intelligence-heading">
+      <SectionHeading
+        eyebrow="Live overview"
+        id="intelligence-heading"
+        title="Qubic intelligence"
+      />
+      <div className="glyph-intelligence-stack mt-8">
+        <NetworkSection showHeading={false} />
+        <MarketSection showHeading={false} />
+      </div>
     </section>
   );
 }
@@ -428,8 +437,7 @@ export function ExplorerHome() {
       <OverviewHero />
       <div className={EXPLORER_FRAME_CONTENT_CLASS}>
         <div className="space-y-20 pb-8 md:space-y-28">
-          <NetworkSection />
-          <MarketSection />
+          <IntelligenceSection />
           <LatestActivity />
         </div>
       </div>
