@@ -26,10 +26,10 @@ function RawTransactionValue({ label, value }: { label: string; value: string | 
   return (
     <div className="flex min-w-0 items-start gap-2">
       <details className="min-w-0 flex-1">
-        <summary className="cursor-pointer text-sm font-semibold text-[var(--glyph-ink)] underline decoration-[var(--glyph-line-strong)] underline-offset-4">
+        <summary className="cursor-pointer text-sm font-semibold text-[var(--glyph-muted)] transition-colors hover:text-[var(--glyph-ink)]">
           View full {label.toLowerCase()} <span className="font-mono text-xs font-normal text-[var(--glyph-tertiary)]">({formatNumber(value.length)} chars)</span>
         </summary>
-        <code className="mt-2 block max-h-40 max-w-full overflow-auto whitespace-pre-wrap break-all border border-[var(--glyph-line)] bg-[var(--glyph-canvas)] p-2 font-mono text-xs leading-5 text-[var(--glyph-ink)]">
+        <code className="mt-3 block max-h-40 max-w-full overflow-auto whitespace-pre-wrap break-all rounded-xl bg-[var(--glyph-canvas)] p-3 font-mono text-xs leading-5 text-[var(--glyph-ink)]">
           {value}
         </code>
       </details>

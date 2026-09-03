@@ -27,7 +27,6 @@ export type ExplorerQuery<T> = {
 
 type ExplorerIcon = HugeiconsIconProps["icon"];
 
-const surfaceClass = "overflow-hidden rounded-[var(--glyph-radius-md)] border border-[var(--glyph-line)] bg-[var(--glyph-surface)] shadow-[0_8px_24px_var(--glyph-shadow)]";
 export const EXPLORER_FRAME_CONTENT_CLASS =
   "mx-auto w-full max-w-screen-2xl px-[var(--glyph-gutter)] py-5 md:py-7";
 
@@ -140,30 +139,11 @@ export function ExplorerLink({ href, children }: { href: string; children: React
   );
 }
 
-export function Panel({
-  title,
-  children,
-  className = "",
-}: {
-  title: string;
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <section className={`${surfaceClass} ${className}`}>
-      <div className="px-4 pb-1 pt-4">
-        <h2 className="text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]">{title}</h2>
-      </div>
-      <div className="p-4">{children}</div>
-    </section>
-  );
-}
-
 export function TableScroll({ children }: { children: ReactNode }) {
   return (
     <div className="glyph-table-scroll">
+      <p className="glyph-table-scroll__hint">Swipe to see all columns →</p>
       {children}
-      <p className="glyph-table-scroll__hint">Swipe horizontally to view more</p>
     </div>
   );
 }
@@ -308,18 +288,18 @@ export function InvalidLookup({
   expected: string;
 }) {
   return (
-    <Panel title={`${label} lookup`}>
-      <StatusMessage
-        description={`Received “${value}”. ${expected}`}
-        status="error"
-        title={`Invalid ${label.toLowerCase()}`}
-      />
-      <div className="mt-5">
-        <Link className="cursor-pointer text-sm font-semibold text-[var(--glyph-muted)] transition-colors hover:text-[var(--glyph-ink)]" href="/">
-          Return to Explorer search
+    <section className="mx-auto flex min-h-[50svh] max-w-2xl flex-col justify-center py-12" role="alert">
+      <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--glyph-tertiary)]">{label} lookup</p>
+      <h1 className="mt-3 text-4xl font-semibold tracking-[-0.065em] text-[var(--glyph-ink)] sm:text-5xl">
+        Invalid {label.toLowerCase()}
+      </h1>
+      <p className="mt-4 max-w-xl text-sm leading-6 text-[var(--glyph-muted)]">Received “{value}”. {expected}</p>
+      <div className="mt-7">
+        <Link className="glyph-button glyph-button--primary glyph-button--md" href="/">
+          Start another lookup
         </Link>
       </div>
-    </Panel>
+    </section>
   );
 }
 

@@ -38,9 +38,11 @@ export function SkeletonHeader({
   descriptionWidth?: string;
 }) {
   return (
-    <header className="mb-5 border-b border-[var(--glyph-line)] pb-4">
-      <Skeleton className={`h-8 rounded-sm ${titleWidth}`} />
-      {description ? <SkeletonLine className={`mt-2 ${descriptionWidth}`} /> : null}
+    <header className="glyph-page-header">
+      <div className="w-full">
+        <Skeleton className={`h-10 rounded-sm ${titleWidth}`} />
+        {description ? <SkeletonLine className={`mt-3 ${descriptionWidth}`} /> : null}
+      </div>
     </header>
   );
 }
@@ -101,9 +103,9 @@ export function SkeletonKeyValueList({
 }) {
   return (
     <SkeletonRegion className={className} label={label}>
-      <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+      <dl className="glyph-detail-grid">
         {Array.from({ length: rows }, (_, index) => (
-          <div className={index === rows - 1 ? "sm:col-span-2" : undefined} key={`detail-${index}`}>
+          <div className={`glyph-detail-item ${index === rows - 1 ? "sm:col-span-2" : ""}`} key={`detail-${index}`}>
             <SkeletonLine className="w-20" />
             <SkeletonLine className={`mt-2 ${index % 3 === 0 ? "w-52" : index % 3 === 1 ? "w-32" : "w-40"}`} />
           </div>
@@ -182,7 +184,7 @@ export function IdentityPageSkeleton() {
           <Skeleton className="size-10 rounded-md" />
         </div>
       </header>
-      <section className="border-t border-[var(--glyph-line)] pt-6">
+      <section className="pt-6">
         <SkeletonHeader description={false} titleWidth="w-28" />
         <SkeletonTable columns={5} label="Loading identity transaction history" minWidth="min-w-[980px]" rows={6} />
       </section>
@@ -202,41 +204,17 @@ export function RichListPageSkeleton() {
 export function TokensPageSkeleton() {
   return (
     <SkeletonRegion label="Loading tokens">
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-4 border-b border-[var(--glyph-line)] pb-4">
-        <Skeleton className="h-8 w-24 rounded-sm" />
+      <div className="glyph-page-header">
+        <div>
+          <Skeleton className="h-10 w-24 rounded-sm" />
+          <SkeletonLine className="mt-3 w-72 max-w-full" />
+        </div>
         <div className="flex items-center gap-3">
-          <Skeleton className="h-9 w-48 rounded-md" />
+          <Skeleton className="h-11 w-48 rounded-md" />
           <SkeletonLine className="w-10" />
         </div>
       </div>
       <SkeletonTable columns={4} label="Loading token rows" minWidth="min-w-[760px]" rows={8} />
-    </SkeletonRegion>
-  );
-}
-
-export function ContractsPageSkeleton() {
-  return (
-    <SkeletonRegion label="Loading contracts">
-      <SkeletonHeader description={false} titleWidth="w-36" />
-      <SkeletonTable columns={4} label="Loading contract rows" minWidth="min-w-[800px]" rows={10} />
-    </SkeletonRegion>
-  );
-}
-
-export function ContractDetailPageSkeleton() {
-  return (
-    <SkeletonRegion label="Loading contract details">
-      <SkeletonHeader titleWidth="w-52" descriptionWidth="w-80" />
-      <div className="grid gap-5">
-        <section className="border border-[var(--glyph-line)] bg-[var(--glyph-surface)]">
-          <div className="border-b border-[var(--glyph-line)] px-4 py-3"><SkeletonLine className="w-32" /></div>
-          <div className="p-4"><SkeletonKeyValueList label="Loading contract identity" rows={3} /></div>
-        </section>
-        <section className="border border-[var(--glyph-line)] bg-[var(--glyph-surface)]">
-          <div className="border-b border-[var(--glyph-line)] px-4 py-3"><SkeletonLine className="w-64" /></div>
-          <div className="p-4"><SkeletonTable columns={3} label="Loading published procedures" minWidth="min-w-[620px]" rows={5} /></div>
-        </section>
-      </div>
     </SkeletonRegion>
   );
 }
@@ -265,7 +243,7 @@ export function TransactionPageSkeleton() {
     <SkeletonRegion label="Loading transaction">
       <SkeletonHeader titleWidth="w-40" descriptionWidth="w-64" />
       <SkeletonKeyValueList label="Loading transaction fields" rows={10} />
-      <div className="mt-8 border-t border-[var(--glyph-line)] pt-5">
+      <div className="mt-8 pt-5">
         <SkeletonLine className="w-24" />
         <div className="mt-5"><SkeletonKeyValueList label="Loading transaction payload" rows={2} /></div>
       </div>
