@@ -226,8 +226,8 @@ function LatestActivity() {
   if (!processedTick.data) return null;
 
   return (
-    <section aria-labelledby="latest-activity-heading" className="mt-5 border border-[var(--glyph-line)] bg-[var(--glyph-surface)]">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--glyph-line)] px-5 py-4">
+    <section aria-labelledby="latest-activity-heading" className="mt-6 overflow-hidden rounded-[var(--glyph-radius-md)] bg-[var(--glyph-surface)] shadow-[0_12px_32px_var(--glyph-shadow)]">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-5 pb-2 pt-5 sm:px-6">
         <div>
           <h2 className="text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]" id="latest-activity-heading">Latest archived activity</h2>
           <p className="mt-1 text-sm text-[var(--glyph-muted)]">Transactions reported for the latest indexed tick.</p>
@@ -236,9 +236,9 @@ function LatestActivity() {
       </div>
       {transactions.isPending ? <p className="px-5 py-4 text-sm text-[var(--glyph-muted)]">Loading transactions…</p> : null}
       {transactions.data?.length ? (
-        <ul className="divide-y divide-[var(--glyph-line)]">
+        <ul className="mt-2 space-y-px bg-[var(--glyph-canvas)] p-2">
           {transactions.data.slice(0, 5).map((transaction, index) => (
-            <li className="flex items-center justify-between gap-4 px-5 py-3 text-sm" key={`${transaction.hash ?? "transaction"}-${index}`}>
+            <li className="flex items-center justify-between gap-4 rounded-[calc(var(--glyph-radius-sm)-2px)] bg-[var(--glyph-surface)] px-4 py-3 text-sm" key={`${transaction.hash ?? "transaction"}-${index}`}>
               {transaction.hash ? <ExplorerLink href={`/transaction/${transaction.hash}`}><code className="font-mono text-xs">{formatTransactionHash(transaction.hash)}</code></ExplorerLink> : <span className="text-[var(--glyph-tertiary)]">Transaction hash not reported</span>}
               <span className="shrink-0 font-mono text-xs text-[var(--glyph-tertiary)]">{transaction.inputType === 0 ? "Transfer" : `Input ${formatNumber(transaction.inputType)}`}</span>
             </li>
@@ -255,7 +255,7 @@ export function ExplorerHome() {
   return (
     <ExplorerFrame>
       <OverviewHero />
-      <section aria-label="Network stats" className="w-full border border-[var(--glyph-line)] bg-[var(--glyph-surface)]">
+      <section aria-label="Network stats" className="w-full overflow-hidden rounded-[var(--glyph-radius-md)] bg-[var(--glyph-surface)] shadow-[0_12px_32px_var(--glyph-shadow)]">
         <StatsSurface query={stats} />
       </section>
       <LatestActivity />
