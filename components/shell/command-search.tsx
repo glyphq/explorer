@@ -3,6 +3,7 @@
 import { Command } from "cmdk";
 import {
   Cancel01Icon,
+  Delete02Icon,
   HashIcon,
   Home01Icon,
   IdentityCardIcon,
@@ -206,19 +207,14 @@ function NavigationCommandItem({ command, onSelect }: { command: NavigationComma
 }
 
 function RecentLookupItem({ lookup, onSelect }: { lookup: RecentLookup; onSelect: () => void }) {
-  const copy = getMatchCopy(lookup.kind);
-
   return (
     <Command.Item
-      className="group flex min-h-12 cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-left outline-none transition-colors data-[selected=true]:bg-[var(--glyph-surface-strong)]"
+      className="group flex min-h-12 cursor-pointer items-center rounded-xl px-3 py-2 text-left outline-none transition-colors data-[selected=true]:bg-[var(--glyph-surface-strong)]"
       onSelect={onSelect}
       value={`recent-${lookup.kind}-${lookup.value}`}
     >
-      <CommandIcon type={lookup.kind} />
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-medium" title={String(lookup.value)}>
-          {copy.label} <span className="font-mono">{formatMatchValue(lookup)}</span>
-        </span>
+        <code className="block truncate font-mono text-xs text-[var(--glyph-ink)]" title={String(lookup.value)}>{formatMatchValue(lookup)}</code>
       </span>
     </Command.Item>
   );
@@ -230,11 +226,13 @@ function CommandPalette({
   open,
   onOpenChange,
   recentLookups,
+  onClearRecentLookups,
   onLookup,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   recentLookups: readonly RecentLookup[];
+  onClearRecentLookups: () => void;
   onLookup: (match: DirectQueryMatch) => void;
 }) {
   const router = useRouter();
@@ -311,7 +309,23 @@ function CommandPalette({
 
       <Command.List className="max-h-[min(56vh,25rem)] overflow-y-auto p-2 [scroll-padding-block:0.5rem]" label="Navigation and lookup results">
         {!hasQuery && recentLookups.length > 0 ? (
-          <Command.Group heading="Recent lookups" className={groupClassName}>
+          <Command.Group
+            heading={(
+              <span className="flex items-center justify-between gap-3">
+                <span>Recent lookups</span>
+                <button
+                  aria-label="Clear recent lookups"
+                  className="flex size-6 items-center justify-center text-[var(--glyph-tertiary)] outline-none transition-colors hover:text-[var(--glyph-ink)] focus-visible:text-[var(--glyph-ink)]"
+                  onClick={onClearRecentLookups}
+                  title="Clear recent lookups"
+                  type="button"
+                >
+                  <ExplorerIcon className="size-3.5" icon={Delete02Icon} />
+                </button>
+              </span>
+            )}
+            className={groupClassName}
+          >
             {recentLookups.map((lookup) => (
               <RecentLookupItem key={`${lookup.kind}:${lookup.value}`} lookup={lookup} onSelect={() => selectMatch(lookup)} />
             ))}
@@ -451,6 +465,7 @@ export function CommandSearch({
         onOpenChange={handleOpenChange}
         open={open}
         recentLookups={recentLookups}
+        onClearRecentLookups={() => setRecentLookups([])}
       />
     </>
   );
