@@ -11,3 +11,8 @@ export {
   type MarketHistoryPoint,
   type QubicMarketSnapshot,
 } from "./coin-gecko";
+export {
+  qubicMarketQueryKey,
+  qubicMarketQueryOptions,
+  useQubicMarket,
+} from "./queries";

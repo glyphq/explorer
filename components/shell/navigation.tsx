@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 import { CommandSearch } from "@/components/shell/command-search";
 import { GlyphBrand } from "@/components/shell/glyph-mark";
-import { useLatestStats } from "@/lib/stats";
+import { useQubicMarket } from "@/lib/market";
 
 export type GlyphNavigationProps = {
   brand?: ReactNode;
@@ -83,14 +83,14 @@ function formatPricePerBillion(value: number | undefined): string {
 }
 
 function HeaderPrice() {
-  const stats = useLatestStats();
+  const market = useQubicMarket();
 
   return (
     <span
       aria-label="Current Qubic price in United States dollars per billion Qubic"
       className="hidden font-mono text-xs text-[var(--glyph-muted)] lg:inline-flex"
     >
-      {formatPricePerBillion(stats.data?.price)}
+      {formatPricePerBillion(market.data?.priceUsd)}
     </span>
   );
 }

@@ -13,7 +13,8 @@ export type Seed = { fill: Rgb; line: Rgb; star: Rgb }
 
 // Each seed: the area-fill hue, the bright series line, and the star sparkle.
 export const PALETTE: Record<DitherColor, Seed> = {
-  green: { fill: [40, 210, 110], line: [150, 255, 180], star: [200, 255, 220] },
+  // Glyph reserves the chart's primary dither colour for its #ccfcfb accent.
+  green: { fill: [204, 252, 251], line: [240, 255, 255], star: [245, 255, 255] },
   blue: { fill: [53, 143, 243], line: [150, 200, 255], star: [205, 228, 255] },
   purple: {
     fill: [150, 110, 255],

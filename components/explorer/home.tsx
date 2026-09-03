@@ -1,266 +1,292 @@
 "use client";
 
-import {
-  AlertCircleIcon,
-  Calendar03Icon,
-  Coins01Icon,
-  Dollar01Icon,
-  FireIcon,
-  RefreshIcon,
-  UserGroupIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
+import { RefreshIcon } from "@hugeicons/core-free-icons";
 
-import { useLatestStats, type LatestStats } from "@/lib/stats";
+import { Sparkline } from "@/components/dither-kit/sparkline";
+import { useQubicMarket } from "@/lib/market";
 import { useLastProcessedTick, useTransactionsForTick } from "@/lib/rpc/queries";
-import { formatTransactionHash } from "@/lib/rpc/validation";
+import { formatAtomicAmount, formatTransactionHash } from "@/lib/rpc/validation";
+import { useLatestStats, type LatestStats } from "@/lib/stats";
 
 import {
   ExplorerFrame,
   ExplorerLink,
   IconButton,
   StatusMessage,
+  TableScroll,
 } from "./primitives";
 import { OverviewHero } from "./overview-hero";
 import { OverviewStatsSkeleton } from "./skeletons";
 import { formatNumber } from "./utils";
 
-function formatBigInt(value: bigint | undefined): string {
-  return value === undefined ? "—" : new Intl.NumberFormat("en-US").format(value);
-}
-
-function formatCompactBigInt(value: bigint | undefined): string {
+function formatCompact(value: bigint | number | undefined): string {
   if (value === undefined) return "—";
-  const units = [
-    { threshold: BigInt("1000000000000"), suffix: "T" },
-    { threshold: BigInt("1000000000"), suffix: "B" },
-    { threshold: BigInt("1000000"), suffix: "M" },
-    { threshold: BigInt("1000"), suffix: "K" },
-  ];
-  const unit = units.find(({ threshold }) => value >= threshold);
-  if (!unit) return formatBigInt(value);
-  const amount = Number(value) / Number(unit.threshold);
-  return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(amount)}${unit.suffix}`;
+  const numericValue = typeof value === "bigint" ? Number(value) : value;
+  if (!Number.isFinite(numericValue)) return "—";
+
+  return new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: 2,
+  }).format(numericValue);
 }
 
-function formatQuality(value: number): string {
-  return `${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value)}%`;
+function formatUsd(value: number | null | undefined): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) return "—";
+  if (value < 0.01) return `$${value.toFixed(9)}`;
+  return new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    maximumFractionDigits: 2,
+    style: "currency",
+  }).format(value);
+}
+
+function formatPercent(value: number | null | undefined): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) return "—";
+  return `${value > 0 ? "+" : ""}${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(value)}%`;
 }
 
 function formatStatsTimestamp(value: number): string {
   return new Intl.DateTimeFormat(undefined, {
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit",
     timeZoneName: "short",
   }).format(new Date(value * 1_000));
 }
 
-function TickQualityStrip({ quality }: { quality: number }) {
-  const filled = Math.round(Math.min(100, Math.max(0, quality)));
-  const title = `Epoch tick quality ${formatQuality(quality)}`;
-
-  return (
-    <svg
-      aria-label={title}
-      className="block h-3 w-full"
-      role="img"
-      viewBox="0 0 100 8"
-      preserveAspectRatio="none"
-    >
-      <title>{title}</title>
-      {Array.from({ length: 100 }, (_, index) => (
-        <rect
-          fill={index < filled ? "var(--glyph-ink)" : "var(--glyph-line-strong)"}
-          height="8"
-          key={index}
-          rx="0.7"
-          width="0.72"
-          x={index + 0.14}
-          y="0"
-        />
-      ))}
-    </svg>
-  );
-}
-
-function Metric({
-  label,
-  value,
-  detail,
-  icon,
+function SectionHeading({
+  id,
+  eyebrow,
+  title,
+  description,
+  action,
 }: {
-  label: string;
-  value: React.ReactNode;
-  detail?: string;
-  icon: HugeiconsIconProps["icon"];
+  id: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  action?: React.ReactNode;
 }) {
   return (
-    <div className="relative min-w-0 overflow-hidden px-4 py-4 sm:px-5">
-      <HugeiconsIcon
-        aria-hidden="true"
-        className="pointer-events-none absolute -bottom-5 -right-4 size-24 text-[var(--glyph-ink)] opacity-[0.055]"
-        focusable="false"
-        icon={icon}
-        strokeWidth={1.15}
-      />
-      <dt className="truncate text-xs text-[var(--glyph-tertiary)]">{label}</dt>
-      <dd className="mt-1 truncate font-mono text-lg font-semibold leading-tight tracking-[-0.03em] text-[var(--glyph-ink)] sm:text-xl">{value}</dd>
-      {detail ? <p className="mt-1 truncate text-[0.68rem] text-[var(--glyph-tertiary)]">{detail}</p> : null}
+    <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
+      <div>
+        <p className="text-[0.68rem] font-medium uppercase tracking-[0.15em] text-[var(--glyph-tertiary)]">{eyebrow}</p>
+        <h2 className="mt-2 text-2xl font-semibold tracking-[-0.055em] text-[var(--glyph-ink)]" id={id}>{title}</h2>
+        <p className="mt-2 max-w-2xl text-sm text-[var(--glyph-muted)]">{description}</p>
+      </div>
+      {action}
     </div>
   );
 }
 
-function StatsContent({
-  query,
-  stats,
-}: {
-  query: ReturnType<typeof useLatestStats>;
-  stats: LatestStats;
-}) {
+function NetworkPulse({ query, stats }: { query: ReturnType<typeof useLatestStats>; stats: LatestStats }) {
   return (
-    <>
-      <div className="p-5 md:p-7">
-        <div className="flex items-start justify-between gap-5">
-          <dl className="min-w-0 flex-1">
-            <div className="min-w-0">
-              <dt className="text-xs text-[var(--glyph-tertiary)]">Latest network tick</dt>
-              <dd className="mt-2 truncate font-mono text-4xl font-semibold tracking-[-0.08em] text-[var(--glyph-ink)] md:text-6xl">
-                {formatNumber(stats.currentTick)}
-              </dd>
-              <p className="mt-2 text-xs text-[var(--glyph-muted)]">The latest unit of confirmed network activity.</p>
-            </div>
-          </dl>
+    <section aria-labelledby="network-pulse-heading">
+      <SectionHeading
+        action={(
           <IconButton
             aria-busy={query.isFetching}
             disabled={query.isFetching}
             icon={RefreshIcon}
-            label="Refresh network stats"
+            label="Refresh network data"
             onClick={() => void query.refetch()}
             size="sm"
+            variant="quiet"
+          />
+        )}
+        description="A live readout from the public Qubic network statistics service."
+        eyebrow="Network"
+        id="network-pulse-heading"
+        title="Network pulse"
+      />
+
+      <div className="mt-8">
+        <p className="text-xs font-medium uppercase tracking-[0.1em] text-[var(--glyph-tertiary)]">Latest network tick</p>
+        <ExplorerLink href={`/tick/${stats.currentTick}`}>
+          <span className="mt-2 font-mono text-5xl font-semibold tracking-[-0.09em] text-[var(--glyph-ink)] sm:text-7xl">{formatNumber(stats.currentTick)}</span>
+        </ExplorerLink>
+        <p className="mt-3 text-sm text-[var(--glyph-muted)]">The latest unit of reported network activity. Updated {formatStatsTimestamp(stats.timestamp)}.</p>
+      </div>
+
+      <dl className="mt-10 grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-5">
+        <div>
+          <dt className="text-xs text-[var(--glyph-tertiary)]">Epoch</dt>
+          <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatNumber(stats.epoch)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-[var(--glyph-tertiary)]">Network health</dt>
+          <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(stats.epochTickQuality)}%</dd>
+          <p className="mt-1 text-xs text-[var(--glyph-muted)]">Tick quality this epoch</p>
+        </div>
+        <div>
+          <dt className="text-xs text-[var(--glyph-tertiary)]">Active accounts</dt>
+          <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatNumber(stats.activeAddresses)}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-[var(--glyph-tertiary)]">Circulating supply</dt>
+          <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatCompact(stats.circulatingSupply)} <span className="text-sm font-normal text-[var(--glyph-muted)]">QUS</span></dd>
+        </div>
+        <div>
+          <dt className="text-xs text-[var(--glyph-tertiary)]">Burned</dt>
+          <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatCompact(stats.burnedQus)} <span className="text-sm font-normal text-[var(--glyph-muted)]">QUS</span></dd>
+        </div>
+      </dl>
+    </section>
+  );
+}
+
+function NetworkSection() {
+  const stats = useLatestStats();
+
+  if (stats.isPending && !stats.data) {
+    return <OverviewStatsSkeleton className="py-8" />;
+  }
+
+  if (!stats.data) {
+    return (
+      <section aria-labelledby="network-pulse-heading">
+        <SectionHeading
+          description="The public Qubic statistics service is temporarily unavailable."
+          eyebrow="Network"
+          id="network-pulse-heading"
+          title="Network pulse"
+        />
+        <div className="mt-8">
+          <StatusMessage
+            action={<IconButton icon={RefreshIcon} label="Retry network data" onClick={() => void stats.refetch()} variant="quiet" />}
+            status="error"
+            title="Network data is unavailable"
           />
         </div>
+      </section>
+    );
+  }
 
-        <div className="mt-8" aria-label="Epoch tick quality">
-          <div className="mb-2 flex items-baseline justify-between gap-4">
-            <span className="text-xs text-[var(--glyph-tertiary)]">Network health</span>
-            <span className="font-mono text-base font-semibold leading-tight tracking-[-0.03em] text-[var(--glyph-ink)] sm:text-lg">
-              {formatQuality(stats.epochTickQuality)}
-            </span>
-          </div>
-          <TickQualityStrip quality={stats.epochTickQuality} />
-          <p className="mt-2 text-xs text-[var(--glyph-muted)]">How reliably the network is producing ticks this epoch.</p>
-          <div className="mt-2 flex flex-wrap justify-between gap-x-4 gap-y-1 font-mono text-[0.68rem] text-[var(--glyph-muted)]">
-            <span>{formatNumber(stats.ticksInCurrentEpoch)} epoch ticks</span>
-            <span>{formatNumber(stats.emptyTicksInCurrentEpoch)} empty</span>
-          </div>
-        </div>
-
-        <time
-          className="mt-7 block font-mono text-[0.68rem] text-[var(--glyph-tertiary)]"
-          dateTime={new Date(stats.timestamp * 1_000).toISOString()}
-        >
-          Last updated {formatStatsTimestamp(stats.timestamp)}
-        </time>
-      </div>
-
-      <dl className="grid grid-cols-2 sm:grid-cols-3">
-        <Metric icon={Calendar03Icon} label="Current epoch" value={formatNumber(stats.epoch)} />
-        <Metric icon={UserGroupIcon} label="Active accounts" value={formatNumber(stats.activeAddresses)} />
-        <Metric icon={Coins01Icon} detail="QUS" label="Circulating supply" value={formatCompactBigInt(stats.circulatingSupply)} />
-        <Metric icon={Dollar01Icon} detail="USD" label="Market cap" value={`$${formatCompactBigInt(stats.marketCap)}`} />
-        <Metric icon={FireIcon} detail="QUS" label="Tokens burned" value={formatCompactBigInt(stats.burnedQus)} />
-      </dl>
-    </>
-  );
+  return <NetworkPulse query={stats} stats={stats.data} />;
 }
 
-function StatsSurface({ query }: { query: ReturnType<typeof useLatestStats> }) {
-  const hasData = query.data !== undefined;
-
-  if (query.isPending && !hasData) {
-    return <OverviewStatsSkeleton className="p-4" />;
-  }
-
-  if (query.isError && !hasData) {
-    return (
-      <div className="p-4">
-        <StatusMessage
-          action={<IconButton icon={RefreshIcon} label="Retry network stats" onClick={() => void query.refetch()} />}
-          description="Current network stats could not be loaded."
-          status="error"
-          title="Network stats unavailable"
-        />
-      </div>
-    );
-  }
-
-  if (!query.data) {
-    return (
-      <div className="p-4">
-        <StatusMessage status="empty" title="No network stats returned" />
-      </div>
-    );
-  }
+function MarketSection() {
+  const market = useQubicMarket();
+  const snapshot = market.data;
 
   return (
-    <>
-      {query.isError ? (
-          <div className="flex items-center gap-3 bg-[var(--glyph-canvas)] px-4 py-3 text-xs text-[var(--glyph-muted)]" role="alert">
-          <HugeiconsIcon aria-hidden="true" className="shrink-0" focusable="false" icon={AlertCircleIcon} size={18} strokeWidth={1.5} />
-          <span className="min-w-0 flex-1">Showing the last successful stats response.</span>
-          <IconButton icon={RefreshIcon} label="Retry network stats" onClick={() => void query.refetch()} size="sm" />
-        </div>
+    <section aria-labelledby="market-heading">
+      <SectionHeading
+        action={(
+          <a className="font-mono text-xs text-[var(--glyph-tertiary)] hover:text-[var(--glyph-ink)]" href="https://www.coingecko.com/en/coins/qubic" rel="noreferrer" target="_blank">
+            Market data by CoinGecko
+          </a>
+        )}
+        description="A wider market view of Qubic, separate from network telemetry."
+        eyebrow="Market"
+        id="market-heading"
+        title="Qubic in the market"
+      />
+
+      {market.isPending && !snapshot ? <p className="mt-8 text-sm text-[var(--glyph-muted)]">Loading market context…</p> : null}
+      {market.isError && !snapshot ? <p className="mt-8 text-sm text-[var(--glyph-muted)]">Market context is unavailable right now.</p> : null}
+      {snapshot ? (
+        <>
+          <div className="mt-8">
+            <p className="text-xs font-medium uppercase tracking-[0.1em] text-[var(--glyph-tertiary)]">Qubic price</p>
+            <p className="mt-2 font-mono text-4xl font-semibold tracking-[-0.08em] text-[var(--glyph-ink)] sm:text-6xl">{formatUsd(snapshot.priceUsd)}</p>
+            <p className="mt-2 text-sm text-[var(--glyph-muted)]">Per QUBIC. Market data last updated {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(snapshot.lastUpdated))}.</p>
+          </div>
+
+          {snapshot.history.length > 1 ? (
+            <div aria-label="30-day Qubic price trend" className="mt-8 h-36 w-full">
+              <Sparkline
+                animate={false}
+                color="green"
+                data={snapshot.history.map((point) => point.priceUsd)}
+                variant="hatched"
+              />
+            </div>
+          ) : null}
+
+          <dl className="mt-8 grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <dt className="text-xs text-[var(--glyph-tertiary)]">Market cap</dt>
+              <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatUsd(snapshot.marketCapUsd)}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-[var(--glyph-tertiary)]">24-hour movement</dt>
+              <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatPercent(snapshot.priceChange24h)}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-[var(--glyph-tertiary)]">7-day movement</dt>
+              <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatPercent(snapshot.priceChange7d)}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-[var(--glyph-tertiary)]">24-hour volume</dt>
+              <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatUsd(snapshot.volume24hUsd)}</dd>
+            </div>
+          </dl>
+        </>
       ) : null}
-      <div className="grid lg:grid-cols-[minmax(20rem,0.9fr)_minmax(0,1.7fr)]">
-        <StatsContent query={query} stats={query.data} />
-      </div>
-    </>
+    </section>
   );
 }
 
-function LatestActivity({ className = "" }: { className?: string }) {
+function LatestActivity() {
   const processedTick = useLastProcessedTick();
   const tick = processedTick.data?.tickNumber;
   const transactions = useTransactionsForTick(tick);
 
-  if (processedTick.isPending) return null;
-  if (!processedTick.data) return null;
+  if (processedTick.isPending || !processedTick.data) return null;
 
   return (
-    <section aria-labelledby="latest-activity-heading" className={`overflow-hidden rounded-[var(--glyph-radius-md)] bg-[var(--glyph-surface)] shadow-[0_12px_32px_var(--glyph-shadow)] ${className}`}>
-      <div className="flex flex-wrap items-center justify-between gap-3 px-5 pb-2 pt-5 sm:px-6">
-        <div>
-          <h2 className="text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]" id="latest-activity-heading">Latest activity</h2>
-          <p className="mt-1 text-sm text-[var(--glyph-muted)]">Recent transactions in the newest indexed tick.</p>
-        </div>
-        <ExplorerLink href={`/tick/${tick}/transactions`}>View all</ExplorerLink>
-      </div>
-      {transactions.isPending ? <p className="px-5 py-4 text-sm text-[var(--glyph-muted)]">Loading transactions…</p> : null}
+    <section aria-labelledby="latest-activity-heading">
+      <SectionHeading
+        action={<ExplorerLink href={`/tick/${tick}/transactions`}>View tick activity</ExplorerLink>}
+        description={`Transactions reported in indexed tick ${formatNumber(tick)}. The archive can lag the live network.`}
+        eyebrow="Archive"
+        id="latest-activity-heading"
+        title="Latest indexed activity"
+      />
+
+      {transactions.isPending ? <p className="mt-8 text-sm text-[var(--glyph-muted)]">Loading reported transactions…</p> : null}
       {transactions.data?.length ? (
-        <ul className="mt-2 px-5 pb-5 sm:px-6">
-          {transactions.data.slice(0, 5).map((transaction, index) => (
-            <li className="flex items-center justify-between gap-4 py-3 text-sm" key={`${transaction.hash ?? "transaction"}-${index}`}>
-              {transaction.hash ? <ExplorerLink href={`/transaction/${transaction.hash}`}><code className="font-mono text-xs">{formatTransactionHash(transaction.hash)}</code></ExplorerLink> : <span className="text-[var(--glyph-tertiary)]">Transaction hash not reported</span>}
-              <span className="shrink-0 font-mono text-xs text-[var(--glyph-tertiary)]">{transaction.inputType === 0 ? "Transfer" : "App activity"}</span>
-            </li>
-          ))}
-        </ul>
-      ) : transactions.isSuccess ? <p className="px-5 py-4 text-sm text-[var(--glyph-muted)]">No recent transactions were reported for this tick.</p> : null}
+        <div className="mt-8">
+          <TableScroll>
+            <table aria-label="Latest indexed Qubic activity" className="glyph-table min-w-[720px] w-full border-collapse text-left">
+              <caption className="sr-only">Latest indexed Qubic activity</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Transaction</th>
+                  <th scope="col">Kind</th>
+                  <th className="text-right" scope="col">Amount</th>
+                  <th className="text-right" scope="col">Tick</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.data.slice(0, 8).map((transaction, index) => (
+                  <tr className="align-top text-sm" key={`${transaction.hash ?? "transaction"}-${index}`}>
+                    <td className="py-3">
+                      {transaction.hash ? (
+                        <ExplorerLink href={`/transaction/${transaction.hash}`}><code className="font-mono text-xs">{formatTransactionHash(transaction.hash)}</code></ExplorerLink>
+                      ) : <span className="text-[var(--glyph-tertiary)]">Hash not reported</span>}
+                    </td>
+                    <td className="py-3 text-xs text-[var(--glyph-muted)]">{transaction.inputType === 0 ? "Transfer" : "Application activity"}</td>
+                    <td className="py-3 text-right font-mono text-xs text-[var(--glyph-ink)]">{transaction.amount === undefined || transaction.amount === null ? "Not reported" : formatAtomicAmount(transaction.amount)}</td>
+                    <td className="py-3 text-right font-mono text-xs"><ExplorerLink href={`/tick/${tick}`}>{formatNumber(tick)}</ExplorerLink></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </TableScroll>
+        </div>
+      ) : transactions.isSuccess ? <p className="mt-8 text-sm text-[var(--glyph-muted)]">No transactions were reported for this indexed tick.</p> : null}
     </section>
   );
 }
 
 export function ExplorerHome() {
-  const stats = useLatestStats();
-
   return (
     <ExplorerFrame>
       <OverviewHero />
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(20rem,0.65fr)]">
-        <section aria-label="Network snapshot" className="w-full overflow-hidden rounded-[var(--glyph-radius-md)] bg-[var(--glyph-surface)] shadow-[0_12px_32px_var(--glyph-shadow)]">
-          <StatsSurface query={stats} />
-        </section>
+      <div className="space-y-20 pb-8 md:space-y-28">
+        <NetworkSection />
+        <MarketSection />
         <LatestActivity />
       </div>
     </ExplorerFrame>
