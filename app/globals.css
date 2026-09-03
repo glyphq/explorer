@@ -162,8 +162,8 @@ input:focus-visible {
   z-index: 40;
   top: 0;
   min-height: var(--glyph-header);
-  border-bottom: 1px solid var(--glyph-line);
-  background: var(--glyph-canvas);
+  background: rgb(0 0 0 / 78%);
+  backdrop-filter: blur(18px) saturate(1.2);
 }
 
 .glyph-nav__inner {
@@ -615,10 +615,10 @@ input:focus-visible {
 .glyph-table-scroll {
   position: relative;
   overflow-x: auto;
-  border: 1px solid var(--glyph-line-strong);
-  border-radius: var(--glyph-radius-sm);
+  border: 0;
+  border-radius: var(--glyph-radius-md);
   background: var(--glyph-table-surface);
-  box-shadow: 0 2px 0 var(--glyph-shadow), inset 0 0 0 1px var(--glyph-table-surface);
+  box-shadow: 0 12px 32px var(--glyph-shadow), inset 0 0 0 1px rgb(255 255 255 / 3%);
   scrollbar-color: var(--glyph-line-strong) var(--glyph-table-surface);
 }
 
@@ -639,7 +639,7 @@ input:focus-visible {
 }
 
 .glyph-table thead tr {
-  border-block-end: 1px solid var(--glyph-line-strong);
+  border-block-end: 0;
 }
 
 .glyph-table thead th {
@@ -653,7 +653,6 @@ input:focus-visible {
 }
 
 .glyph-table tbody tr {
-  border-block-end: 1px solid var(--glyph-line);
   transition: background-color 140ms ease;
 }
 
@@ -677,10 +676,10 @@ input:focus-visible {
 
 .glyph-input,
 .glyph-input-shell {
-  border: 1px solid var(--glyph-line-strong);
+  border: 1px solid rgb(255 255 255 / 10%);
   border-radius: var(--glyph-radius-sm);
   background: var(--glyph-surface);
-  box-shadow: 0 2px 0 var(--glyph-shadow), inset 0 0 0 1px var(--glyph-surface);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 2%);
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease,
