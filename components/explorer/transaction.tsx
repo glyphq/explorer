@@ -10,6 +10,7 @@ import {
   ExplorerLink,
   InvalidLookup,
   KeyValueList,
+  PageHeader,
   QueryRefreshMeta,
   QueryState,
 } from "./primitives";
@@ -55,14 +56,12 @@ export function TransactionPage({ hash }: { hash: string | null }) {
 
   return (
     <ExplorerFrame>
-      <header className="mb-5 border-b border-[var(--glyph-line)] pb-4">
-        <h1 className="text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)]">Transaction</h1>
-        <p className="mt-1 text-sm text-[var(--glyph-muted)]">Archive record for this transaction.</p>
-        <div className="mt-4 flex items-start gap-2">
-          <code className="min-w-0 flex-1 break-all font-mono text-xs leading-5 text-[var(--glyph-ink)]">{hash}</code>
-          <CopyButton label="Copy transaction hash" value={hash} />
-        </div>
-      </header>
+      <PageHeader
+        description={<code className="block max-w-4xl break-all font-mono text-xs leading-5 text-[var(--glyph-muted)]">{hash}</code>}
+        eyebrow="Transaction record"
+        title="Transaction"
+        actions={<CopyButton label="Copy transaction hash" value={hash} />}
+      />
 
       <QueryState
         label="transaction"
@@ -87,15 +86,16 @@ export function TransactionPage({ hash }: { hash: string | null }) {
               ]}
             />
 
-            <div className="mt-8 border-t border-[var(--glyph-line)] pt-5">
-              <h2 className="text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]">Payload</h2>
+            <section aria-labelledby="transaction-payload" className="mt-10">
+              <h2 className="text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]" id="transaction-payload">Raw transaction fields</h2>
+              <p className="mb-4 mt-1 text-sm text-[var(--glyph-muted)]">Original values reported by the network, shown without decoding.</p>
               <KeyValueList
                 items={[
                   { label: "Input data", value: <RawTransactionValue label="Input data" value={transaction.inputData} />, wide: true },
                   { label: "Signature", value: <RawTransactionValue label="Signature" value={transaction.signature} />, wide: true },
                 ]}
               />
-            </div>
+            </section>
 
           </>
         ) : null}

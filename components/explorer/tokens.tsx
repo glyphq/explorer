@@ -16,6 +16,7 @@ import {
 import {
   ExplorerFrame,
   ExplorerLink,
+  PageHeader,
   QueryRefreshMeta,
   QueryState,
   TableHeaderLabel,
@@ -103,11 +104,10 @@ export function TokensPage() {
 
   return (
     <ExplorerFrame>
-      <header className="mb-5 flex flex-wrap items-end justify-between gap-4 border-b border-[var(--glyph-line)] pb-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)]">Tokens</h1>
-        </div>
-        <div className="flex items-center gap-3">
+      <PageHeader
+        description="Browse asset issuances reported by the live Qubic network."
+        title="Tokens"
+        actions={<div className="flex items-center gap-3">
           <label className="sr-only" htmlFor="token-search">Filter tokens</label>
           <input
             className="glyph-input h-9 w-48 px-3 text-sm text-[var(--glyph-ink)] placeholder:text-[var(--glyph-tertiary)] focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:outline-[var(--glyph-focus)]"
@@ -120,8 +120,8 @@ export function TokensPage() {
           <span className="font-mono text-xs text-[var(--glyph-tertiary)]">
             {formatNumber(filteredRows.length)}{normalizedSearch ? ` / ${formatNumber(rows.length)}` : ""}
           </span>
-        </div>
-      </header>
+        </div>}
+      />
 
       <QueryState
         emptyMessage="No tokens match this filter."

@@ -16,6 +16,7 @@ import {
   ExplorerLink,
   InvalidLookup,
   KeyValueList,
+  PageHeader,
   QueryRefreshMeta,
   QueryState,
   StatusMessage,
@@ -53,15 +54,12 @@ function Detail({ issuance }: { issuance: AssetIssuance }) {
 
   return (
     <>
-      <header className="mb-5 flex flex-wrap items-end justify-between gap-4 border-b border-[var(--glyph-line)] pb-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)]">
-            {data?.name ?? "Asset issuance"}
-          </h1>
-          <p className="mt-1 text-sm text-[var(--glyph-muted)]">Reported issuance details.</p>
-        </div>
-        <ExplorerLink href="/tokens">Back to tokens</ExplorerLink>
-      </header>
+      <PageHeader
+        actions={<ExplorerLink href="/tokens">All tokens</ExplorerLink>}
+        description="Issuance details reported by the live Qubic asset API."
+        eyebrow="Token"
+        title={data?.name ?? "Asset issuance"}
+      />
 
       <KeyValueList
         items={[

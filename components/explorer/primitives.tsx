@@ -41,6 +41,51 @@ export function ExplorerFrame({ children }: { children: ReactNode }) {
   );
 }
 
+export function PageHeader({
+  actions,
+  description,
+  eyebrow,
+  title,
+}: {
+  actions?: ReactNode;
+  description?: ReactNode;
+  eyebrow?: string;
+  title: ReactNode;
+}) {
+  return (
+    <header className="glyph-page-header">
+      <div className="min-w-0">
+        {eyebrow ? <p className="glyph-page-header__eyebrow">{eyebrow}</p> : null}
+        <h1 className="glyph-page-header__title">{title}</h1>
+        {description ? <div className="glyph-page-header__description">{description}</div> : null}
+      </div>
+      {actions ? <div className="glyph-page-header__actions">{actions}</div> : null}
+    </header>
+  );
+}
+
+export function SectionHeader({
+  actions,
+  description,
+  id,
+  title,
+}: {
+  actions?: ReactNode;
+  description?: ReactNode;
+  id: string;
+  title: string;
+}) {
+  return (
+    <div className="glyph-section-header">
+      <div>
+        <h2 className="glyph-section-header__title" id={id}>{title}</h2>
+        {description ? <p className="glyph-section-header__description">{description}</p> : null}
+      </div>
+      {actions ? <div className="glyph-section-header__actions">{actions}</div> : null}
+    </div>
+  );
+}
+
 export function IconButton({
   label,
   icon,
@@ -106,7 +151,7 @@ export function Panel({
 }) {
   return (
     <section className={`${surfaceClass} ${className}`}>
-      <div className="border-b border-[var(--glyph-line)] px-4 py-3">
+      <div className="px-4 pb-1 pt-4">
         <h2 className="text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]">{title}</h2>
       </div>
       <div className="p-4">{children}</div>
@@ -284,9 +329,9 @@ export function KeyValueList({
   items: Array<{ label: string; value: ReactNode; wide?: boolean }>;
 }) {
   return (
-    <dl className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
+    <dl className="glyph-detail-grid">
       {items.map((item) => (
-        <div className={item.wide ? "sm:col-span-2" : ""} key={item.label}>
+        <div className={`glyph-detail-item ${item.wide ? "sm:col-span-2" : ""}`} key={item.label}>
           <dt className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">{item.label}</dt>
           <dd className="mt-1 break-words text-sm text-[var(--glyph-ink)]">{item.value}</dd>
         </div>

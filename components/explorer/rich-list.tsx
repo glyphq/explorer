@@ -14,7 +14,7 @@ import {
 } from "@/lib/stats";
 import { formatIdentity } from "@/lib/rpc/validation";
 
-import { ExplorerFrame, QueryState, TableHeaderLabel, TableScroll } from "./primitives";
+import { ExplorerFrame, PageHeader, QueryState, TableHeaderLabel, TableScroll } from "./primitives";
 import { SkeletonTable } from "./skeletons";
 import { formatNumber } from "./utils";
 
@@ -123,10 +123,10 @@ export function RichListPage() {
 
   return (
     <ExplorerFrame>
-      <header className="mb-5 border-b border-[var(--glyph-line)] pb-4">
-        <h1 className="text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)]">Rich list</h1>
-        <p className="mt-1 text-sm text-[var(--glyph-muted)]">Reported balances from the official Qubic Stats API.</p>
-      </header>
+      <PageHeader
+        description="See the largest balances currently reported by the official Qubic Stats API."
+        title="Rich list"
+      />
 
       <QueryState
         emptyMessage="The Stats API returned no rich-list entries."

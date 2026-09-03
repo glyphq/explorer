@@ -10,6 +10,7 @@ import {
   ExplorerFrame,
   ExplorerLink,
   InvalidLookup,
+  PageHeader,
   QueryRefreshMeta,
   QueryState,
   TableHeaderLabel,
@@ -103,16 +104,15 @@ export function TickTransactionsPage({ tick }: { tick: number | null }) {
 
   return (
     <ExplorerFrame>
-      <header className="mb-4 flex flex-wrap items-end justify-between gap-4 border-b border-[var(--glyph-line)] pb-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)]">Tick {formatNumber(tick)}</h1>
-          <p className="mt-1 text-sm text-[var(--glyph-muted)]">Transactions reported for this tick.</p>
-        </div>
-        <div className="flex items-center gap-3">
+      <PageHeader
+        description="Review every transaction reported for this tick."
+        eyebrow="Tick activity"
+        title={<>Tick <span className="font-mono">{formatNumber(tick)}</span></>}
+        actions={<div className="flex items-center gap-3">
           <ExplorerLink href={`/tick/${tick}`}>Tick record</ExplorerLink>
           <CopyButton label="Copy tick" value={String(tick)} />
-        </div>
-      </header>
+        </div>}
+      />
 
       <QueryState
         label="archive tick record"

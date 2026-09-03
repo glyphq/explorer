@@ -127,6 +127,9 @@ export function GlyphNavigation({
           {commandSearch}
         </div>
       </div>
+      <nav aria-label="Mobile primary" className="glyph-nav__mobile">
+        <DefaultNavigationLinks />
+      </nav>
     </header>
   );
 }

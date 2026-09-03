@@ -8,6 +8,7 @@ import {
   ExplorerLink,
   IdentifierValue,
   InvalidLookup,
+  PageHeader,
   QueryRefreshMeta,
   QueryState,
 } from "./primitives";
@@ -31,13 +32,15 @@ export function TickPage({ tick }: { tick: number | null }) {
 
   return (
     <ExplorerFrame>
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[var(--glyph-line)] pb-4">
-        <p className="min-w-0 flex-1 font-mono text-2xl font-semibold tracking-[-0.05em] text-[var(--glyph-ink)]">{formatNumber(tick)}</p>
-        <div className="flex items-center gap-3">
+      <PageHeader
+        eyebrow="Network tick"
+        title={<span className="font-mono">{formatNumber(tick)}</span>}
+        description="Timing, computor, and transaction information reported for this tick."
+        actions={<div className="flex items-center gap-3">
           <ExplorerLink href={`/tick/${tick}/transactions`}>Transactions</ExplorerLink>
           <CopyButton label="Copy tick" value={String(tick)} />
-        </div>
-      </div>
+        </div>}
+      />
 
       <section aria-labelledby="tick-metadata">
         <h2 className="mb-4 text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]" id="tick-metadata">Metadata</h2>
