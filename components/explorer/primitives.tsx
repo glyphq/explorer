@@ -27,7 +27,7 @@ export type ExplorerQuery<T> = {
 
 type ExplorerIcon = HugeiconsIconProps["icon"];
 
-const surfaceClass = "border border-[var(--glyph-line)] bg-[var(--glyph-surface)]";
+const surfaceClass = "overflow-hidden rounded-[var(--glyph-radius-md)] border border-[var(--glyph-line)] bg-[var(--glyph-surface)] shadow-[0_8px_24px_var(--glyph-shadow)]";
 export const EXPLORER_FRAME_CONTENT_CLASS =
   "mx-auto w-full max-w-screen-2xl px-[var(--glyph-gutter)] py-5 md:py-7";
 
@@ -89,7 +89,7 @@ export function CopyButton({ value, label }: { value: string; label: string }) {
 
 export function ExplorerLink({ href, children }: { href: string; children: ReactNode }) {
   return (
-    <Link className="inline font-mono text-xs font-semibold underline" href={href}>
+    <Link className="inline font-mono text-xs font-semibold text-[var(--glyph-accent)] underline decoration-[color:var(--glyph-accent)]/35 underline-offset-4 transition-colors hover:text-[var(--glyph-accent-strong)]" href={href}>
       {children}
     </Link>
   );
@@ -231,7 +231,7 @@ export function StatusMessage({
   const icon = status === "error" ? AlertCircleIcon : InformationCircleIcon;
 
   return (
-    <div className="border border-[var(--glyph-line)] bg-[var(--glyph-canvas)] px-4 py-5" role={role}>
+    <div className="rounded-[var(--glyph-radius-md)] border border-[var(--glyph-line)] bg-[var(--glyph-surface)] px-5 py-5 shadow-[0_8px_24px_var(--glyph-shadow)]" role={role}>
       <div className="flex items-start gap-3">
         <HugeiconsIcon aria-hidden="true" className="mt-0.5 shrink-0 text-[var(--glyph-muted)]" focusable="false" icon={icon} size={19} strokeWidth={1.5} />
         <div>

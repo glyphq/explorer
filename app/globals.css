@@ -2,20 +2,23 @@
 
 :root {
   color-scheme: light;
-  --glyph-canvas: #ffffff;
-  --glyph-surface: #f7f7f7;
-  --glyph-surface-strong: #ededed;
-  --glyph-ink: #060606;
-  --glyph-muted: #454545;
-  --glyph-tertiary: #6c6c6c;
-  --glyph-line: #dedede;
-  --glyph-line-strong: #bababa;
-  --glyph-focus: #060606;
-  --glyph-shadow: rgb(0 0 0 / 12%);
-  --glyph-table-surface: #f4f4f4;
-  --glyph-table-header: #e9e9e9;
-  --glyph-table-stripe: #f0f0f0;
-  --glyph-table-hover: #e5e5e5;
+  --glyph-canvas: #f8fafc;
+  --glyph-surface: #ffffff;
+  --glyph-surface-strong: #f1f5f9;
+  --glyph-ink: #172033;
+  --glyph-muted: #4b5565;
+  --glyph-tertiary: #718096;
+  --glyph-line: #e2e8f0;
+  --glyph-line-strong: #cbd5e1;
+  --glyph-focus: #2563eb;
+  --glyph-accent: #2563eb;
+  --glyph-accent-strong: #1d4ed8;
+  --glyph-accent-surface: #eff6ff;
+  --glyph-shadow: rgb(15 23 42 / 8%);
+  --glyph-table-surface: #ffffff;
+  --glyph-table-header: #f8fafc;
+  --glyph-table-stripe: #fbfdff;
+  --glyph-table-hover: #eff6ff;
   --glyph-mark-filter: none;
   --glyph-mark-on-ink-filter: invert(1);
   --glyph-danger-surface: #fff1f2;
@@ -31,15 +34,18 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --glyph-canvas: #000000;
-  --glyph-surface: #070707;
-  --glyph-surface-strong: #121212;
-  --glyph-ink: #f7f7f7;
-  --glyph-muted: #b9b9b9;
-  --glyph-tertiary: #8c8c8c;
-  --glyph-line: #171717;
-  --glyph-line-strong: #343434;
-  --glyph-focus: #ffffff;
+  --glyph-canvas: #0b1020;
+  --glyph-surface: #121a2d;
+  --glyph-surface-strong: #1b2740;
+  --glyph-ink: #f8fafc;
+  --glyph-muted: #cbd5e1;
+  --glyph-tertiary: #94a3b8;
+  --glyph-line: #24324d;
+  --glyph-line-strong: #334155;
+  --glyph-focus: #60a5fa;
+  --glyph-accent: #60a5fa;
+  --glyph-accent-strong: #93c5fd;
+  --glyph-accent-surface: #172554;
   --glyph-shadow: rgb(0 0 0 / 42%);
   --glyph-table-surface: #0a0a0a;
   --glyph-table-header: #121212;
@@ -74,6 +80,9 @@
     --glyph-danger-surface: #450a0a;
     --glyph-danger-line: #7f1d1d;
     --glyph-danger-ink: #fecaca;
+    --glyph-accent: #60a5fa;
+    --glyph-accent-strong: #93c5fd;
+    --glyph-accent-surface: #172554;
   }
 }
 
@@ -530,13 +539,14 @@ input:focus-visible {
 }
 
 .glyph-button--primary {
-  background: var(--glyph-ink);
-  color: var(--glyph-canvas);
+  border-color: var(--glyph-accent);
+  background: var(--glyph-accent);
+  color: #fff;
 }
 
 .glyph-button--primary:hover {
-  border-color: var(--glyph-muted);
-  background: var(--glyph-muted);
+  border-color: var(--glyph-accent-strong);
+  background: var(--glyph-accent-strong);
 }
 
 .glyph-button--secondary {
@@ -706,6 +716,12 @@ input:focus-visible {
 
 .glyph-table tbody tr:hover {
   background: var(--glyph-table-hover);
+}
+
+.glyph-table tbody tr:focus-within {
+  background: var(--glyph-accent-surface);
+  outline: 2px solid var(--glyph-focus);
+  outline-offset: -2px;
 }
 
 .glyph-input,
