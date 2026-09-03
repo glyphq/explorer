@@ -109,13 +109,13 @@ function startCartesianLoop({
   let lastProg = -1
   let lastRevision = state.current.revision
   let entranceReported = !animate
-  let intensity = 0
+  let intensity = state.current.isMouseInChart || state.current.hovered ? 1 : 0
   let needsFill = true
   let lastPaintSig = ""
   let lastSelected: string | null | undefined = Symbol() as never
 
   const draw = (now: number) => {
-    raf = requestAnimationFrame(draw)
+    raf = 0
     const s = state.current
     if (!s.ready) return
     // Keep the bloom layer in sync with the crisp canvas while it's active.
@@ -190,7 +190,8 @@ function startCartesianLoop({
     // Live hover wins; the controlled markerIndex (e.g. a committed point)
     // is the fallback shown when nothing is hovered.
     const marker = s.hoverIndex != null ? s.hoverIndex : s.markerIndex
-    const winkDue = !reduce && now - last >= 100
+    const decorativeMotion = animate && !reduce
+    const winkDue = decorativeMotion && now - last >= 100
     // Repaint when a tweak-driven paint input changes (variant, stacking) so
     // the panel updates the fill live — without resetting the entrance reveal.
     const paintSig = `${s.stackType}|${s.configKeys
@@ -262,7 +263,7 @@ function startCartesianLoop({
       const top = cur.top[sx] ?? 0
       const floor = cur.floor[sx] ?? rows - 1
       const sy = Math.round(top + star.depth * (floor - top))
-      const tw = reduce ? 0.85 : (Math.sin((tick + star.phase) * 0.35) + 1) / 2
+      const tw = decorativeMotion ? (Math.sin((tick + star.phase) * 0.35) + 1) / 2 : 0.85
       const lift = tw * (0.7 + 0.3 * intensity)
       if (lift < 0.55 || sy < 0 || sy >= rows) continue
       // Sparkles glint in the series colour via opacity (the `lift` wink)
@@ -279,6 +280,10 @@ function startCartesianLoop({
         c.fillRect(sx, sy - 1, 1, 1)
         c.fillRect(sx, sy + 1, 1, 1)
       }
+    }
+
+    if (moving || settling || decorativeMotion || (animate && prog < 1)) {
+      raf = requestAnimationFrame(draw)
     }
   }
 
@@ -369,7 +374,19 @@ export function CartesianCanvas() {
       targets: targetsRef,
       stars: starsRef,
     })
-  }, [cols, rows])
+  }, [
+    cols,
+    rows,
+    ctx.animate,
+    ctx.focusDataKey,
+    ctx.hovered,
+    ctx.hoverIndex,
+    ctx.isMouseInChart,
+    ctx.revision,
+    ctx.selectedDataKey,
+    stars,
+    targets,
+  ])
 
   const bloomActive = ctx.bloomOnHover
     ? ctx.isMouseInChart || ctx.hovered
