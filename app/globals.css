@@ -173,7 +173,10 @@ input:focus-visible {
   min-height: var(--glyph-header);
   background: rgb(0 0 0 / 78%);
   backdrop-filter: blur(18px) saturate(1.2);
-  transition: min-height 260ms var(--glyph-ease), background-color 260ms var(--glyph-ease);
+  transition:
+    top 260ms var(--glyph-ease),
+    min-height 260ms var(--glyph-ease),
+    background-color 260ms var(--glyph-ease);
 }
 
 .glyph-nav__inner {
@@ -189,6 +192,7 @@ input:focus-visible {
 }
 
 .glyph-nav[data-scrolled="true"] {
+  top: 0.75rem;
   min-height: 64px;
   background: transparent;
   pointer-events: none;
@@ -197,7 +201,7 @@ input:focus-visible {
 .glyph-nav[data-scrolled="true"] .glyph-nav__inner {
   width: min(calc(100% - 2rem), 72rem);
   min-height: 52px;
-  margin-top: 0.75rem;
+  margin-top: 0;
   padding-inline: 1rem;
   border: 1px solid rgb(255 255 255 / 7%);
   border-radius: 999px;
