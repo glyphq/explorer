@@ -605,6 +605,18 @@ input:focus-visible {
   margin: 0 auto;
 }
 
+/* The overview is an intentionally full-bleed entry experience. Its data
+ * sections and footer re-establish the shared reading width below the hero. */
+.glyph-shell__content:has(.glyph-home-hero) {
+  width: 100%;
+  max-width: none;
+}
+
+.glyph-shell__content:has(.glyph-home-hero) .glyph-footer > div {
+  width: min(100%, var(--glyph-content));
+  margin-inline: auto;
+}
+
 .glyph-breadcrumbs {
   width: 100%;
   padding: 0.65rem var(--glyph-gutter) 0;

@@ -1,28 +1,17 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
 
 const Dither = dynamic(() => import("@/components/Dither"), {
   ssr: false,
 });
 
 export function ReactBitsDither() {
-  const [reducedMotion, setReducedMotion] = useState(false);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReducedMotion(mediaQuery.matches);
-    update();
-    mediaQuery.addEventListener("change", update);
-    return () => mediaQuery.removeEventListener("change", update);
-  }, []);
-
   return (
     <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
       <Dither
         colorNum={10}
-        disableAnimation={reducedMotion}
+        disableAnimation
         enableMouseInteraction={false}
         mouseRadius={1}
         pixelSize={2}

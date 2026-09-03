@@ -22,6 +22,25 @@ test.describe("public explorer navigation", () => {
     await expect(hero.getByRole("heading", { name: "Explore Qubic" })).toBeVisible();
     await expect(hero.getByRole("button", { name: /Open lookup/ })).toBeVisible();
     await expect(hero.locator("canvas")).toHaveCount(1);
+
+    const geometry = await page.evaluate(() => {
+      const heroElement = document.querySelector<HTMLElement>(".glyph-home-hero");
+      const mainElement = document.querySelector("main");
+      if (!heroElement || !mainElement) return null;
+      return {
+        height: heroElement.getBoundingClientRect().height,
+        top: heroElement.getBoundingClientRect().top,
+        documentWidth: document.body.getBoundingClientRect().width,
+        width: heroElement.getBoundingClientRect().width,
+        mainTop: mainElement.getBoundingClientRect().top,
+      };
+    });
+
+    expect(geometry).not.toBeNull();
+    expect(geometry?.width).toBe(geometry?.documentWidth);
+    const viewport = page.viewportSize();
+    expect(geometry?.height).toBeGreaterThanOrEqual((viewport?.height ?? 0) * 0.6);
+    expect(geometry?.top).toBe(geometry?.mainTop);
   });
 
   test("renders safe feedback for invalid typed routes", async ({ page }) => {

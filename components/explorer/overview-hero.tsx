@@ -6,7 +6,7 @@ import { ReactBitsDither } from "./react-bits-dither";
 
 export function OverviewHero() {
   return (
-    <section aria-labelledby="overview-heading" className="relative flex min-h-[60dvh] w-full items-center overflow-hidden">
+    <section aria-labelledby="overview-heading" className="glyph-home-hero relative flex min-h-[60dvh] w-full items-center overflow-hidden">
       <ReactBitsDither />
       <div className="relative z-10 mx-auto w-full max-w-screen-2xl px-[var(--glyph-gutter)] py-16">
         <div className="max-w-2xl">
