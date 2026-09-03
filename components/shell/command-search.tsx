@@ -174,7 +174,12 @@ function DirectRouteItem({ match, onSelect }: { match: DirectQueryMatch; onSelec
       onSelect={onSelect}
       value={`direct-${match.kind}-${match.value}`}
     >
-      <CommandIcon type={match.kind} />
+      <IdentityAvatar
+        identity={String(match.value)}
+        label={`Avatar for typed ${match.kind} lookup`}
+        radius={999}
+        size={32}
+      />
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-medium" title={String(match.value)}>
           {copy.label} <span className="font-mono">{displayValue}</span>
