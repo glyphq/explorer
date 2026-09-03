@@ -15,7 +15,6 @@ import { useMemo } from "react";
 
 import { Area } from "@/components/dither-kit/area";
 import { AreaChart } from "@/components/dither-kit/area-chart";
-import { DitherAvatar } from "@/components/dither-kit/avatar";
 import { Grid } from "@/components/dither-kit/grid";
 import { Tooltip } from "@/components/dither-kit/tooltip";
 import { XAxis } from "@/components/dither-kit/x-axis";
@@ -92,9 +91,6 @@ function MarketMetric({
 }) {
   return (
     <div className="glyph-market-metric">
-      <span aria-hidden="true" className="glyph-market-metric__dither">
-        <DitherAvatar animate={false} hue={180} label="" name={`market-${label}`} size={112} />
-      </span>
       <HugeiconsIcon
         aria-hidden="true"
         className="glyph-market-metric__mask"
@@ -143,6 +139,10 @@ function SectionHeading({
 }
 
 function NetworkPulse({ query, stats }: { query: ReturnType<typeof useLatestStats>; stats: LatestStats }) {
+  const indexedTick = useLastProcessedTick();
+  const archiveTick = indexedTick.data?.tickNumber;
+  const archiveLag = archiveTick === undefined ? null : Math.max(0, stats.currentTick - archiveTick);
+
   return (
     <section aria-labelledby="network-pulse-heading">
       <SectionHeading
@@ -162,40 +162,50 @@ function NetworkPulse({ query, stats }: { query: ReturnType<typeof useLatestStat
         title="The network, right now"
       />
 
-      <div className="mt-8">
-        <p className="text-xs font-medium uppercase tracking-[0.1em] text-[var(--glyph-tertiary)]">Latest network tick</p>
-        <ExplorerLink href={`/tick/${stats.currentTick}`}>
-          <span className="mt-2 font-mono text-5xl font-semibold tracking-[-0.09em] text-[var(--glyph-ink)] sm:text-7xl">{formatNumber(stats.currentTick)}</span>
-        </ExplorerLink>
-        <p className="mt-3 text-sm text-[var(--glyph-muted)]">The latest unit of reported network activity. Updated {formatStatsTimestamp(stats.timestamp)}.</p>
-      </div>
-
-      <dl className="mt-10 grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-5">
-        <div>
-          <dt className="text-xs text-[var(--glyph-tertiary)]">Epoch</dt>
-          <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatNumber(stats.epoch)}</dd>
+      <dl className="glyph-network-grid mt-8">
+        <div className="glyph-network-tile glyph-network-tile--lead">
+          <dt>Live network tick</dt>
+          <dd>
+            <ExplorerLink href={`/tick/${stats.currentTick}`}>
+              <span className="font-mono text-5xl font-semibold tracking-[-0.09em] sm:text-7xl">{formatNumber(stats.currentTick)}</span>
+            </ExplorerLink>
+          </dd>
+          <p>Reported {formatStatsTimestamp(stats.timestamp)}</p>
         </div>
-        <div>
-          <dt className="text-xs text-[var(--glyph-tertiary)]">Network health</dt>
-          <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(stats.epochTickQuality)}%</dd>
-          <p className="mt-1 text-xs text-[var(--glyph-muted)]">Tick quality this epoch</p>
+        <div className="glyph-network-tile glyph-network-tile--archive">
+          <dt>Indexed archive</dt>
+          <dd>{archiveTick === undefined ? "—" : <ExplorerLink href={`/tick/${archiveTick}`}><span>{formatNumber(archiveTick)}</span></ExplorerLink>}</dd>
+          <p>{archiveLag === null ? "Checking archive coverage" : archiveLag === 0 ? "Caught up with the live tick" : `${formatNumber(archiveLag)} ticks behind live`}</p>
         </div>
-        <div>
-          <dt className="text-xs text-[var(--glyph-tertiary)]">Active accounts</dt>
-          <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatNumber(stats.activeAddresses)}</dd>
+        <div className="glyph-network-tile">
+          <dt>Epoch</dt>
+          <dd>{formatNumber(stats.epoch)}</dd>
+          <p>{formatNumber(stats.ticksInCurrentEpoch)} ticks so far</p>
         </div>
-        <div>
-          <dt className="text-xs text-[var(--glyph-tertiary)]">Circulating supply</dt>
-          <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatCompact(stats.circulatingSupply)} <span className="text-sm font-normal text-[var(--glyph-muted)]">QUS</span></dd>
+        <div className="glyph-network-tile">
+          <dt>Network health</dt>
+          <dd>{new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(stats.epochTickQuality)}%</dd>
+          <p>Productive ticks this epoch</p>
         </div>
-        <div>
-          <dt className="text-xs text-[var(--glyph-tertiary)]">Burned</dt>
-          <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatCompact(stats.burnedQus)} <span className="text-sm font-normal text-[var(--glyph-muted)]">QUS</span></dd>
+        <div className="glyph-network-tile">
+          <dt>Active accounts</dt>
+          <dd>{formatNumber(stats.activeAddresses)}</dd>
+          <p>Reported in the live snapshot</p>
         </div>
-        <div>
-          <dt className="text-xs text-[var(--glyph-tertiary)]">Burned share</dt>
-          <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatBigIntPercent(stats.burnedQus, stats.circulatingSupply + stats.burnedQus)}</dd>
-          <p className="mt-1 text-xs text-[var(--glyph-muted)]">Of reported supply</p>
+        <div className="glyph-network-tile">
+          <dt>Empty ticks</dt>
+          <dd>{formatNumber(stats.emptyTicksInCurrentEpoch)}</dd>
+          <p>So far this epoch</p>
+        </div>
+        <div className="glyph-network-tile glyph-network-tile--wide">
+          <dt>Circulating supply</dt>
+          <dd>{formatCompact(stats.circulatingSupply)} <span>QUS</span></dd>
+          <p>Reported live supply</p>
+        </div>
+        <div className="glyph-network-tile">
+          <dt>Burned</dt>
+          <dd>{formatCompact(stats.burnedQus)} <span>QUS</span></dd>
+          <p>{formatBigIntPercent(stats.burnedQus, stats.circulatingSupply + stats.burnedQus)} of reported supply</p>
         </div>
       </dl>
     </section>
