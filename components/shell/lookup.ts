@@ -13,7 +13,7 @@ export type DirectQueryMatch =
   | { kind: "transaction"; value: string; href: string }
   | { kind: "tick"; value: number; href: string }
   | { kind: "token"; value: number; href: string }
-  | { kind: "contract"; value: number; href: string };
+;
 
 export type QueryMatch =
   | { kind: "empty"; value: "" }
@@ -25,21 +25,19 @@ export function classifyCommandQuery(input: string): QueryMatch {
   const value = input.trim();
   if (!value) return { kind: "empty", value: "" };
 
-  const typedIndex = value.match(/^(?:\/?)((?:token|tokens|asset|assets|contract|contracts|tick))\s*(?::|\/|\s)\s*(\d+)$/i);
+  const typedIndex = value.match(/^(?:\/?)((?:token|tokens|asset|assets|tick))\s*(?::|\/|\s)\s*(\d+)$/i);
   if (typedIndex) {
     const prefix = typedIndex[1].toLowerCase();
     const kind = prefix === "token" || prefix === "tokens" || prefix === "asset" || prefix === "assets"
       ? "token"
-      : prefix === "contract" || prefix === "contracts"
-        ? "contract"
-        : "tick";
+      : "tick";
     const index = kind === "tick" ? normalizeTick(typedIndex[2]) : normalizeAssetIndex(typedIndex[2]);
     if (index === null) return { kind: "invalid", value };
 
     return {
       kind,
       value: index,
-      href: `/${kind === "token" ? "tokens" : kind === "contract" ? "contracts" : "tick"}/${index}`,
+      href: `/${kind === "token" ? "tokens" : "tick"}/${index}`,
     };
   }
 
@@ -109,14 +107,6 @@ export function getMatchCopy(kind: DirectQueryMatch["kind"]): MatchCopy {
       detail: "Numeric universe index",
       label: "Token",
       context: "Asset issuance details",
-    };
-  }
-
-  if (kind === "contract") {
-    return {
-      detail: "Numeric contract index",
-      label: "Contract",
-      context: "Published contract metadata",
     };
   }
 

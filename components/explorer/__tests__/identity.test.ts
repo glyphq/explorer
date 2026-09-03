@@ -1,5 +1,4 @@
 import { describe, expect, test } from "bun:test";
-import { contractIndexToIdentity } from "@qubic.org/crypto";
 import type { QueryTransaction } from "@qubic.org/rpc";
 
 import { getIdentityTransactionTypeDisplay } from "../identity";
@@ -67,17 +66,7 @@ describe("identity transaction query helpers", () => {
 });
 
 describe("identity transaction type display", () => {
-  test("shows a recognized procedure while retaining contract details for hover", () => {
-    const transaction: QueryTransaction = {
-      destination: contractIndexToIdentity(9),
-      inputData: btoa(String.fromCharCode(...new Uint8Array(12))),
-      inputSize: 12,
-      inputType: 2,
-    };
-
-    expect(getIdentityTransactionTypeDisplay(transaction)).toEqual({
-      label: "Unlock (2)",
-      detail: "Qearn\nContract index 9 · input type 2 · 12 reported bytes · 12 payload bytes",
-    });
+  test("does not decode smart-contract calls", () => {
+    expect(getIdentityTransactionTypeDisplay({ inputType: 2 } as QueryTransaction)).toEqual({ label: "Smart-contract call" });
   });
 });

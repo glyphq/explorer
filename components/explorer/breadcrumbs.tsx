@@ -5,7 +5,6 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { getContractByIndex } from "./contracts-catalogue";
 import {
   formatIdentifier,
   formatIdentity,
@@ -60,15 +59,6 @@ function getBreadcrumbItems(pathname: string): BreadcrumbItem[] {
     return items;
   }
 
-  if (section === "contracts") {
-    items.push({ href: "/contracts", label: "Contracts" });
-    if (value) {
-      const index = normalizeAssetIndex(value);
-      const contract = getContractByIndex(index);
-      items.push({ label: contract?.name ?? (index === null ? `Contract ${identifierLabel(value, "text")}` : `Contract ${index}`) });
-    }
-    return items;
-  }
 
   if (section === "identity") {
     items.push({ label: "Identity" });

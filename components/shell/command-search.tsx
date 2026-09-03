@@ -10,7 +10,6 @@ import {
   SearchRemoveIcon,
   TransactionIcon,
   Coins01Icon,
-  ContractsIcon,
   RankingIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
@@ -42,9 +41,9 @@ type CommandSearchProps = {
 };
 
 export type NavigationCommand = {
-  id: "overview" | "tokens" | "contracts" | "rich-list";
+  id: "overview" | "tokens" | "rich-list";
   label: string;
-  href: "/" | "/tokens" | "/contracts" | "/rich-list";
+  href: "/" | "/tokens" | "/rich-list";
   keywords: string[];
 };
 
@@ -63,12 +62,6 @@ const NAVIGATION_COMMANDS: NavigationCommand[] = [
     label: "Tokens",
     href: "/tokens",
     keywords: ["assets", "asset", "issuance", "token", "tokens", "registry"],
-  },
-  {
-    id: "contracts",
-    label: "Contracts",
-    href: "/contracts",
-    keywords: ["contract", "contracts", "smart contract", "procedure", "input", "identity"],
   },
   {
     id: "rich-list",
@@ -127,7 +120,6 @@ function ExplorerIcon({
 function CommandIcon({ type }: { type: NavigationCommand["id"] | DirectQueryMatch["kind"] | "invalid" }) {
   if (type === "overview") return <ExplorerIcon icon={Home01Icon} />;
   if (type === "tokens") return <ExplorerIcon icon={Coins01Icon} />;
-  if (type === "contracts") return <ExplorerIcon icon={ContractsIcon} />;
   if (type === "rich-list") return <ExplorerIcon icon={RankingIcon} />;
 
   if (type === "identity") {
@@ -162,13 +154,6 @@ function CommandIcon({ type }: { type: NavigationCommand["id"] | DirectQueryMatc
     );
   }
 
-  if (type === "contract") {
-    return (
-      <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-lg border border-[var(--glyph-line-strong)] text-sm text-[var(--glyph-muted)]">
-        <ExplorerIcon className="size-4" icon={ContractsIcon} />
-      </span>
-    );
-  }
 
   return (
     <span aria-hidden="true" className="flex size-8 items-center justify-center rounded-lg border border-[var(--glyph-line-strong)] text-sm text-[var(--glyph-muted)]">

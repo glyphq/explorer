@@ -44,7 +44,7 @@ import {
   TableHeaderLabel,
   TableScroll,
 } from "./primitives";
-import { formatContractInvocation, identifyContractInvocation, isSmartContractCall, transactionTypeLabel } from "./contracts";
+
 import { SkeletonLine } from "./skeletons";
 import { formatNumber, formatTimestamp } from "./utils";
 
@@ -402,21 +402,7 @@ function amountSortValue(value: string | undefined): bigint | undefined {
 }
 
 export function getIdentityTransactionTypeDisplay(transaction: QueryTransaction): { label: string; detail?: string } {
-  if (isSmartContractCall(transaction.inputType)) {
-    const invocation = identifyContractInvocation(transaction);
-    if (invocation.status === "recognized") {
-      const details = formatContractInvocation(invocation);
-      return {
-        label: `${invocation.procedureName} (${formatNumber(invocation.inputType)})`,
-        detail: [details.description, details.metadata].filter((value): value is string => Boolean(value)).join("\n"),
-      };
-    }
-    return {
-      label: "Smart-contract call",
-      detail: transaction.inputType === undefined ? undefined : `Input type ${formatNumber(transaction.inputType)}`,
-    };
-  }
-  return { label: transactionTypeLabel(transaction.inputType) };
+  return { label: transaction.inputType === 0 ? "Transfer" : "Smart-contract call" };
 }
 
 const identityTableFeatures = tableFeatures({

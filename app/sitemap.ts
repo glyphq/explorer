@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 import { explorerCanonical } from "@/lib/metadata";
 
-const PUBLIC_PATHS = ["/", "/tokens", "/contracts", "/rich-list"] as const;
+const PUBLIC_PATHS = ["/", "/tokens", "/rich-list"] as const;
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return PUBLIC_PATHS.map((path) => ({

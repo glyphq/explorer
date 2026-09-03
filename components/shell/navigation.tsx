@@ -1,6 +1,6 @@
 "use client";
 
-import { Coins01Icon, ContractsIcon, Home01Icon, RankingIcon } from "@hugeicons/core-free-icons";
+import { Coins01Icon, Home01Icon, RankingIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -17,9 +17,9 @@ export type GlyphNavigationProps = {
 };
 
 type NavigationRoute = {
-  id: "overview" | "tokens" | "contracts" | "rich-list";
+  id: "overview" | "tokens" | "rich-list";
   label: string;
-  href: "/" | "/tokens" | "/contracts" | "/rich-list";
+  href: "/" | "/tokens" | "/rich-list";
   icon: HugeiconsIconProps["icon"];
 };
 
@@ -36,12 +36,6 @@ const DEFAULT_NAVIGATION_ROUTES: readonly NavigationRoute[] = [
     label: "Tokens",
     href: "/tokens",
     icon: Coins01Icon,
-  },
-  {
-    id: "contracts",
-    label: "Contracts",
-    href: "/contracts",
-    icon: ContractsIcon,
   },
   {
     id: "rich-list",

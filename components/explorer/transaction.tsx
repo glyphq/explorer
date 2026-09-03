@@ -1,6 +1,6 @@
 "use client";
 
-import { useTickData, useTransactionByHash } from "@/lib/rpc/queries";
+import { useTransactionByHash } from "@/lib/rpc/queries";
 import { formatAtomicAmount } from "@/lib/rpc/validation";
 import { IdentityIdentifier } from "@/components/identity";
 
@@ -13,7 +13,7 @@ import {
   QueryRefreshMeta,
   QueryState,
 } from "./primitives";
-import { formatContractInvocation, identifyContractInvocation, isSmartContractCall, transactionTypeLabel } from "./contracts";
+
 import { TransactionPageSkeleton } from "./skeletons";
 import { formatNumber, formatTimestamp } from "./utils";
 
@@ -40,8 +40,6 @@ function RawTransactionValue({ label, value }: { label: string; value: string | 
 export function TransactionPage({ hash }: { hash: string | null }) {
   const query = useTransactionByHash(hash);
   const transaction = query.data;
-  const shouldDecodeContract = Boolean(transaction && isSmartContractCall(transaction.inputType));
-  const tickQuery = useTickData(transaction?.tickNumber, { enabled: shouldDecodeContract });
 
   if (!hash) {
     return (
@@ -55,12 +53,6 @@ export function TransactionPage({ hash }: { hash: string | null }) {
     );
   }
 
-  const contractInvocation = shouldDecodeContract && transaction
-    ? identifyContractInvocation({ ...transaction, epoch: tickQuery.data?.epoch })
-    : null;
-  const contractInvocationDisplay = contractInvocation
-    ? formatContractInvocation(contractInvocation)
-    : null;
   return (
     <ExplorerFrame>
       <header className="mb-5 border-b border-[var(--glyph-line)] pb-4">
@@ -88,7 +80,7 @@ export function TransactionPage({ hash }: { hash: string | null }) {
                 { label: "Timestamp", value: formatTimestamp(transaction.timestamp) },
                 { label: "Source", value: <IdentityIdentifier label="Source" value={transaction.source} />, wide: true },
                 { label: "Destination", value: <IdentityIdentifier label="Destination" value={transaction.destination} />, wide: true },
-                { label: "Type", value: transactionTypeLabel(transaction.inputType) },
+                { label: "Type", value: transaction.inputType === 0 ? "Transfer" : "Smart-contract call" },
                 { label: "Input type", value: formatNumber(transaction.inputType) },
                 { label: "Input size", value: formatNumber(transaction.inputSize) },
                 { label: "Money flew", value: transaction.moneyFlew === undefined ? "Not reported" : transaction.moneyFlew ? "Yes" : "No" },
@@ -105,46 +97,6 @@ export function TransactionPage({ hash }: { hash: string | null }) {
               />
             </div>
 
-            {contractInvocationDisplay ? (
-              <div className="mt-8 border-t border-[var(--glyph-line)] pt-5">
-                <h2 className="text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]">Contract invocation</h2>
-                {contractInvocation?.status === "recognized" && contractInvocationDisplay.availability ? (
-                  <>
-                    <div className="mt-4">
-                      <p className="text-xs font-medium uppercase tracking-[0.08em] text-[var(--glyph-tertiary)]">Procedure</p>
-                      <h3 className="mt-1 text-lg font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]">{contractInvocationDisplay.title}</h3>
-                      <p className="mt-1 text-sm text-[var(--glyph-muted)]"><span className="font-medium text-[var(--glyph-tertiary)]">Contract</span> {contractInvocationDisplay.description}</p>
-                    </div>
-
-                    {contractInvocationDisplay.metadata ? (
-                      <details className="group mt-4 border-y border-[var(--glyph-line)] py-3">
-                        <summary className="cursor-pointer list-none text-sm font-semibold text-[var(--glyph-ink)] underline decoration-[var(--glyph-line-strong)] underline-offset-4 outline-none marker:hidden focus-visible:ring-2 focus-visible:ring-[var(--glyph-focus)]">
-                          Technical details
-                          <span aria-hidden="true" className="ml-2 text-[var(--glyph-tertiary)] group-open:hidden">+</span>
-                          <span aria-hidden="true" className="ml-2 hidden text-[var(--glyph-tertiary)] group-open:inline">−</span>
-                        </summary>
-                        <p className="mt-3 font-mono text-xs leading-5 text-[var(--glyph-muted)]">{contractInvocationDisplay.metadata}</p>
-                      </details>
-                    ) : null}
-
-                    <div className="mt-4 border-l border-[var(--glyph-line-strong)] pl-3" role="status">
-                      <p className="text-sm font-semibold text-[var(--glyph-ink)]">{contractInvocationDisplay.availability.title}</p>
-                      <p className="mt-1 text-sm leading-6 text-[var(--glyph-muted)]">{contractInvocationDisplay.availability.description}</p>
-                      <p className="mt-2 text-xs leading-5 text-[var(--glyph-tertiary)]">{contractInvocationDisplay.availability.provenance}</p>
-                    </div>
-
-                    <div className="mt-4">
-                      <RawTransactionValue label="Raw input" value={transaction.inputData} />
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <p className="mt-2 text-sm font-semibold text-[var(--glyph-ink)]">{contractInvocationDisplay.title}</p>
-                    <p className="mt-1 text-sm leading-6 text-[var(--glyph-muted)]">{contractInvocationDisplay.description}</p>
-                  </>
-                )}
-              </div>
-            ) : null}
           </>
         ) : null}
       </QueryState>
