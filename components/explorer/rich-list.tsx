@@ -30,7 +30,7 @@ function IdentityCell({ identity }: Pick<RichListEntry, "identity">) {
     >
       <IdentityAvatar identity={identity} label={`Identicon for ${identity}`} radius={4} size={20} />
       <span className="min-w-0">
-        <span className="block truncate font-mono text-xs font-semibold text-[var(--glyph-ink)]" title={identity}>
+        <span className="block truncate font-mono text-xs font-semibold" title={identity}>
           {formatIdentity(identity)}
         </span>
       </span>

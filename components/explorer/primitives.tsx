@@ -89,7 +89,7 @@ export function CopyButton({ value, label }: { value: string; label: string }) {
 
 export function ExplorerLink({ href, children }: { href: string; children: ReactNode }) {
   return (
-    <Link className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-[var(--glyph-accent)] transition-colors hover:text-[var(--glyph-accent-strong)]" href={href}>
+    <Link className="inline-flex cursor-pointer items-center gap-1 font-mono text-xs font-semibold text-[var(--glyph-muted)] transition-colors hover:text-[var(--glyph-ink)]" href={href}>
       {children}
     </Link>
   );
@@ -270,7 +270,7 @@ export function InvalidLookup({
         title={`Invalid ${label.toLowerCase()}`}
       />
       <div className="mt-5">
-        <Link className="text-sm font-semibold text-[var(--glyph-accent)] transition-colors hover:text-[var(--glyph-accent-strong)]" href="/">
+        <Link className="cursor-pointer text-sm font-semibold text-[var(--glyph-muted)] transition-colors hover:text-[var(--glyph-ink)]" href="/">
           Return to Explorer search
         </Link>
       </div>

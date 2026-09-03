@@ -35,7 +35,7 @@ export function GlyphFooter() {
             {FOOTER_LINKS.map((link) =>
               link.external ? (
                 <a
-                  className="inline-flex min-h-9 items-center border-b border-transparent pb-px no-underline transition-colors hover:border-[var(--glyph-ink)] hover:text-[var(--glyph-ink)]"
+                  className="inline-flex min-h-9 cursor-pointer items-center no-underline transition-colors hover:text-[var(--glyph-ink)]"
                   href={link.href}
                   key={link.href}
                   rel="noreferrer"
@@ -45,7 +45,7 @@ export function GlyphFooter() {
                 </a>
               ) : (
                 <Link
-                  className="inline-flex min-h-9 items-center border-b border-transparent pb-px no-underline transition-colors hover:border-[var(--glyph-ink)] hover:text-[var(--glyph-ink)]"
+                  className="inline-flex min-h-9 cursor-pointer items-center no-underline transition-colors hover:text-[var(--glyph-ink)]"
                   href={link.href}
                   key={link.href}
                 >

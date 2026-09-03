@@ -104,16 +104,17 @@ a {
 
 a {
   color: inherit;
+  cursor: pointer;
   text-decoration: none;
 }
 
 a:not(.glyph-button):not(.glyph-nav__brand-link):not(.glyph-nav__route) {
-  color: var(--glyph-accent);
+  color: var(--glyph-muted);
   transition: color 160ms var(--glyph-ease), opacity 160ms var(--glyph-ease);
 }
 
 a:not(.glyph-button):not(.glyph-nav__brand-link):not(.glyph-nav__route):hover {
-  color: var(--glyph-accent-strong);
+  color: var(--glyph-ink);
 }
 
 code,
@@ -712,13 +713,14 @@ input:focus-visible {
 }
 
 .glyph-table tbody a {
-  color: var(--glyph-accent);
+  color: var(--glyph-muted);
+  cursor: pointer;
   font-weight: inherit;
   transition: color 160ms var(--glyph-ease);
 }
 
 .glyph-table tbody a:hover {
-  color: var(--glyph-accent-strong);
+  color: var(--glyph-ink);
 }
 
 .glyph-table tbody tr:focus-within {
