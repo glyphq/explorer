@@ -44,6 +44,13 @@ test.describe("public explorer navigation", () => {
     expect(geometry?.radius).not.toBe("0px");
   });
 
+  test("opens one shared command palette from the global shortcut", async ({ page }) => {
+    await page.goto("/");
+    await page.keyboard.press("Control+k");
+
+    await expect(page.getByRole("dialog", { name: "Glyph Explorer navigation and lookup" })).toHaveCount(1);
+  });
+
   test("renders safe feedback for invalid typed routes", async ({ page }) => {
     await page.goto("/transaction/not-a-transaction");
 

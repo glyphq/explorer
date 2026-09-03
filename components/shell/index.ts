@@ -1,4 +1,4 @@
-export { CommandSearch } from "@/components/shell/command-search";
+export { CommandSearch, CommandSearchProvider } from "@/components/shell/command-search";
 export { GlyphFooter } from "@/components/shell/glyph-footer";
 export { GlyphBrand, GlyphMark } from "@/components/shell/glyph-mark";
 export { GlyphNavigation } from "@/components/shell/navigation";

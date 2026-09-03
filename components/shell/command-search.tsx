@@ -16,12 +16,15 @@ import {
 import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
 import { useRouter } from "next/navigation";
 import {
+  createContext,
   useCallback,
+  useContext,
   useEffect,
   useId,
   useRef,
   useState,
   type MouseEvent,
+  type ReactNode,
 } from "react";
 
 import { GlyphButton, type GlyphButtonVariant } from "@/components/ui/button";
@@ -231,6 +234,12 @@ function RecentLookupItem({ lookup, onSelect }: { lookup: RecentLookup; onSelect
 
 const groupClassName = "[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.14em] [&_[cmdk-group-heading]]:text-[var(--glyph-tertiary)]";
 
+type CommandSearchContextValue = {
+  openCommandSearch: (trigger?: HTMLElement | null) => void;
+};
+
+const CommandSearchContext = createContext<CommandSearchContextValue | null>(null);
+
 function CommandPalette({
   open,
   onOpenChange,
@@ -376,36 +385,23 @@ function CommandPalette({
   );
 }
 
-export function CommandSearch({
-  label = "Search",
-  onClick,
-  shortcut = "⌘/Ctrl K",
-  variant = "secondary",
-}: CommandSearchProps) {
+export function CommandSearchProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [recentLookups, setRecentLookups] = useState<RecentLookup[]>([]);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const wasOpenRef = useRef(false);
 
-  const rememberFocusAndOpen = useCallback((element?: HTMLElement | null) => {
+  const openCommandSearch = useCallback((element?: HTMLElement | null) => {
     restoreFocusRef.current = element ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null);
     setOpen(true);
   }, []);
 
-  const handleTriggerClick = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
-      onClick?.();
-      rememberFocusAndOpen(event.currentTarget);
-    },
-    [onClick, rememberFocusAndOpen],
-  );
-
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {
-      if (nextOpen) rememberFocusAndOpen();
+      if (nextOpen) openCommandSearch();
       else setOpen(false);
     },
-    [rememberFocusAndOpen],
+    [openCommandSearch],
   );
 
   const handleLookup = useCallback((match: DirectQueryMatch) => {
@@ -440,31 +436,17 @@ export function CommandSearch({
       if (open) {
         setOpen(false);
       } else {
-        rememberFocusAndOpen();
+        openCommandSearch();
       }
     };
 
     document.addEventListener("keydown", handleGlobalShortcut);
     return () => document.removeEventListener("keydown", handleGlobalShortcut);
-  }, [open, rememberFocusAndOpen]);
+  }, [open, openCommandSearch]);
 
   return (
-    <>
-      <GlyphButton
-        aria-keyshortcuts="Meta+K Control+K"
-        aria-label={`${label}. Press Command K or Control K to open navigation and lookup.`}
-        className={`glyph-command-search glyph-command-search--${variant}`}
-        data-glyph-slot="command-search"
-        icon={Search01Icon}
-        onClick={handleTriggerClick}
-        size="sm"
-        variant={variant}
-      >
-        <span className="glyph-command-search__label">
-          <span>{label}</span>
-        </span>
-        <kbd>{shortcut}</kbd>
-      </GlyphButton>
+    <CommandSearchContext.Provider value={{ openCommandSearch }}>
+      {children}
       <CommandPalette
         key={open ? "open" : "closed"}
         onLookup={handleLookup}
@@ -473,6 +455,42 @@ export function CommandSearch({
         recentLookups={recentLookups}
         onClearRecentLookups={() => setRecentLookups([])}
       />
-    </>
+    </CommandSearchContext.Provider>
+  );
+}
+
+export function CommandSearch({
+  label = "Search",
+  onClick,
+  shortcut = "⌘/Ctrl K",
+  variant = "secondary",
+}: CommandSearchProps) {
+  const commandSearch = useContext(CommandSearchContext);
+
+  if (!commandSearch) {
+    throw new Error("CommandSearch must be rendered inside CommandSearchProvider.");
+  }
+
+  const handleTriggerClick = (event: MouseEvent<HTMLButtonElement>) => {
+    onClick?.();
+    commandSearch.openCommandSearch(event.currentTarget);
+  };
+
+  return (
+    <GlyphButton
+      aria-keyshortcuts="Meta+K Control+K"
+      aria-label={`${label}. Press Command K or Control K to open navigation and lookup.`}
+      className={`glyph-command-search glyph-command-search--${variant}`}
+      data-glyph-slot="command-search"
+      icon={Search01Icon}
+      onClick={handleTriggerClick}
+      size="sm"
+      variant={variant}
+    >
+      <span className="glyph-command-search__label">
+        <span>{label}</span>
+      </span>
+      <kbd>{shortcut}</kbd>
+    </GlyphButton>
   );
 }

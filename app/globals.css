@@ -592,18 +592,18 @@ input:focus-visible {
 
 .glyph-market-metric {
   position: relative;
-  min-height: 10.5rem;
+  min-height: 9.5rem;
   overflow: hidden;
   border: 1px solid var(--glyph-line);
   border-radius: var(--glyph-radius-md);
-  padding: 1.15rem;
+  padding: 1rem;
   background: var(--glyph-surface);
   transition: border-color 180ms var(--glyph-ease), background-color 180ms var(--glyph-ease);
 }
 
 .glyph-intelligence-stack {
   display: grid;
-  gap: clamp(3.5rem, 8vw, 6rem);
+  gap: clamp(3rem, 6vw, 4.5rem);
 }
 
 .glyph-market-metric,
@@ -663,9 +663,9 @@ input:focus-visible {
 
 .glyph-network-tile {
   position: relative;
-  min-height: 10rem;
+  min-height: 9.5rem;
   overflow: hidden;
-  padding: 1.15rem;
+  padding: 1rem;
   border: 1px solid var(--glyph-line);
   border-radius: var(--glyph-radius-md);
   background: var(--glyph-surface);
@@ -680,7 +680,7 @@ input:focus-visible {
 }
 
 .glyph-network-tile dd {
-  margin-top: 1.15rem;
+  margin-top: 0.8rem;
   color: var(--glyph-ink);
   font-family: var(--font-geist-mono), monospace;
   font-size: 1.35rem;
@@ -706,7 +706,7 @@ input:focus-visible {
 }
 
 .glyph-network-tile p {
-  margin-top: 0.6rem;
+  margin-top: 0.45rem;
   color: var(--glyph-muted);
   font-size: 0.75rem;
   line-height: 1.4;
@@ -721,7 +721,7 @@ input:focus-visible {
 }
 
 .glyph-network-tile--lead dd {
-  margin-top: 1.6rem;
+  margin-top: 1.2rem;
   font-size: clamp(3.5rem, 8vw, 6.5rem);
   line-height: 0.9;
   letter-spacing: -0.1em;

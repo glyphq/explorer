@@ -116,8 +116,8 @@ function MarketMetric({
         strokeWidth={1.25}
       />
       <dt className="relative text-xs font-medium uppercase tracking-[0.1em] text-[var(--glyph-tertiary)]">{label}</dt>
-      <dd className="relative mt-5 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{value}</dd>
-      <p className="relative mt-2 text-xs text-[var(--glyph-muted)]">{detail}</p>
+      <dd className="relative mt-3 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{value}</dd>
+      <p className="relative mt-1.5 text-xs text-[var(--glyph-muted)]">{detail}</p>
     </div>
   );
 }
@@ -377,9 +377,10 @@ function IntelligenceSection() {
   return (
     <section aria-labelledby="intelligence-heading">
       <SectionHeading
-        eyebrow="Live overview"
+        description="Live network signals and market context, collected in one place."
+        eyebrow="Overview"
         id="intelligence-heading"
-        title="Qubic intelligence"
+        title="Qubic, at a glance"
       />
       <div className="glyph-intelligence-stack mt-8">
         <NetworkSection showHeading={false} />

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CommandSearchProvider } from "@/components/shell/command-search";
 import { GlyphNavigation, type GlyphNavigationProps } from "@/components/shell/navigation";
 import { GlyphFooter } from "@/components/shell/glyph-footer";
 import { ExplorerBreadcrumbs } from "@/components/explorer/breadcrumbs";
@@ -12,16 +13,18 @@ export function GlyphShell({ children, navigation }: GlyphShellProps) {
   const defaultNavigationProps: GlyphNavigationProps = {};
 
   return (
-    <div className="glyph-shell">
-      <a className="glyph-skip-link" href="#glyph-main">
-        Skip to content
-      </a>
-      {navigation ?? <GlyphNavigation {...defaultNavigationProps} />}
-      <div className="glyph-shell__content flex flex-col" id="glyph-main">
-        <ExplorerBreadcrumbs />
-        {children}
-        <GlyphFooter />
+    <CommandSearchProvider>
+      <div className="glyph-shell">
+        <a className="glyph-skip-link" href="#glyph-main">
+          Skip to content
+        </a>
+        {navigation ?? <GlyphNavigation {...defaultNavigationProps} />}
+        <div className="glyph-shell__content flex flex-col" id="glyph-main">
+          <ExplorerBreadcrumbs />
+          {children}
+          <GlyphFooter />
+        </div>
       </div>
-    </div>
+    </CommandSearchProvider>
   );
 }
