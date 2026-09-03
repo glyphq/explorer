@@ -590,6 +590,37 @@ input:focus-visible {
   padding-top: var(--glyph-header);
 }
 
+.glyph-market-metric {
+  position: relative;
+  min-height: 10.5rem;
+  overflow: hidden;
+  border: 1px solid var(--glyph-line);
+  border-radius: var(--glyph-radius-md);
+  padding: 1.15rem;
+  background: var(--glyph-surface);
+  transition: border-color 180ms var(--glyph-ease), background-color 180ms var(--glyph-ease);
+}
+
+.glyph-market-metric:hover {
+  border-color: var(--glyph-line-strong);
+  background: var(--glyph-surface-strong);
+}
+
+.glyph-market-metric__dither {
+  position: absolute;
+  right: -1.75rem;
+  bottom: -1.75rem;
+  opacity: 0.12;
+}
+
+.glyph-market-metric__mask {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  color: var(--glyph-accent);
+  opacity: 0.16;
+}
+
 .glyph-nav[data-scrolled="true"] .glyph-command-search {
   min-height: 38px;
   padding-inline: 0.8rem;

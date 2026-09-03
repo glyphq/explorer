@@ -1,10 +1,21 @@
 "use client";
 
-import { RefreshIcon } from "@hugeicons/core-free-icons";
+import {
+  ChartEvaluationIcon,
+  ChartHighLowIcon,
+  ChartIncreaseIcon,
+  ChartLineData01Icon,
+  ChartMaximumIcon,
+  ChartMinimumIcon,
+  CoinsDollarIcon,
+  RefreshIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
 import { useMemo } from "react";
 
 import { Area } from "@/components/dither-kit/area";
 import { AreaChart } from "@/components/dither-kit/area-chart";
+import { DitherAvatar } from "@/components/dither-kit/avatar";
 import { Grid } from "@/components/dither-kit/grid";
 import { Tooltip } from "@/components/dither-kit/tooltip";
 import { XAxis } from "@/components/dither-kit/x-axis";
@@ -65,6 +76,38 @@ function formatMarketChartDate(value: unknown): string {
 const MARKET_CHART_CONFIG = {
   priceUsd: { color: "green", label: "Qubic price" },
 } as const;
+
+type MarketMetricIcon = HugeiconsIconProps["icon"];
+
+function MarketMetric({
+  detail,
+  icon,
+  label,
+  value,
+}: {
+  detail: string;
+  icon: MarketMetricIcon;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="glyph-market-metric">
+      <span aria-hidden="true" className="glyph-market-metric__dither">
+        <DitherAvatar animate={false} hue={180} label="" name={`market-${label}`} size={112} />
+      </span>
+      <HugeiconsIcon
+        aria-hidden="true"
+        className="glyph-market-metric__mask"
+        icon={icon}
+        size={52}
+        strokeWidth={1.25}
+      />
+      <dt className="relative text-xs font-medium uppercase tracking-[0.1em] text-[var(--glyph-tertiary)]">{label}</dt>
+      <dd className="relative mt-5 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{value}</dd>
+      <p className="relative mt-2 text-xs text-[var(--glyph-muted)]">{detail}</p>
+    </div>
+  );
+}
 
 function formatStatsTimestamp(value: number): string {
   return new Intl.DateTimeFormat(undefined, {
@@ -225,6 +268,16 @@ function MarketSection() {
             <p className="mt-3 text-sm leading-6 text-[var(--glyph-muted)]">Per QUBIC. Market data last updated {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(snapshot.lastUpdated))}.</p>
           </div>
 
+          <dl className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <MarketMetric detail="Current network valuation" icon={ChartEvaluationIcon} label="Market cap" value={formatUsd(snapshot.marketCapUsd)} />
+            <MarketMetric detail="Change over the latest day" icon={ChartIncreaseIcon} label="24-hour movement" value={formatPercent(snapshot.priceChange24h)} />
+            <MarketMetric detail="Direction across seven days" icon={ChartLineData01Icon} label="7-day movement" value={formatPercent(snapshot.priceChange7d)} />
+            <MarketMetric detail="Reported market turnover" icon={CoinsDollarIcon} label="24-hour volume" value={formatUsd(snapshot.volume24hUsd)} />
+            <MarketMetric detail="Lowest daily close in range" icon={ChartMinimumIcon} label="30-day low" value={range ? formatUsd(range.low) : "—"} />
+            <MarketMetric detail="Highest daily close in range" icon={ChartMaximumIcon} label="30-day high" value={range ? formatUsd(range.high) : "—"} />
+            <MarketMetric detail="Change from the first close" icon={ChartHighLowIcon} label="30-day movement" value={formatPercent(periodChange)} />
+          </dl>
+
           {snapshot.history.length > 1 ? (
             <figure aria-labelledby="market-chart-title" className="mt-10">
               <figcaption className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
@@ -248,36 +301,6 @@ function MarketSection() {
             </figure>
           ) : null}
 
-          <dl className="mt-10 grid gap-x-8 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <dt className="text-xs text-[var(--glyph-tertiary)]">Market cap</dt>
-              <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatUsd(snapshot.marketCapUsd)}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-[var(--glyph-tertiary)]">24-hour movement</dt>
-              <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatPercent(snapshot.priceChange24h)}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-[var(--glyph-tertiary)]">7-day movement</dt>
-              <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatPercent(snapshot.priceChange7d)}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-[var(--glyph-tertiary)]">24-hour volume</dt>
-              <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatUsd(snapshot.volume24hUsd)}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-[var(--glyph-tertiary)]">30-day low</dt>
-              <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{range ? formatUsd(range.low) : "—"}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-[var(--glyph-tertiary)]">30-day high</dt>
-              <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{range ? formatUsd(range.high) : "—"}</dd>
-            </div>
-            <div>
-              <dt className="text-xs text-[var(--glyph-tertiary)]">30-day movement</dt>
-              <dd className="mt-2 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{formatPercent(periodChange)}</dd>
-            </div>
-          </dl>
         </>
       ) : null}
     </section>
