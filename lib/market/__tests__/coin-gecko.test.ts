@@ -23,6 +23,14 @@ const HISTORY_PAYLOAD = {
     [1_788_395_200_000, 4.095904367624855e-7],
     [1_788_482_400_000, 4.103665392330583e-7],
   ],
+  market_caps: [
+    [1_788_395_200_000, 58_122_000],
+    [1_788_482_400_000, 59_214_000],
+  ],
+  total_volumes: [
+    [1_788_395_200_000, 701_000],
+    [1_788_482_400_000, 820_000],
+  ],
 };
 
 describe("CoinGecko Qubic market data", () => {
@@ -38,6 +46,14 @@ describe("CoinGecko Qubic market data", () => {
       history: [
         { timestamp: 1_788_395_200_000, priceUsd: 4.095904367624855e-7 },
         { timestamp: 1_788_482_400_000, priceUsd: 4.103665392330583e-7 },
+      ],
+      marketCapHistory: [
+        { timestamp: 1_788_395_200_000, value: 58_122_000 },
+        { timestamp: 1_788_482_400_000, value: 59_214_000 },
+      ],
+      volumeHistory: [
+        { timestamp: 1_788_395_200_000, value: 701_000 },
+        { timestamp: 1_788_482_400_000, value: 820_000 },
       ],
     });
   });
@@ -66,6 +82,8 @@ describe("CoinGecko Qubic market data", () => {
     expect(requested).toEqual([COINGECKO_MARKET_ENDPOINT, COINGECKO_HISTORY_ENDPOINT]);
     expect(market.priceUsd).toBe(4.24652e-7);
     expect(market.history).toEqual([]);
+    expect(market.marketCapHistory).toEqual([]);
+    expect(market.volumeHistory).toEqual([]);
   });
 
   test("fails safely when the primary market endpoint is unavailable", async () => {

@@ -8,14 +8,11 @@ import {
   ChartLineData01Icon,
   Coins01Icon,
   CoinsDollarIcon,
-  Database01Icon,
   FireIcon,
   RefreshIcon,
   UserGroupIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
-import { useMemo } from "react";
-
 import { Area } from "@/components/dither-kit/area";
 import { AreaChart } from "@/components/dither-kit/area-chart";
 import { Grid } from "@/components/dither-kit/grid";
@@ -23,8 +20,6 @@ import { Tooltip } from "@/components/dither-kit/tooltip";
 import { XAxis } from "@/components/dither-kit/x-axis";
 import { YAxis } from "@/components/dither-kit/y-axis";
 import { useQubicMarket } from "@/lib/market";
-import { useLastProcessedTick, useTransactionsForTick } from "@/lib/rpc/queries";
-import { formatAtomicAmount, formatTransactionHash } from "@/lib/rpc/validation";
 import { useLatestStats, type LatestStats } from "@/lib/stats";
 
 import {
@@ -32,7 +27,6 @@ import {
   ExplorerLink,
   IconButton,
   StatusMessage,
-  TableScroll,
 } from "./primitives";
 import { OverviewHero } from "./overview-hero";
 import { OverviewStatsSkeleton } from "./skeletons";
@@ -75,8 +69,26 @@ function formatMarketChartDate(value: unknown): string {
   return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(new Date(value));
 }
 
+function formatCompactUsd(value: number | null | undefined): string {
+  if (value === null || value === undefined || !Number.isFinite(value)) return "—";
+  return new Intl.NumberFormat("en-US", {
+    currency: "USD",
+    notation: "compact",
+    maximumFractionDigits: 2,
+    style: "currency",
+  }).format(value);
+}
+
 const MARKET_CHART_CONFIG = {
   priceUsd: { color: "green", label: "Qubic price" },
+} as const;
+
+const MARKET_CAP_CHART_CONFIG = {
+  value: { color: "green", label: "Market cap" },
+} as const;
+
+const MARKET_VOLUME_CHART_CONFIG = {
+  value: { color: "green", label: "Daily volume" },
 } as const;
 
 type MarketMetricIcon = HugeiconsIconProps["icon"];
@@ -152,10 +164,6 @@ function NetworkPulse({
   showHeading?: boolean;
   stats: LatestStats;
 }) {
-  const indexedTick = useLastProcessedTick();
-  const archiveTick = indexedTick.data?.tickNumber;
-  const archiveLag = archiveTick === undefined ? null : Math.max(0, stats.currentTick - archiveTick);
-
   return (
     <section aria-label={showHeading ? undefined : "Network data"} aria-labelledby={showHeading ? "network-pulse-heading" : undefined}>
       {showHeading ? (
@@ -188,12 +196,6 @@ function NetworkPulse({
             </ExplorerLink>
           </dd>
           <p>Reported {formatStatsTimestamp(stats.timestamp)}</p>
-        </div>
-        <div className="glyph-network-tile glyph-network-tile--archive">
-          <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={Database01Icon} size={60} strokeWidth={1.2} />
-          <dt>Indexed archive</dt>
-          <dd>{archiveTick === undefined ? "—" : <ExplorerLink href={`/tick/${archiveTick}`}><span>{formatNumber(archiveTick)}</span></ExplorerLink>}</dd>
-          <p>{archiveLag === null ? "Checking archive coverage" : archiveLag === 0 ? "Caught up with the live tick" : `${formatNumber(archiveLag)} ticks behind live`}</p>
         </div>
         <div className="glyph-network-tile">
           <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={Calendar03Icon} size={44} strokeWidth={1.2} />
@@ -319,6 +321,52 @@ function MarketSection({ showHeading = true }: { showHeading?: boolean }) {
             </figure>
           ) : null}
 
+          {snapshot.marketCapHistory.length > 1 ? (
+            <figure aria-labelledby="market-cap-chart-title" className="mt-14">
+              <figcaption className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+                <span className="text-sm font-medium text-[var(--glyph-ink)]" id="market-cap-chart-title">30-day market capitalization</span>
+                <span className="font-mono text-xs text-[var(--glyph-tertiary)]">Daily reported value</span>
+              </figcaption>
+              <div className="h-64 w-full sm:h-72">
+                <AreaChart
+                  animate={false}
+                  config={MARKET_CAP_CHART_CONFIG}
+                  data={snapshot.marketCapHistory}
+                  margins={{ bottom: 28, left: 78, right: 16, top: 18 }}
+                >
+                  <Grid />
+                  <Area dataKey="value" strokeVariant="solid" variant="hatched" />
+                  <XAxis dataKey="timestamp" maxTicks={6} tickFormatter={formatMarketChartDate} />
+                  <YAxis tickFormatter={formatCompactUsd} />
+                  <Tooltip labelKey="timestamp" valueFormatter={(value) => formatCompactUsd(value)} />
+                </AreaChart>
+              </div>
+            </figure>
+          ) : null}
+
+          {snapshot.volumeHistory.length > 1 ? (
+            <figure aria-labelledby="market-volume-chart-title" className="mt-14">
+              <figcaption className="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+                <span className="text-sm font-medium text-[var(--glyph-ink)]" id="market-volume-chart-title">30-day trading volume</span>
+                <span className="font-mono text-xs text-[var(--glyph-tertiary)]">Daily reported turnover</span>
+              </figcaption>
+              <div className="h-64 w-full sm:h-72">
+                <AreaChart
+                  animate={false}
+                  config={MARKET_VOLUME_CHART_CONFIG}
+                  data={snapshot.volumeHistory}
+                  margins={{ bottom: 28, left: 78, right: 16, top: 18 }}
+                >
+                  <Grid />
+                  <Area dataKey="value" strokeVariant="solid" variant="hatched" />
+                  <XAxis dataKey="timestamp" maxTicks={6} tickFormatter={formatMarketChartDate} />
+                  <YAxis tickFormatter={formatCompactUsd} />
+                  <Tooltip labelKey="timestamp" valueFormatter={(value) => formatCompactUsd(value)} />
+                </AreaChart>
+              </div>
+            </figure>
+          ) : null}
+
         </>
       ) : null}
     </section>
@@ -341,96 +389,6 @@ function IntelligenceSection() {
   );
 }
 
-function LatestActivity() {
-  const processedTick = useLastProcessedTick();
-  const tick = processedTick.data?.tickNumber;
-  const transactions = useTransactionsForTick(tick);
-  const activity = useMemo(() => {
-    const rows = transactions.data ?? [];
-    const transfers = rows.filter((transaction) => transaction.inputType === 0).length;
-    const applications = rows.length - transfers;
-    return {
-      applications,
-      count: rows.length,
-      transfers,
-      transferShare: rows.length ? Math.round((transfers / rows.length) * 100) : 0,
-    };
-  }, [transactions.data]);
-
-  if (processedTick.isPending || !processedTick.data) return null;
-
-  return (
-    <section aria-labelledby="latest-activity-heading">
-      <SectionHeading
-        action={<ExplorerLink href={`/tick/${tick}/transactions`}>View tick activity</ExplorerLink>}
-        description={`A focused view of what the archive reported in tick ${formatNumber(tick)}. It may lag the live network.`}
-        eyebrow="Archive"
-        id="latest-activity-heading"
-        title="What just reached the archive"
-      />
-
-      {transactions.isPending ? <p className="mt-8 text-sm text-[var(--glyph-muted)]">Loading reported transactions…</p> : null}
-      {transactions.data?.length ? (
-        <div className="mt-10">
-          <div className="grid gap-x-8 gap-y-6 sm:grid-cols-3 sm:items-end">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.1em] text-[var(--glyph-tertiary)]">Reported in this tick</p>
-              <p className="mt-2 font-mono text-4xl font-semibold tracking-[-0.075em] text-[var(--glyph-ink)]">{formatNumber(activity.count)}</p>
-              <p className="mt-2 text-sm text-[var(--glyph-muted)]">{activity.transfers} transfers and {activity.applications} application interactions.</p>
-            </div>
-            <div>
-              <div className="flex items-center justify-between gap-3 text-xs text-[var(--glyph-muted)]">
-                <span>Transfer share</span>
-                <span className="font-mono text-[var(--glyph-ink)]">{activity.transferShare}%</span>
-              </div>
-              <div aria-label={`${activity.transferShare}% transfers in the indexed tick`} className="mt-3 flex h-2 overflow-hidden rounded-full bg-[var(--glyph-surface)]">
-                <span className="bg-[var(--glyph-accent)]" style={{ width: `${activity.transferShare}%` }} />
-                <span className="flex-1 bg-[var(--glyph-surface-strong)]" />
-              </div>
-              <div className="mt-2 flex justify-between text-xs text-[var(--glyph-tertiary)]">
-                <span>Transfers</span>
-                <span>Applications</span>
-              </div>
-            </div>
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.1em] text-[var(--glyph-tertiary)]">Application interactions</p>
-              <p className="mt-2 font-mono text-4xl font-semibold tracking-[-0.075em] text-[var(--glyph-ink)]">{formatNumber(activity.applications)}</p>
-              <p className="mt-2 text-sm text-[var(--glyph-muted)]">Reported activity beyond direct transfers.</p>
-            </div>
-          </div>
-          <TableScroll>
-            <table aria-label="Latest indexed Qubic activity" className="glyph-table min-w-[720px] w-full border-collapse text-left">
-              <caption className="sr-only">Latest indexed Qubic activity</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Transaction</th>
-                  <th scope="col">Kind</th>
-                  <th className="text-right" scope="col">Amount</th>
-                  <th className="text-right" scope="col">Tick</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactions.data.slice(0, 8).map((transaction, index) => (
-                  <tr className="align-top text-sm" key={`${transaction.hash ?? "transaction"}-${index}`}>
-                    <td className="py-3">
-                      {transaction.hash ? (
-                        <ExplorerLink href={`/transaction/${transaction.hash}`}><code className="font-mono text-xs">{formatTransactionHash(transaction.hash)}</code></ExplorerLink>
-                      ) : <span className="text-[var(--glyph-tertiary)]">Hash not reported</span>}
-                    </td>
-                    <td className="py-3 text-xs text-[var(--glyph-muted)]">{transaction.inputType === 0 ? "Transfer" : "Application activity"}</td>
-                    <td className="py-3 text-right font-mono text-xs text-[var(--glyph-ink)]">{transaction.amount === undefined || transaction.amount === null ? "Not reported" : formatAtomicAmount(transaction.amount)}</td>
-                    <td className="py-3 text-right font-mono text-xs"><ExplorerLink href={`/tick/${tick}`}>{formatNumber(tick)}</ExplorerLink></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </TableScroll>
-        </div>
-      ) : transactions.isSuccess ? <p className="mt-8 text-sm text-[var(--glyph-muted)]">No transactions were reported for this indexed tick.</p> : null}
-    </section>
-  );
-}
-
 export function ExplorerHome() {
   return (
     <main className="min-h-[calc(100svh-72px)]">
@@ -438,7 +396,6 @@ export function ExplorerHome() {
       <div className={EXPLORER_FRAME_CONTENT_CLASS}>
         <div className="space-y-20 pb-8 md:space-y-28">
           <IntelligenceSection />
-          <LatestActivity />
         </div>
       </div>
     </main>

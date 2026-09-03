@@ -15,6 +15,11 @@ export type MarketHistoryPoint = {
   priceUsd: number;
 };
 
+export type MarketSeriesPoint = {
+  timestamp: number;
+  value: number;
+};
+
 export type QubicMarketSnapshot = {
   priceUsd: number;
   marketCapUsd: number;
@@ -24,6 +29,8 @@ export type QubicMarketSnapshot = {
   circulatingSupply: number | null;
   lastUpdated: string;
   history: MarketHistoryPoint[];
+  marketCapHistory: MarketSeriesPoint[];
+  volumeHistory: MarketSeriesPoint[];
 };
 
 export type MarketFetcher = (
@@ -68,11 +75,12 @@ function asUpdatedAt(value: unknown): string {
   return value;
 }
 
-export function normalizeMarketHistory(payload: unknown): MarketHistoryPoint[] {
+function normalizeMarketSeries(payload: unknown, field: string): MarketSeriesPoint[] {
   const record = asRecord(payload);
-  if (!record || !Array.isArray(record.prices)) return [];
+  const series = record?.[field];
+  if (!Array.isArray(series)) return [];
 
-  return record.prices
+  return series
     .flatMap((entry) => {
       if (!Array.isArray(entry) || entry.length < 2) return [];
       const timestamp = entry[0];
@@ -87,10 +95,14 @@ export function normalizeMarketHistory(payload: unknown): MarketHistoryPoint[] {
       ) {
         return [];
       }
-      return [{ timestamp, priceUsd: price }];
+      return [{ timestamp, value: price }];
     })
     .sort((left, right) => left.timestamp - right.timestamp)
     .slice(-31);
+}
+
+export function normalizeMarketHistory(payload: unknown): MarketHistoryPoint[] {
+  return normalizeMarketSeries(payload, "prices").map(({ timestamp, value }) => ({ timestamp, priceUsd: value }));
 }
 
 export function normalizeQubicMarket(
@@ -119,6 +131,8 @@ export function normalizeQubicMarket(
     circulatingSupply: asOptionalFiniteNumber(market.circulating_supply, "circulating_supply"),
     lastUpdated: asUpdatedAt(market.last_updated),
     history: normalizeMarketHistory(historyPayload),
+    marketCapHistory: normalizeMarketSeries(historyPayload, "market_caps"),
+    volumeHistory: normalizeMarketSeries(historyPayload, "total_volumes"),
   };
 }
 

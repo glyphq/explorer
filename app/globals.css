@@ -712,8 +712,7 @@ input:focus-visible {
   line-height: 1.4;
 }
 
-.glyph-network-tile--lead,
-.glyph-network-tile--archive {
+.glyph-network-tile--lead {
   grid-column: span 2;
 }
 
@@ -733,17 +732,14 @@ input:focus-visible {
   height: 6rem;
 }
 
-.glyph-network-tile--lead dd a,
-.glyph-network-tile--archive dd a {
+.glyph-network-tile--lead dd a {
   color: inherit;
 }
 
-.glyph-network-tile--archive dd,
 .glyph-network-tile--wide dd {
   font-size: clamp(2rem, 4vw, 3rem);
 }
 
-.glyph-network-tile--archive .glyph-network-tile__mask,
 .glyph-network-tile--wide .glyph-network-tile__mask {
   width: 4.5rem;
   height: 4.5rem;
@@ -772,7 +768,6 @@ input:focus-visible {
     grid-row: span 2;
   }
 
-  .glyph-network-tile--archive,
   .glyph-network-tile--wide {
     grid-column: span 2;
   }
