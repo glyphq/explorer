@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import { Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { GlyphShell } from "@/components/shell";
 import { explorerMetadataBase } from "@/lib/metadata";
 import "./globals.css";
 
 import ExplorerProviders from "./providers";
+
+const geist = Geist({
+  variable: "--font-geist",
+  subsets: ["latin"],
+});
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -32,7 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={geistMono.variable}
+      className={`${geist.variable} ${geistMono.variable}`}
       data-theme="dark"
     >
       <body>
