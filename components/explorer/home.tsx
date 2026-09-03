@@ -12,9 +12,12 @@ import {
 import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
 
 import { useLatestStats, type LatestStats } from "@/lib/stats";
+import { useLastProcessedTick, useTransactionsForTick } from "@/lib/rpc/queries";
+import { formatTransactionHash } from "@/lib/rpc/validation";
 
 import {
   ExplorerFrame,
+  ExplorerLink,
   IconButton,
   StatusMessage,
 } from "./primitives";
@@ -214,6 +217,38 @@ function StatsSurface({ query }: { query: ReturnType<typeof useLatestStats> }) {
   );
 }
 
+function LatestActivity() {
+  const processedTick = useLastProcessedTick();
+  const tick = processedTick.data?.tickNumber;
+  const transactions = useTransactionsForTick(tick);
+
+  if (processedTick.isPending) return null;
+  if (!processedTick.data) return null;
+
+  return (
+    <section aria-labelledby="latest-activity-heading" className="mt-5 border border-[var(--glyph-line)] bg-[var(--glyph-surface)]">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--glyph-line)] px-5 py-4">
+        <div>
+          <h2 className="text-base font-semibold tracking-[-0.03em] text-[var(--glyph-ink)]" id="latest-activity-heading">Latest archived activity</h2>
+          <p className="mt-1 text-sm text-[var(--glyph-muted)]">Transactions reported for the latest indexed tick.</p>
+        </div>
+        <ExplorerLink href={`/tick/${tick}/transactions`}>View tick {formatNumber(tick)}</ExplorerLink>
+      </div>
+      {transactions.isPending ? <p className="px-5 py-4 text-sm text-[var(--glyph-muted)]">Loading transactions…</p> : null}
+      {transactions.data?.length ? (
+        <ul className="divide-y divide-[var(--glyph-line)]">
+          {transactions.data.slice(0, 5).map((transaction, index) => (
+            <li className="flex items-center justify-between gap-4 px-5 py-3 text-sm" key={`${transaction.hash ?? "transaction"}-${index}`}>
+              {transaction.hash ? <ExplorerLink href={`/transaction/${transaction.hash}`}><code className="font-mono text-xs">{formatTransactionHash(transaction.hash)}</code></ExplorerLink> : <span className="text-[var(--glyph-tertiary)]">Transaction hash not reported</span>}
+              <span className="shrink-0 font-mono text-xs text-[var(--glyph-tertiary)]">{transaction.inputType === 0 ? "Transfer" : `Input ${formatNumber(transaction.inputType)}`}</span>
+            </li>
+          ))}
+        </ul>
+      ) : transactions.isSuccess ? <p className="px-5 py-4 text-sm text-[var(--glyph-muted)]">No transactions were reported for this tick.</p> : null}
+    </section>
+  );
+}
+
 export function ExplorerHome() {
   const stats = useLatestStats();
 
@@ -223,6 +258,7 @@ export function ExplorerHome() {
       <section aria-label="Network stats" className="w-full border border-[var(--glyph-line)] bg-[var(--glyph-surface)]">
         <StatsSurface query={stats} />
       </section>
+      <LatestActivity />
     </ExplorerFrame>
   );
 }
