@@ -47,9 +47,9 @@ function TransactionTable({ rows, tick }: { rows: TickTransactionRow[]; tick: nu
             <th className="font-medium" scope="col"><TableHeaderLabel icon={TransactionIcon}>Transaction</TableHeaderLabel></th>
             <th className="font-medium" scope="col"><TableHeaderLabel icon={UserIcon}>Source</TableHeaderLabel></th>
             <th className="font-medium" scope="col"><TableHeaderLabel icon={UserArrowLeftRightIcon}>Destination</TableHeaderLabel></th>
-            <th className="font-medium" scope="col"><TableHeaderLabel icon={Coins01Icon}>Amount</TableHeaderLabel></th>
-            <th className="font-medium" scope="col"><TableHeaderLabel icon={CodeIcon}>Input type</TableHeaderLabel></th>
-            {showContractIndex ? <th className="font-medium" scope="col"><TableHeaderLabel icon={HashtagIcon}>Contract index</TableHeaderLabel></th> : null}
+            <th className="text-right font-medium" scope="col"><TableHeaderLabel icon={Coins01Icon}>Amount</TableHeaderLabel></th>
+            <th className="text-right font-medium" scope="col"><TableHeaderLabel icon={CodeIcon}>Input type</TableHeaderLabel></th>
+            {showContractIndex ? <th className="text-right font-medium" scope="col"><TableHeaderLabel icon={HashtagIcon}>Contract index</TableHeaderLabel></th> : null}
           </tr>
         </thead>
         <tbody>

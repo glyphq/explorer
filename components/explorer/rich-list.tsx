@@ -47,9 +47,9 @@ function RichListTable({ entries, pagination }: { entries: RichListEntry[]; pagi
         <caption className="sr-only">Reported Qubic identities and balances from the official Stats API</caption>
         <thead>
           <tr>
-            <th className="w-20 font-medium" scope="col"><TableHeaderLabel icon={RankingIcon}>Rank</TableHeaderLabel></th>
+            <th className="w-20 text-right font-medium" scope="col"><TableHeaderLabel icon={RankingIcon}>Rank</TableHeaderLabel></th>
             <th className="font-medium" scope="col"><TableHeaderLabel icon={IdentityCardIcon}>Identity</TableHeaderLabel></th>
-            <th className="font-medium" scope="col"><TableHeaderLabel icon={Coins01Icon}>Reported balance</TableHeaderLabel></th>
+            <th className="text-right font-medium" scope="col"><TableHeaderLabel icon={Coins01Icon}>Reported balance</TableHeaderLabel></th>
           </tr>
         </thead>
         <tbody>

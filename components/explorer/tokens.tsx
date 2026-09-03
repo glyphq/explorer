@@ -63,9 +63,9 @@ function TokenTable({ rows }: { rows: readonly AssetIssuanceRow[] }) {
         <thead>
           <tr>
             <th className="font-medium" scope="col"><TableHeaderLabel icon={Coins01Icon}>Token</TableHeaderLabel></th>
-            <th className="font-medium" scope="col"><TableHeaderLabel icon={HashtagIcon}>Index</TableHeaderLabel></th>
+            <th className="text-right font-medium" scope="col"><TableHeaderLabel icon={HashtagIcon}>Index</TableHeaderLabel></th>
             <th className="font-medium" scope="col"><TableHeaderLabel icon={IdentityCardIcon}>Issuer</TableHeaderLabel></th>
-            <th className="font-medium" scope="col"><TableHeaderLabel icon={Tick01Icon}>Issued at</TableHeaderLabel></th>
+            <th className="text-right font-medium" scope="col"><TableHeaderLabel icon={Tick01Icon}>Issued at</TableHeaderLabel></th>
           </tr>
         </thead>
         <tbody>
