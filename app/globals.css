@@ -391,19 +391,16 @@ input:focus-visible {
     background-color 160ms ease,
     border-color 160ms ease,
     box-shadow 160ms ease,
-    color 160ms ease,
-    transform 160ms var(--glyph-ease);
+    color 160ms ease;
 }
 
 .glyph-theme-toggle__trigger:hover {
   border-color: var(--glyph-ink);
   background: var(--glyph-surface-strong);
-  transform: translateY(-1px);
 }
 
 .glyph-theme-toggle__trigger:active {
   box-shadow: none;
-  transform: translateY(1px);
 }
 
 .glyph-theme-toggle__panel {
@@ -447,18 +444,13 @@ input:focus-visible {
   transition:
     background-color 160ms ease,
     border-color 160ms ease,
-    color 160ms ease,
-    transform 160ms var(--glyph-ease);
+    color 160ms ease;
 }
 
 .glyph-theme-toggle__option:hover {
   border-color: var(--glyph-line);
   background: var(--glyph-surface);
   color: var(--glyph-ink);
-}
-
-.glyph-theme-toggle__option:active {
-  transform: translateY(1px);
 }
 
 .glyph-theme-toggle__option[aria-pressed="true"] {
@@ -495,17 +487,11 @@ input:focus-visible {
     background-color 160ms ease,
     border-color 160ms ease,
     color 160ms ease,
-    box-shadow 160ms ease,
-    transform 160ms var(--glyph-ease);
-}
-
-.glyph-button:hover {
-  transform: translateY(-1px);
+    box-shadow 160ms ease;
 }
 
 .glyph-button:active:not(:disabled) {
   box-shadow: none;
-  transform: translateY(1px);
 }
 
 .glyph-button:disabled {
@@ -750,7 +736,7 @@ input:focus-visible {
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease,
-    transform 160ms var(--glyph-ease);
+    background-color 160ms ease;
 }
 
 .glyph-input:hover,
@@ -776,7 +762,6 @@ input:focus-visible {
 
 .glyph-input:active {
   box-shadow: 0 1px 0 var(--glyph-shadow), inset 0 0 0 1px var(--glyph-surface);
-  transform: translateY(1px);
 }
 
 @media (max-width: 639px) {
