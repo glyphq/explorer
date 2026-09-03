@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 test.describe("public explorer navigation", () => {
   test("opens primary catalogue routes", async ({ page }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle(/Glyph Explorer/);
+    await expect(page).toHaveTitle("Network overview");
 
     await page.getByRole("link", { name: "Tokens" }).click();
     await expect(page).toHaveURL(/\/tokens$/);
