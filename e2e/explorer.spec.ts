@@ -15,6 +15,15 @@ test.describe("public explorer navigation", () => {
     await expect(page.getByRole("heading", { name: "Rich list" })).toBeVisible();
   });
 
+  test("presents the full-width dither lookup hero", async ({ page }) => {
+    await page.goto("/");
+
+    const hero = page.locator("section[aria-labelledby='overview-heading']");
+    await expect(hero.getByRole("heading", { name: "Explore Qubic" })).toBeVisible();
+    await expect(hero.getByRole("button", { name: /Open lookup/ })).toBeVisible();
+    await expect(hero.locator("canvas")).toHaveCount(1);
+  });
+
   test("renders safe feedback for invalid typed routes", async ({ page }) => {
     await page.goto("/transaction/not-a-transaction");
 

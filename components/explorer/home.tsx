@@ -9,7 +9,7 @@ import { formatAtomicAmount, formatTransactionHash } from "@/lib/rpc/validation"
 import { useLatestStats, type LatestStats } from "@/lib/stats";
 
 import {
-  ExplorerFrame,
+  EXPLORER_FRAME_CONTENT_CLASS,
   ExplorerLink,
   IconButton,
   StatusMessage,
@@ -282,13 +282,15 @@ function LatestActivity() {
 
 export function ExplorerHome() {
   return (
-    <ExplorerFrame>
+    <main className="min-h-[calc(100svh-72px)]">
       <OverviewHero />
-      <div className="space-y-20 pb-8 md:space-y-28">
-        <NetworkSection />
-        <MarketSection />
-        <LatestActivity />
+      <div className={EXPLORER_FRAME_CONTENT_CLASS}>
+        <div className="space-y-20 pb-8 md:space-y-28">
+          <NetworkSection />
+          <MarketSection />
+          <LatestActivity />
+        </div>
       </div>
-    </ExplorerFrame>
+    </main>
   );
 }
