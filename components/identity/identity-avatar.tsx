@@ -1,7 +1,5 @@
 import type { CSSProperties } from "react";
-import Avatar from "boring-avatars";
-
-const MARBLE_COLORS = ["#ccfcfb", "#7dd3fc", "#6ee7b7", "#fbbf24", "#a78bfa", "#f87171"];
+import { DitherAvatar } from "@/components/dither-kit/avatar";
 
 export interface IdentityAvatarProps {
   identity: string;
@@ -26,26 +24,19 @@ export function IdentityAvatar({
   void padding;
 
   return (
-    <div
-      aria-label={label}
+    <DitherAvatar
+      animate={false}
       className={className}
-      role="img"
+      hue={180}
+      label={label}
+      name={identity}
+      size={size}
       style={{
-        width: size,
-        height: size,
         borderRadius: radius,
-        overflow: "hidden",
         flexShrink: 0,
+        overflow: "hidden",
         ...style,
       }}
-    >
-      <Avatar
-        size={size}
-        name={identity}
-        variant="marble"
-        colors={MARBLE_COLORS}
-        square={false}
-      />
-    </div>
+    />
   );
 }
