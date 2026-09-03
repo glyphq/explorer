@@ -12,7 +12,6 @@ describe("IdentityAvatar", () => {
     expect(rendered.type).toBe(DitherAvatar);
     expect(rendered.props).toMatchObject({
       animate: false,
-      hue: 180,
       label: `Identity identicon for ${IDENTITY}`,
       name: IDENTITY,
       size: 32,
@@ -22,6 +21,7 @@ describe("IdentityAvatar", () => {
         flexShrink: 0,
       },
     });
+    expect(rendered.props.hue).toBeUndefined();
 
     expect(IdentityAvatar({ identity: IDENTITY, label: "Sender identicon" }).props.label).toBe(
       "Sender identicon",

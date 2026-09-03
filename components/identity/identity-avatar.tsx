@@ -27,7 +27,6 @@ export function IdentityAvatar({
     <DitherAvatar
       animate={false}
       className={className}
-      hue={180}
       label={label}
       name={identity}
       size={size}
