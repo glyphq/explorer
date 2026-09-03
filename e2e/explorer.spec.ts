@@ -51,6 +51,24 @@ test.describe("public explorer navigation", () => {
     await expect(page.getByRole("dialog", { name: "Glyph Explorer navigation and lookup" })).toHaveCount(1);
   });
 
+  test("keeps primary navigation and lookup usable on a phone viewport", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+
+    const mobileNavigation = page.getByRole("navigation", { name: "Mobile primary" });
+    await expect(mobileNavigation).toBeVisible();
+    await mobileNavigation.getByRole("link", { name: "Tokens" }).click();
+    await expect(page).toHaveURL(/\/tokens$/);
+    await expect(page.getByRole("heading", { name: "Tokens" })).toBeVisible();
+
+    await page.keyboard.press("Control+k");
+    const dialog = page.getByRole("dialog", { name: "Glyph Explorer navigation and lookup" });
+    await expect(dialog).toBeVisible();
+    const box = await dialog.boundingBox();
+    expect(box).not.toBeNull();
+    expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(390);
+  });
+
   test("renders safe feedback for invalid typed routes", async ({ page }) => {
     await page.goto("/transaction/not-a-transaction");
 

@@ -3,11 +3,11 @@
  :root {
   color-scheme: dark;
   --glyph-canvas: #000;
-  --glyph-surface: #090909;
-  --glyph-surface-strong: #111;
+  --glyph-surface: #0b0c0c;
+  --glyph-surface-strong: #141616;
   --glyph-ink: #f5f5f4;
   --glyph-muted: #a8a29e;
-  --glyph-tertiary: #78716c;
+  --glyph-tertiary: #8c8781;
   --glyph-line: transparent;
   --glyph-line-strong: #242424;
   --glyph-focus: #ccfcfb;
@@ -15,10 +15,10 @@
   --glyph-accent-strong: #f0ffff;
   --glyph-accent-surface: #102021;
   --glyph-shadow: rgb(0 0 0 / 52%);
-  --glyph-table-surface: #090909;
-  --glyph-table-header: #111;
-  --glyph-table-stripe: #0d0d0d;
-  --glyph-table-hover: #151515;
+  --glyph-table-surface: #090a0a;
+  --glyph-table-header: #111313;
+  --glyph-table-stripe: #0d0f0f;
+  --glyph-table-hover: #171a1a;
   --glyph-mark-filter: invert(1);
   --glyph-mark-on-ink-filter: none;
   --glyph-danger-surface: #250c0c;
@@ -1093,9 +1093,9 @@ input:focus-visible {
 
 .glyph-input:focus,
 .glyph-input-shell:focus-within {
-  border-color: var(--glyph-ink);
+  border-color: var(--glyph-focus);
   background: var(--glyph-surface-strong);
-  box-shadow: inset 0 0 0 1px var(--glyph-ink);
+  box-shadow: 0 0 0 2px rgb(204 252 251 / 16%), inset 0 0 0 1px var(--glyph-focus);
 }
 
 .glyph-command-search:focus-visible {
