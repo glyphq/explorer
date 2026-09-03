@@ -3,6 +3,7 @@
 import { ArrowLeft01Icon, ArrowRight01Icon, Cancel01Icon, Clock01Icon, Coins01Icon, Copy01Icon, CopyCheckIcon, FunctionIcon, QrCode01Icon, Tick01Icon, TransactionIcon, UserArrowLeftRightIcon, UserIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Image from "next/image";
+import Link from "next/link";
 import QRCode from "qrcode";
 import {
   createColumnHelper,
@@ -357,14 +358,26 @@ function IdentityAssetChips({ assets }: { assets: ReturnType<typeof useIdentityA
   return (
     <div aria-label="Assets held by this identity" className="mt-3 flex max-w-full flex-wrap justify-center gap-2" role="list">
       {[...chips.values()].map(({ index, label }) => (
-        <span
-          className="inline-flex max-w-full items-center rounded-full border border-[var(--glyph-line-strong)] bg-[var(--glyph-surface)] px-3 py-1 text-xs font-medium text-[var(--glyph-muted)]"
-          key={index === undefined ? label : index}
-          role="listitem"
-          title={index === undefined ? label : `Asset ${formatNumber(index)}`}
-        >
-          <span className="break-all">{label}</span>
-        </span>
+        index === undefined ? (
+          <span
+            className="inline-flex max-w-full items-center rounded-full bg-[var(--glyph-surface)] px-3 py-1 text-xs font-medium text-[var(--glyph-muted)]"
+            key={label}
+            role="listitem"
+            title={label}
+          >
+            <span className="break-all">{label}</span>
+          </span>
+        ) : (
+          <Link
+            className="inline-flex max-w-full items-center rounded-full bg-[var(--glyph-surface)] px-3 py-1 text-xs font-medium text-[var(--glyph-muted)] transition-colors hover:bg-[var(--glyph-surface-strong)] hover:text-[var(--glyph-ink)]"
+            href={`/tokens/${index}`}
+            key={index}
+            role="listitem"
+            title={`Open asset ${formatNumber(index)}`}
+          >
+            <span className="break-all">{label}</span>
+          </Link>
+        )
       ))}
     </div>
   );
