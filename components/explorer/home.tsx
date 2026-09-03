@@ -304,6 +304,7 @@ function MarketSection({ showHeading = true }: { showHeading?: boolean }) {
                       config={MARKET_CHART_CONFIG}
                       data={snapshot.history}
                       margins={{ bottom: 28, left: 78, right: 16, top: 18 }}
+                      mobileMargins={{ bottom: 24, left: 56, right: 0, top: 12 }}
                     >
                       <Grid />
                       <Area dataKey="priceUsd" strokeVariant="solid" variant="hatched" />
@@ -332,6 +333,7 @@ function MarketSection({ showHeading = true }: { showHeading?: boolean }) {
                       config={MARKET_CAP_CHART_CONFIG}
                       data={snapshot.marketCapHistory}
                       margins={{ bottom: 28, left: 78, right: 16, top: 18 }}
+                      mobileMargins={{ bottom: 24, left: 56, right: 0, top: 12 }}
                     >
                       <Grid />
                       <Area dataKey="value" strokeVariant="solid" variant="hatched" />
@@ -360,6 +362,7 @@ function MarketSection({ showHeading = true }: { showHeading?: boolean }) {
                       config={MARKET_VOLUME_CHART_CONFIG}
                       data={snapshot.volumeHistory}
                       margins={{ bottom: 28, left: 78, right: 16, top: 18 }}
+                      mobileMargins={{ bottom: 24, left: 56, right: 0, top: 12 }}
                     >
                       <Grid />
                       <Area dataKey="value" strokeVariant="solid" variant="hatched" />

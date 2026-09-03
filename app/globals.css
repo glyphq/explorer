@@ -638,6 +638,12 @@ input:focus-visible {
   margin: 0;
 }
 
+@media (max-width: 699px) {
+  .glyph-market-chart {
+    padding: 0.85rem;
+  }
+}
+
 .glyph-market-metric__mask {
   position: absolute;
   top: 0.85rem;

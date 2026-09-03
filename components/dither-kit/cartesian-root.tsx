@@ -37,6 +37,10 @@ export type CartesianChartProps<TData extends Row> = {
   children: ReactNode
   stackType?: StackType
   margins?: Partial<Margins>
+  /** Overrides selected margins when the measured chart width is narrow. */
+  mobileMargins?: Partial<Margins>
+  /** Measured width below which `mobileMargins` is applied. */
+  mobileBreakpoint?: number
   className?: string
   animate?: boolean
   animationDuration?: number
@@ -82,6 +86,8 @@ export function CartesianRoot<TData extends Row>({
   children,
   stackType = "default",
   margins: marginsProp,
+  mobileMargins,
+  mobileBreakpoint = 480,
   className,
   animate = true,
   animationDuration = 900,
@@ -99,7 +105,11 @@ export function CartesianRoot<TData extends Row>({
   Canvas: ComponentType
 }) {
   const { ref, size } = useChartDimensions<HTMLDivElement>()
-  const margins = { ...DEFAULT_MARGINS, ...marginsProp }
+  const margins = {
+    ...DEFAULT_MARGINS,
+    ...marginsProp,
+    ...(size.width > 0 && size.width < mobileBreakpoint ? mobileMargins : undefined),
+  }
 
   const ctx = useChartController({
     chartType,
