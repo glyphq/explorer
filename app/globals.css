@@ -197,7 +197,7 @@ input:focus-visible {
 .glyph-nav[data-scrolled="true"] .glyph-nav__inner {
   width: min(calc(100% - 2rem), 72rem);
   min-height: 52px;
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
   padding-inline: 1rem;
   border: 1px solid rgb(255 255 255 / 7%);
   border-radius: 999px;
@@ -321,7 +321,6 @@ input:focus-visible {
 .glyph-nav__route:hover,
 .glyph-nav__route[data-current="true"] {
   color: var(--glyph-ink);
-  background: rgb(255 255 255 / 6%);
 }
 
 .glyph-nav__route[data-current="true"] {
