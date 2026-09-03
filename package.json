@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "test": "bun test",
+    "test:e2e": "bun run build && playwright test",
     "start": "next start",
     "lint": "eslint"
   },
@@ -27,6 +28,7 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/qrcode": "^1.5.6",
