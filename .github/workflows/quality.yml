@@ -33,7 +33,7 @@ jobs:
         run: bun run lint
 
       - name: Unit tests
-        run: bun test
+        run: bun run test
 
       - name: Build production app
         run: bun run build
