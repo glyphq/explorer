@@ -34,10 +34,10 @@ function getStatusLabel(query: string): string | null {
 function getAccessibleStatus(query: string): string {
   const match = classifyCommandQuery(query);
   if (match.kind === "empty") {
-    return "Enter an identity, transaction hash, tick, token index, or contract index.";
+    return "Enter an identity, transaction hash, tick, or token index.";
   }
   if (match.kind === "invalid") {
-    return "No supported route. Try an identity, hash, tick, token index, or contract index.";
+    return "No supported route. Try an identity, hash, tick, or token index.";
   }
   if (match.kind === "ambiguous") {
     return "This identifier can be an identity or transaction. Use a typed route to choose one.";
@@ -59,7 +59,7 @@ export function OverviewHero() {
   }
 
   return (
-    <section aria-labelledby="overview-heading" className="mb-8">
+    <section aria-labelledby="overview-heading" className="mb-8 rounded-[var(--glyph-radius-md)] border border-[var(--glyph-line)] bg-[linear-gradient(135deg,var(--glyph-surface)_0%,var(--glyph-accent-surface)_100%)] px-5 py-8 shadow-[0_8px_24px_var(--glyph-shadow)] sm:px-8 sm:py-10">
       <div className="mx-auto max-w-3xl text-center">
         <h1 id="overview-heading" className="text-4xl font-semibold tracking-[-0.08em] text-[var(--glyph-ink)] sm:text-5xl">
           Network overview
@@ -69,16 +69,16 @@ export function OverviewHero() {
         </p>
 
         <form aria-label="Lookup an explorer identifier" className="mx-auto mt-6 max-w-2xl text-left" onSubmit={handleSubmit}>
-          <div className="flex min-h-14 items-center gap-3 rounded-[var(--glyph-radius-md)] border border-[var(--glyph-line-strong)] bg-[var(--glyph-canvas)] px-3 transition-colors focus-within:border-[var(--glyph-muted)] focus-within:bg-[var(--glyph-surface)]">
+          <div className="flex min-h-14 items-center gap-3 rounded-[var(--glyph-radius-md)] border border-[var(--glyph-line-strong)] bg-[var(--glyph-surface)] px-3 shadow-[0_4px_14px_var(--glyph-shadow)] transition-[border-color,box-shadow] focus-within:border-[var(--glyph-focus)] focus-within:shadow-[0_0_0_3px_var(--glyph-accent-surface)]">
             <HugeiconsIcon aria-hidden="true" className="shrink-0 text-[var(--glyph-muted)]" focusable="false" icon={Search01Icon} size={19} strokeWidth={1.5} />
             <input
               aria-describedby="overview-lookup-status"
-              aria-label="Identity, transaction, tick, token, or contract identifier"
+              aria-label="Identity, transaction, tick, or token identifier"
               autoComplete="off"
               className="min-w-0 flex-1 bg-transparent py-2 text-sm text-[var(--glyph-ink)] outline-none placeholder:text-[var(--glyph-tertiary)]"
               id="overview-lookup"
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Identity, transaction hash, tick, token:123, or contract:9"
+              placeholder="Identity, transaction hash, tick, or token:123"
               spellCheck={false}
               type="search"
               value={query}
