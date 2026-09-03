@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { CommandSearch } from "@/components/shell/command-search";
 import { GlyphBrand } from "@/components/shell/glyph-mark";
-import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { useLatestStats } from "@/lib/stats";
 
 export type GlyphNavigationProps = {
@@ -117,7 +116,6 @@ export function GlyphNavigation({
         <div className="glyph-nav__actions">
           <HeaderPrice />
           {commandSearch}
-          <ThemeToggle />
         </div>
       </div>
     </header>

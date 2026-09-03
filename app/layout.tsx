@@ -6,19 +6,6 @@ import "./globals.css";
 
 import ExplorerProviders from "./providers";
 
-const themeBootstrapScript = `
-(function () {
-  try {
-    var key = "glyph-explorer:theme";
-    var theme = window.localStorage.getItem(key);
-    if (theme !== "light" && theme !== "dark" && theme !== "system") theme = "system";
-    document.documentElement.setAttribute("data-theme", theme);
-  } catch (_) {
-    document.documentElement.setAttribute("data-theme", "system");
-  }
-})();
-`;
-
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
@@ -46,12 +33,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={spaceGrotesk.variable}
-      data-theme="system"
-      suppressHydrationWarning
+      data-theme="dark"
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
-      </head>
       <body>
         <ExplorerProviders>
           <GlyphShell>{children}</GlyphShell>
