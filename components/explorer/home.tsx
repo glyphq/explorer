@@ -1,14 +1,21 @@
 "use client";
 
 import {
+  ActivitySparkIcon,
+  Calendar03Icon,
   ChartEvaluationIcon,
   ChartHighLowIcon,
   ChartIncreaseIcon,
   ChartLineData01Icon,
   ChartMaximumIcon,
   ChartMinimumIcon,
+  CircleIcon,
+  Coins01Icon,
   CoinsDollarIcon,
+  Database01Icon,
+  FireIcon,
   RefreshIcon,
+  UserGroupIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon, type HugeiconsIconProps } from "@hugeicons/react";
 import { useMemo } from "react";
@@ -164,47 +171,55 @@ function NetworkPulse({ query, stats }: { query: ReturnType<typeof useLatestStat
 
       <dl className="glyph-network-grid mt-8">
         <div className="glyph-network-tile glyph-network-tile--lead">
+          <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={ActivitySparkIcon} size={72} strokeWidth={1.2} />
           <dt>Live network tick</dt>
           <dd>
             <ExplorerLink href={`/tick/${stats.currentTick}`}>
-              <span className="font-mono text-5xl font-semibold tracking-[-0.09em] sm:text-7xl">{formatNumber(stats.currentTick)}</span>
+              <span>{formatNumber(stats.currentTick)}</span>
             </ExplorerLink>
           </dd>
           <p>Reported {formatStatsTimestamp(stats.timestamp)}</p>
         </div>
         <div className="glyph-network-tile glyph-network-tile--archive">
+          <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={Database01Icon} size={60} strokeWidth={1.2} />
           <dt>Indexed archive</dt>
           <dd>{archiveTick === undefined ? "—" : <ExplorerLink href={`/tick/${archiveTick}`}><span>{formatNumber(archiveTick)}</span></ExplorerLink>}</dd>
           <p>{archiveLag === null ? "Checking archive coverage" : archiveLag === 0 ? "Caught up with the live tick" : `${formatNumber(archiveLag)} ticks behind live`}</p>
         </div>
         <div className="glyph-network-tile">
+          <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={Calendar03Icon} size={44} strokeWidth={1.2} />
           <dt>Epoch</dt>
           <dd>{formatNumber(stats.epoch)}</dd>
           <p>{formatNumber(stats.ticksInCurrentEpoch)} ticks so far</p>
         </div>
         <div className="glyph-network-tile">
+          <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={ActivitySparkIcon} size={44} strokeWidth={1.2} />
           <dt>Network health</dt>
           <dd>{new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(stats.epochTickQuality)}%</dd>
           <p>Productive ticks this epoch</p>
         </div>
         <div className="glyph-network-tile">
+          <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={UserGroupIcon} size={44} strokeWidth={1.2} />
           <dt>Active accounts</dt>
           <dd>{formatNumber(stats.activeAddresses)}</dd>
           <p>Reported in the live snapshot</p>
         </div>
         <div className="glyph-network-tile">
+          <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={CircleIcon} size={44} strokeWidth={1.2} />
           <dt>Empty ticks</dt>
           <dd>{formatNumber(stats.emptyTicksInCurrentEpoch)}</dd>
           <p>So far this epoch</p>
         </div>
         <div className="glyph-network-tile glyph-network-tile--wide">
+          <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={Coins01Icon} size={60} strokeWidth={1.2} />
           <dt>Circulating supply</dt>
-          <dd>{formatCompact(stats.circulatingSupply)} <span>QUS</span></dd>
+          <dd>{formatCompact(stats.circulatingSupply)} <span className="glyph-network-tile__unit">QUS</span></dd>
           <p>Reported live supply</p>
         </div>
         <div className="glyph-network-tile">
+          <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={FireIcon} size={44} strokeWidth={1.2} />
           <dt>Burned</dt>
-          <dd>{formatCompact(stats.burnedQus)} <span>QUS</span></dd>
+          <dd>{formatCompact(stats.burnedQus)} <span className="glyph-network-tile__unit">QUS</span></dd>
           <p>{formatBigIntPercent(stats.burnedQus, stats.circulatingSupply + stats.burnedQus)} of reported supply</p>
         </div>
       </dl>
