@@ -10,10 +10,10 @@
   --glyph-tertiary: #78716c;
   --glyph-line: transparent;
   --glyph-line-strong: #242424;
-  --glyph-focus: #d6ff3e;
-  --glyph-accent: #d6ff3e;
-  --glyph-accent-strong: #edff9a;
-  --glyph-accent-surface: #1b2110;
+  --glyph-focus: #ccfcfb;
+  --glyph-accent: #ccfcfb;
+  --glyph-accent-strong: #f0ffff;
+  --glyph-accent-surface: #102021;
   --glyph-shadow: rgb(0 0 0 / 52%);
   --glyph-table-surface: #090909;
   --glyph-table-header: #111;
@@ -104,7 +104,16 @@ a {
 
 a {
   color: inherit;
-  text-underline-offset: 0.2em;
+  text-decoration: none;
+}
+
+a:not(.glyph-button):not(.glyph-nav__brand-link) {
+  color: var(--glyph-accent);
+  transition: color 160ms var(--glyph-ease), opacity 160ms var(--glyph-ease);
+}
+
+a:not(.glyph-button):not(.glyph-nav__brand-link):hover {
+  color: var(--glyph-accent-strong);
 }
 
 code,
@@ -666,6 +675,29 @@ input:focus-visible {
 
 .glyph-table tbody tr:hover {
   background: var(--glyph-table-hover);
+}
+
+.glyph-table tbody td:first-child {
+  font-weight: 550;
+}
+
+.glyph-table tbody td:has(a) {
+  color: var(--glyph-ink);
+}
+
+.glyph-table tbody a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.25rem;
+  border-radius: 0.5rem;
+  color: var(--glyph-accent);
+  font-weight: 600;
+  transition: background-color 160ms var(--glyph-ease), color 160ms var(--glyph-ease);
+}
+
+.glyph-table tbody a:hover {
+  background: var(--glyph-accent-surface);
+  color: var(--glyph-accent-strong);
 }
 
 .glyph-table tbody tr:focus-within {

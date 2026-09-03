@@ -59,7 +59,7 @@ export function OverviewHero() {
   }
 
   return (
-    <section aria-labelledby="overview-heading" className="mb-8 rounded-[var(--glyph-radius-md)] border border-[var(--glyph-line)] bg-[linear-gradient(135deg,var(--glyph-surface)_0%,var(--glyph-accent-surface)_100%)] px-5 py-8 shadow-[0_8px_24px_var(--glyph-shadow)] sm:px-8 sm:py-10">
+    <section aria-labelledby="overview-heading" className="mb-8 rounded-[var(--glyph-radius-md)] bg-[var(--glyph-surface)] px-5 py-8 shadow-[0_8px_24px_var(--glyph-shadow)] sm:px-8 sm:py-10">
       <div className="mx-auto max-w-3xl text-center">
         <h1 id="overview-heading" className="text-4xl font-semibold tracking-[-0.08em] text-[var(--glyph-ink)] sm:text-5xl">
           Network overview
