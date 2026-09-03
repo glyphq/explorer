@@ -97,7 +97,7 @@ function HeaderPrice() {
 
 export function GlyphNavigation({
   brand = (
-    <Link className="glyph-nav__brand-link" href="/" aria-label="Glyph home">
+    <Link className="glyph-nav__brand-link" href="/" aria-label="Glyph Explorer home">
       <GlyphBrand suffix="explorer" />
     </Link>
   ),

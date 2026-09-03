@@ -35,6 +35,7 @@ export type CartesianChartProps<TData extends Row> = {
   data: TData[]
   config: ChartConfig
   children: ReactNode
+  ariaLabel?: string
   stackType?: StackType
   margins?: Partial<Margins>
   /** Overrides selected margins when the measured chart width is narrow. */
@@ -84,6 +85,7 @@ export function CartesianRoot<TData extends Row>({
   data,
   config,
   children,
+  ariaLabel,
   stackType = "default",
   margins: marginsProp,
   mobileMargins,
@@ -151,12 +153,42 @@ export function CartesianRoot<TData extends Row>({
     onHoverChange?.(index)
   }
 
+  const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!interactive || data.length === 0) return
+    const current = ctx.hoverIndex
+    let next: number | null = null
+    if (event.key === "ArrowRight") next = Math.min(data.length - 1, current === null ? 0 : current + 1)
+    else if (event.key === "ArrowLeft") next = Math.max(0, current === null ? data.length - 1 : current - 1)
+    else if (event.key === "Home") next = 0
+    else if (event.key === "End") next = data.length - 1
+    else if (event.key === "Escape") {
+      ctx.setHoverIndex(null)
+      ctx.setMouseInChart(false)
+      return
+    } else return
+
+    event.preventDefault()
+    ctx.setMouseInChart(true)
+    ctx.setHoverIndex(next)
+    ctx.setCursorX(margins.left + ctx.xCenter(next))
+    onHoverChange?.(next)
+  }
+
   return (
     <ChartContext value={ctx}>
       <CommonChartContext value={ctx.common}>
         <div
           ref={ref}
+          aria-hidden={!ariaLabel ? true : undefined}
+          aria-label={ariaLabel}
+          aria-roledescription={ariaLabel && interactive ? "interactive chart" : undefined}
           className={cn("relative h-full w-full", className)}
+          onBlur={interactive ? () => {
+            ctx.setMouseInChart(false)
+            ctx.setHoverIndex(null)
+            onHoverChange?.(null)
+          } : undefined}
+          onKeyDown={ariaLabel ? onKeyDown : undefined}
           onPointerEnter={() => ctx.setMouseInChart(true)}
           onPointerMove={interactive ? (e) => onMove(e.clientX) : undefined}
           onPointerLeave={() => {
@@ -164,6 +196,8 @@ export function CartesianRoot<TData extends Row>({
             ctx.setHoverIndex(null)
             onHoverChange?.(null)
           }}
+          role={ariaLabel ? (interactive ? "group" : "img") : undefined}
+          tabIndex={ariaLabel && interactive ? 0 : undefined}
         >
           {ctx.ready && backChildren.length > 0 && (
             <svg
@@ -184,8 +218,8 @@ export function CartesianRoot<TData extends Row>({
               width={size.width}
               height={size.height}
               className="absolute inset-0 overflow-visible"
-              role="img"
-              aria-label="Chart"
+              aria-hidden="true"
+              role="presentation"
             >
               <g transform={`translate(${margins.left},${margins.top})`}>
                 {svgChildren}

@@ -232,7 +232,7 @@ function RecentLookupItem({ lookup, onSelect }: { lookup: RecentLookup; onSelect
   );
 }
 
-const groupClassName = "[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.14em] [&_[cmdk-group-heading]]:text-[var(--glyph-tertiary)]";
+const groupClassName = "[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-2 [&_[cmdk-group-heading]]:text-[11px] [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-[0.12em] [&_[cmdk-group-heading]]:text-[var(--glyph-tertiary)]";
 
 type CommandSearchContextValue = {
   openCommandSearch: (trigger?: HTMLElement | null) => void;
@@ -288,7 +288,7 @@ function CommandPalette({
       overlayClassName="fixed inset-0 z-[60] bg-black/45 backdrop-blur-[2px] transition-opacity duration-150 data-[state=closed]:pointer-events-none data-[state=closed]:opacity-0"
       shouldFilter={false}
     >
-      <div className="flex items-center gap-3 border-b border-[var(--glyph-line)] px-4">
+      <div className="glyph-command-input-shell flex items-center gap-3 px-4">
         <ExplorerIcon icon={Search01Icon} />
         <Command.Input
           aria-label="Search routes and identifiers"
@@ -300,7 +300,7 @@ function CommandPalette({
         />
         <button
           aria-label="Close navigation and lookup"
-          className="flex size-8 shrink-0 items-center justify-center rounded-lg text-[var(--glyph-tertiary)] outline-none transition-colors hover:bg-[var(--glyph-surface)] hover:text-[var(--glyph-ink)] focus-visible:ring-2 focus-visible:ring-[var(--glyph-focus)]"
+          className="flex size-11 shrink-0 items-center justify-center rounded-xl text-[var(--glyph-tertiary)] outline-none transition-colors hover:bg-[var(--glyph-surface)] hover:text-[var(--glyph-ink)] focus-visible:ring-2 focus-visible:ring-[var(--glyph-focus)]"
           onClick={() => onOpenChange(false)}
           type="button"
         >
@@ -309,16 +309,20 @@ function CommandPalette({
       </div>
 
       <p className="sr-only" id={descriptionId}>
-        Open the network overview or a validated identity, transaction, tick, token, or contract route. Lookup stays in this tab and does not make network requests.
+        Open the network overview or a validated identity, transaction, tick, or token route. Lookup stays in this tab and does not make network requests.
       </p>
       <p aria-live="polite" className="sr-only" role="status">
         {hasDirectMatch
           ? directMatches.length === 1
             ? `${getMatchCopy(directMatches[0].kind).label} route ready. Press Enter to open.`
             : "Choose a lookup route."
-          : hasQuery
-            ? "No matching route."
-            : "Navigation and recent lookups."}
+          : navigationCommands.length === 1
+            ? `${navigationCommands[0].label} route ready. Press Enter to open.`
+            : navigationCommands.length > 1
+              ? `${navigationCommands.length} routes available.`
+              : hasQuery
+                ? "No matching route."
+                : "Navigation and recent lookups."}
       </p>
 
       <Command.List className="max-h-[min(56vh,25rem)] overflow-y-auto p-2 [scroll-padding-block:0.5rem]" label="Navigation and lookup results">
@@ -329,7 +333,7 @@ function CommandPalette({
                 <span>Recent lookups</span>
                 <button
                   aria-label="Clear recent lookups"
-                  className="flex size-6 items-center justify-center text-[var(--glyph-tertiary)] outline-none transition-colors hover:text-[var(--glyph-ink)] focus-visible:text-[var(--glyph-ink)]"
+                  className="flex size-11 items-center justify-center text-[var(--glyph-tertiary)] outline-none transition-colors hover:text-[var(--glyph-ink)] focus-visible:text-[var(--glyph-ink)]"
                   onClick={onClearRecentLookups}
                   title="Clear recent lookups"
                   type="button"

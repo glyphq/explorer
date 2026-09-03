@@ -11,13 +11,15 @@ export default defineConfig({
   reporter: process.env.CI ? [["github"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL,
+    screenshot: "only-on-failure",
     trace: "on-first-retry",
   },
+  outputDir: "test-results",
   webServer: {
     command: `bun run start -- --hostname 127.0.0.1 --port ${port}`,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     url: baseURL,
-    timeout: 30_000,
+    timeout: 120_000,
   },
   projects: [
     {

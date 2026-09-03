@@ -116,7 +116,7 @@ function MarketMetric({
       />
       <dt className="relative text-xs font-medium uppercase tracking-[0.1em] text-[var(--glyph-tertiary)]">{label}</dt>
       <dd className="relative mt-3 font-mono text-xl font-semibold tracking-[-0.045em] text-[var(--glyph-ink)]">{value}</dd>
-      <p className="relative mt-1.5 text-xs text-[var(--glyph-muted)]">{detail}</p>
+      <dd className="relative mt-1.5 text-xs font-normal tracking-normal text-[var(--glyph-muted)]">{detail}</dd>
     </div>
   );
 }
@@ -145,7 +145,7 @@ function SectionHeading({
   return (
     <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
       <div>
-        <p className="text-[0.68rem] font-medium uppercase tracking-[0.15em] text-[var(--glyph-tertiary)]">{eyebrow}</p>
+        <p className="text-[0.7rem] font-medium uppercase tracking-[0.15em] text-[var(--glyph-tertiary)]">{eyebrow}</p>
         <h2 className="mt-2 text-2xl font-semibold tracking-[-0.055em] text-[var(--glyph-ink)]" id={id}>{title}</h2>
         {description ? <p className="mt-2 max-w-2xl text-sm text-[var(--glyph-muted)]">{description}</p> : null}
       </div>
@@ -184,7 +184,7 @@ function NetworkPulse({
         />
       ) : null}
 
-      {!showHeading ? <p className="text-[0.68rem] font-medium uppercase tracking-[0.15em] text-[var(--glyph-tertiary)]">Network</p> : null}
+      {!showHeading ? <p className="text-[0.7rem] font-medium uppercase tracking-[0.15em] text-[var(--glyph-tertiary)]">Network</p> : null}
       <dl className={showHeading ? "glyph-network-grid mt-8" : "glyph-network-grid mt-4"}>
         <div className="glyph-data-card glyph-network-tile glyph-network-tile--lead">
           <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={ActivitySparkIcon} size={72} strokeWidth={1.2} />
@@ -194,31 +194,31 @@ function NetworkPulse({
               <span>{formatNumber(stats.currentTick)}</span>
             </ExplorerLink>
           </dd>
-          <p>Reported {formatStatsTimestamp(stats.timestamp)}</p>
+          <dd className="glyph-stat-detail">Reported {formatStatsTimestamp(stats.timestamp)}</dd>
         </div>
         <div className="glyph-data-card glyph-network-tile">
           <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={Calendar03Icon} size={44} strokeWidth={1.2} />
           <dt>Epoch</dt>
           <dd>{formatNumber(stats.epoch)}</dd>
-          <p>{formatNumber(stats.ticksInCurrentEpoch)} ticks so far</p>
+          <dd className="glyph-stat-detail">{formatNumber(stats.ticksInCurrentEpoch)} ticks so far</dd>
         </div>
         <div className="glyph-data-card glyph-network-tile">
           <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={ActivitySparkIcon} size={44} strokeWidth={1.2} />
           <dt>Network health</dt>
           <dd>{new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(stats.epochTickQuality)}%</dd>
-          <p>Productive ticks this epoch</p>
+          <dd className="glyph-stat-detail">Productive ticks this epoch</dd>
         </div>
         <div className="glyph-data-card glyph-network-tile">
           <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={UserGroupIcon} size={44} strokeWidth={1.2} />
           <dt>Active accounts</dt>
           <dd>{formatNumber(stats.activeAddresses)}</dd>
-          <p>Reported in the live snapshot</p>
+          <dd className="glyph-stat-detail">Reported in the live snapshot</dd>
         </div>
         <div className="glyph-data-card glyph-network-tile">
           <HugeiconsIcon aria-hidden="true" className="glyph-network-tile__mask" icon={Coins01Icon} size={44} strokeWidth={1.2} />
           <dt>Circulating supply</dt>
           <dd>{formatCompact(stats.circulatingSupply)} <span className="glyph-network-tile__unit">QUS</span></dd>
-          <p>{formatBigIntPercent(stats.burnedQus, stats.circulatingSupply + stats.burnedQus)} of reported supply</p>
+          <dd className="glyph-stat-detail">{formatBigIntPercent(stats.burnedQus, stats.circulatingSupply + stats.burnedQus)} of reported supply</dd>
         </div>
       </dl>
     </section>
@@ -269,7 +269,7 @@ function MarketSection({ showHeading = true }: { showHeading?: boolean }) {
         />
       ) : (
         <div className="flex items-center justify-between gap-4">
-          <p className="text-[0.68rem] font-medium uppercase tracking-[0.15em] text-[var(--glyph-tertiary)]">Market</p>
+          <p className="text-[0.7rem] font-medium uppercase tracking-[0.15em] text-[var(--glyph-tertiary)]">Market</p>
           <a className="font-mono text-xs text-[var(--glyph-tertiary)] hover:text-[var(--glyph-ink)]" href="https://www.coingecko.com/en/coins/qubic" rel="noreferrer" target="_blank">CoinGecko</a>
         </div>
       )}
@@ -281,7 +281,7 @@ function MarketSection({ showHeading = true }: { showHeading?: boolean }) {
           <div className="glyph-data-card glyph-market-spot">
             <dt className="text-xs font-medium uppercase tracking-[0.1em] text-[var(--glyph-tertiary)]">Qubic price</dt>
             <dd className="mt-3 font-mono text-4xl font-semibold tracking-[-0.08em] text-[var(--glyph-ink)] sm:text-6xl">{formatUsd(snapshot.priceUsd)}</dd>
-            <p className="mt-3 text-sm leading-6 text-[var(--glyph-muted)]">Per QUBIC. Updated {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(snapshot.lastUpdated))}.</p>
+            <dd className="mt-3 text-sm font-normal leading-6 tracking-normal text-[var(--glyph-muted)]">Per QUBIC. Updated {new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(snapshot.lastUpdated))}.</dd>
           </div>
 
           <MarketMetric className="glyph-market-metric--wide" detail="Current network valuation" icon={ChartEvaluationIcon} label="Market cap" value={formatUsd(snapshot.marketCapUsd)} />
@@ -300,6 +300,7 @@ function MarketSection({ showHeading = true }: { showHeading?: boolean }) {
                   </figcaption>
                   <div className="mt-5 h-64 w-full sm:h-72">
                     <AreaChart
+                      ariaLabel="Qubic price over the last 30 days. Use the left and right arrow keys to inspect daily values."
                       animate={false}
                       config={MARKET_CHART_CONFIG}
                       data={snapshot.history}
@@ -310,7 +311,7 @@ function MarketSection({ showHeading = true }: { showHeading?: boolean }) {
                       <Area dataKey="priceUsd" strokeVariant="solid" variant="hatched" />
                       <XAxis dataKey="timestamp" maxTicks={6} tickFormatter={formatMarketChartDate} />
                       <YAxis tickFormatter={formatUsd} />
-                      <Tooltip labelKey="timestamp" valueFormatter={(value) => formatUsd(value)} />
+                      <Tooltip labelFormatter={(value) => formatMarketChartDate(Number(value))} labelKey="timestamp" valueFormatter={(value) => formatUsd(value)} />
                     </AreaChart>
                   </div>
                 </figure>
@@ -329,6 +330,7 @@ function MarketSection({ showHeading = true }: { showHeading?: boolean }) {
                   </figcaption>
                   <div className="mt-5 h-56 w-full sm:h-64">
                     <AreaChart
+                      ariaLabel="Qubic market capitalization over the last 30 days. Use the left and right arrow keys to inspect daily values."
                       animate={false}
                       config={MARKET_CAP_CHART_CONFIG}
                       data={snapshot.marketCapHistory}
@@ -339,7 +341,7 @@ function MarketSection({ showHeading = true }: { showHeading?: boolean }) {
                       <Area dataKey="value" strokeVariant="solid" variant="hatched" />
                       <XAxis dataKey="timestamp" maxTicks={4} tickFormatter={formatMarketChartDate} />
                       <YAxis tickFormatter={formatCompactUsd} />
-                      <Tooltip labelKey="timestamp" valueFormatter={(value) => formatCompactUsd(value)} />
+                      <Tooltip labelFormatter={(value) => formatMarketChartDate(Number(value))} labelKey="timestamp" valueFormatter={(value) => formatCompactUsd(value)} />
                     </AreaChart>
                   </div>
                 </figure>
@@ -358,6 +360,7 @@ function MarketSection({ showHeading = true }: { showHeading?: boolean }) {
                   </figcaption>
                   <div className="mt-5 h-56 w-full sm:h-64">
                     <AreaChart
+                      ariaLabel="Qubic trading volume over the last 30 days. Use the left and right arrow keys to inspect daily values."
                       animate={false}
                       config={MARKET_VOLUME_CHART_CONFIG}
                       data={snapshot.volumeHistory}
@@ -368,7 +371,7 @@ function MarketSection({ showHeading = true }: { showHeading?: boolean }) {
                       <Area dataKey="value" strokeVariant="solid" variant="hatched" />
                       <XAxis dataKey="timestamp" maxTicks={4} tickFormatter={formatMarketChartDate} />
                       <YAxis tickFormatter={formatCompactUsd} />
-                      <Tooltip labelKey="timestamp" valueFormatter={(value) => formatCompactUsd(value)} />
+                      <Tooltip labelFormatter={(value) => formatMarketChartDate(Number(value))} labelKey="timestamp" valueFormatter={(value) => formatCompactUsd(value)} />
                     </AreaChart>
                   </div>
                 </figure>

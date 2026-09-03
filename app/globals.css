@@ -505,7 +505,7 @@ input:focus-visible {
 }
 
 .glyph-button--sm {
-  min-height: 40px;
+  min-height: 44px;
   padding: 0.55rem 0.85rem;
   font-size: 0.8125rem;
 }
@@ -584,6 +584,15 @@ input:focus-visible {
   color: rgb(0 0 0 / 72%);
 }
 
+.glyph-command-input-shell {
+  transition: background-color 160ms var(--glyph-ease), box-shadow 160ms var(--glyph-ease);
+}
+
+.glyph-command-input-shell:focus-within {
+  background: var(--glyph-surface);
+  box-shadow: inset 0 0 0 1px rgb(204 252 251 / 22%);
+}
+
 .glyph-overview-command .glyph-command-search {
   min-width: 0;
   min-height: 50px;
@@ -608,7 +617,7 @@ input:focus-visible {
 .glyph-page-header__eyebrow {
   margin: 0 0 0.45rem;
   color: var(--glyph-tertiary);
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -673,7 +682,7 @@ input:focus-visible {
 }
 
 .glyph-filter-option {
-  min-height: 36px;
+  min-height: 44px;
   border: 0;
   border-radius: 999px;
   padding: 0.45rem 0.75rem;
@@ -747,7 +756,7 @@ input:focus-visible {
   min-height: 14rem;
 }
 
-.glyph-market-spot dd {
+.glyph-market-spot dd:first-of-type {
   line-height: 0.9;
 }
 
@@ -759,6 +768,11 @@ input:focus-visible {
 
 .glyph-market-chart dd {
   margin: 0;
+}
+
+.glyph-market-chart [role="group"]:focus-visible {
+  outline: 2px solid var(--glyph-focus);
+  outline-offset: 4px;
 }
 
 @media (max-width: 699px) {
@@ -794,13 +808,13 @@ input:focus-visible {
 
 .glyph-network-tile dt {
   color: var(--glyph-tertiary);
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
-.glyph-network-tile dd {
+.glyph-network-tile dd:not(.glyph-stat-detail) {
   margin-top: 0.8rem;
   color: var(--glyph-ink);
   font-family: var(--font-geist-mono), monospace;
@@ -826,10 +840,13 @@ input:focus-visible {
   height: 2.75rem;
 }
 
-.glyph-network-tile p {
+.glyph-network-tile .glyph-stat-detail {
   margin-top: 0.45rem;
   color: var(--glyph-muted);
+  font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
   font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: normal;
   line-height: 1.4;
 }
 
@@ -841,7 +858,7 @@ input:focus-visible {
   min-height: 14rem;
 }
 
-.glyph-network-tile--lead dd {
+.glyph-network-tile--lead dd:not(.glyph-stat-detail) {
   margin-top: 1.2rem;
   font-size: clamp(3.5rem, 8vw, 6.5rem);
   line-height: 0.9;
@@ -853,7 +870,7 @@ input:focus-visible {
   height: 6rem;
 }
 
-.glyph-network-tile--lead dd a {
+.glyph-network-tile--lead dd:not(.glyph-stat-detail) a {
   color: inherit;
 }
 
@@ -891,7 +908,7 @@ input:focus-visible {
 }
 
 .glyph-nav[data-scrolled="true"] .glyph-command-search {
-  min-height: 38px;
+  min-height: 40px;
   padding-inline: 0.8rem;
   background: transparent;
   border-color: transparent;
@@ -943,7 +960,7 @@ input:focus-visible {
   width: 100%;
   padding: 0.65rem var(--glyph-gutter) 0;
   color: var(--glyph-tertiary);
-  font-size: 0.68rem;
+  font-size: 0.72rem;
 }
 
 .glyph-breadcrumbs ol,
@@ -1030,7 +1047,7 @@ input:focus-visible {
   padding-block: 0.75rem;
   vertical-align: middle;
   color: var(--glyph-tertiary);
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1181,10 +1198,13 @@ input:focus-visible {
   .glyph-table-scroll__hint {
     display: block;
     margin: 0;
-    border-block-start: 1px solid var(--glyph-line);
-    padding: 0.55rem 0.75rem;
+    position: sticky;
+    z-index: 4;
+    left: 0;
+    width: 100%;
+    padding: 0.55rem 0.75rem 0.35rem;
     color: var(--glyph-tertiary);
-    font-size: 0.68rem;
+    font-size: 0.72rem;
     letter-spacing: 0.04em;
     text-align: right;
   }
@@ -1265,7 +1285,7 @@ input:focus-visible {
   }
 
   .glyph-command-search {
-    width: 40px;
+    width: 44px;
     padding-inline: 0;
   }
 

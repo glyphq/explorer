@@ -1,13 +1,15 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 const Dither = dynamic(() => import("@/components/Dither"), {
   ssr: false,
 });
 
 export function ReactBitsDither() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(true);
   const reduceMotion = useSyncExternalStore(
     (onStoreChange) => {
       const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -18,11 +20,21 @@ export function ReactBitsDither() {
     () => false,
   );
 
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(([entry]) => setIsVisible(entry.isIntersecting), {
+      rootMargin: "160px",
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div aria-hidden="true" className="absolute inset-0 pointer-events-none opacity-25">
+    <div ref={containerRef} aria-hidden="true" className="absolute inset-0 pointer-events-none opacity-25">
       <Dither
         colorNum={10}
-        disableAnimation={reduceMotion}
+        disableAnimation={reduceMotion || !isVisible}
         enableMouseInteraction={false}
         mouseRadius={1}
         pixelSize={2}
